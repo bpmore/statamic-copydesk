@@ -12,7 +12,7 @@
 - [x] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
 - [x] Unit tests against reference texts with published scores
 - [x] Report a grade **band**, never a decimal
-- [ ] Locale guard: English only; disable with an explicit message otherwise
+- [x] Locale guard: English only; disable with an explicit message otherwise
 
 ## Phase 2 — Rules
 - [ ] One class per rule, individually testable
@@ -336,3 +336,27 @@
 - A negative tolerance in config is read as its distance (abs), not an inverted
   band.
 - **Tests:** 179 passing.
+
+### 2026-09-11 — Phase 1, task 9: locale guard — Phase 1 complete
+
+- **Shipped:** `Locale\LocaleGuard` (`fromConfig(['locales' => [...]])`, default
+  `['en']`; `check(string): Decision`, `allows(string): bool`) and
+  `Locale\Decision` (`allowed`, `locale`, `language`, `message()`). The core
+  cannot read a Statamic site's locale — the addon passes it in (Phase 3: `Site::
+  current()->locale()`); the core owns the decision and the words.
+- **Matching:** a bare language in the setting (`en`) allows every region of it
+  (`en_AU`, `en-GB`); a full locale (`en_US`) allows only itself. Case and `-`/`_`
+  are ignored. The spec's example list `['en', 'en_US', 'en_GB']` is therefore
+  redundant but harmless.
+- **No locale is refused too** (`''`, `'default'`): scoring text whose language
+  nobody stated is the silent failure the spec calls a correctness issue. The
+  message says to set the site's locale.
+- **Message:** English, plain words, says what to do ("add fr to the locales
+  setting to check it anyway"). Language names come from intl when present
+  ("French (fr)"), else the code ("set to fr"); a message, not a score, so host
+  variation is acceptable. `Decision` carries `locale` and `language` so the
+  addon can write its own translated message.
+- **Phase 1 is complete.** The engine: extraction (HTML/Bard/plain) → exclusions →
+  segmentation → syllables → tallies → four formulas → band vs target, plus the
+  locale guard. No runtime dependencies. 186 tests. Nothing in `Phase 2` has been
+  started.
