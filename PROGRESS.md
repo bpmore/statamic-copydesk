@@ -9,7 +9,7 @@
 - [x] Exclusion pipeline: code blocks, blockquotes, references, proper names, addresses, ignore-classes
 - [x] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
 - [x] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
-- [ ] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
+- [x] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
 - [ ] Unit tests against reference texts with published scores
 - [ ] Report a grade **band**, never a decimal
 - [ ] Locale guard: English only; disable with an explicit message otherwise
@@ -247,3 +247,38 @@
 - The two pre-rule corrections (diacritics off, vowelless initialisms spelled
   out) are unchanged. `TextStatisticsSyllableCounter` is deleted.
 - **Tests:** 147 passing, none depending on the library.
+
+### 2026-09-11 — Phase 1, task 6: formula layer
+
+- **Shape:** `Formula\Counts` (sentences, words, syllables, characters, Gunning
+  complex words, SMOG polysyllables; `add()` so sections sum) ← `Formula\Tally`
+  (Segmenter + SyllableCounter → Counts) → `Formula\Formula` implementations
+  `FleschKincaid`, `GunningFog`, `Smog`, `ColemanLiau` (`grade(Counts): float`,
+  unrounded) + `FleschReadingEase::score()` (not a grade) + `Grades::of(Counts)`
+  gathering all five (null when empty). `Text\Words` tokenizes: whitespace split,
+  surrounding punctuation off, a token needs a letter or digit to be a word.
+- **Which blocks count (the task-4 question): every block except headings.**
+  Headings are section markers; counting "Who should get one?" as a one-line
+  sentence flatters a page. List items count — a list is a plain-language
+  technique and the formulas rewarding it is right. A number is a one-syllable
+  word; "—" is not a word. Recorded in `Tally`'s docblock.
+- **Gunning's complex word is done Gunning's way:** ≥3 syllables, but not a
+  hyphenated compound, and not a word that only reaches three by `-es`/`-ed`/
+  `-ing` (the stem is re-counted). Proper nouns are already gone via ProperNames.
+  SMOG's polysyllables have no exclusions. Most implementations skip this; it
+  makes Fog run lower than naive ports on -ing-heavy prose, which is the formula
+  as published.
+- **Constants** are the published ones (FK 0.39/11.8/15.59; Fog 0.4; SMOG
+  1.0430/3.1291 with the ×30/sentences sample scaling; CL 0.0588/0.296/15.8; RE
+  206.835/1.015/84.6). Each formula's docblock carries it. Grades can go negative
+  on very plain text (FK −0.8 on "A flu shot keeps you well. It is free."); task
+  8's band layer clamps.
+- **Observed on the fixture page:** 18 sentences / 77 words = 4.3 words per
+  sentence, because labels, nav and list items are one-"sentence" blocks. Real
+  field content is mostly paragraphs so this is less severe there, but it is why
+  per-section scoring (Phase 2) and the band matter. SMOG's 30-sentence design
+  sample is noted in its docblock; nothing enforces it.
+- **Tests:** 167 passing. Formula tests are against hand-computed values from one
+  fixed `Counts`; the tally is tested with a table-driven stub counter so the
+  arithmetic does not depend on the syllable rules. Reference texts with
+  published scores are task 7, not done here.
