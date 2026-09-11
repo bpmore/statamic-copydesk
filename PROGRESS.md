@@ -5,7 +5,7 @@
 
 ## Phase 1 — Core engine (no Statamic)
 - [x] Scaffold `readability-core`, composer-installable and testable standalone
-- [ ] Text extraction + normalization: HTML/Bard → analyzable plain text
+- [x] Text extraction + normalization: HTML/Bard → analyzable plain text
 - [ ] Exclusion pipeline: code blocks, blockquotes, references, proper names, addresses, ignore-classes
 - [ ] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
 - [ ] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
@@ -84,3 +84,45 @@
   dependency) is a decision for Phase 5, alongside the README positioning.
 - `PROGRESS.md` header said the spec was `plain-build-spec.md`; it is `SPEC.md`.
   Corrected.
+
+### 2026-09-11 — Phase 1, task 2: text extraction + normalization
+
+- **Extraction produces structure, not a string.** `Text\Document` is an ordered
+  list of `Block`s (kind, normalised text, heading level) each with an `Origin`
+  (tag, ancestors, HTML classes, Bard set handles, Bard node path). Every later
+  task needs it: exclusions drop blocks by what encloses them, per-section
+  scoring groups blocks under headings, and inline highlighting needs the Bard
+  path. `Document::text()` is the flat form for anything that only wants words.
+- **One vocabulary.** The Bard extractor maps node types onto the HTML tag they
+  render as (`listItem`→`li`, `codeBlock`→`pre`, `tableHeader`→`th`); a set is
+  `set`. So `Block::isQuoted()` etc. ask one question whichever extractor ran.
+- **Markdown is deliberately not a core concern.** The host renders it with its
+  own parser and extensions and hands over HTML; a second parser here would only
+  disagree with the first. The addon (Phase 3) does this.
+- **Sets:** disabled sets are skipped whole; Bard fields nested in an enabled set
+  are walked; a set's plain string fields are *not* read, because from here a
+  caption is indistinguishable from a URL. The addon, which has the blueprint,
+  hands those to `PlainTextExtractor` itself. Replicator-shaped values are walked
+  and found empty, by design.
+- **A newline in block text always means a hard break** (`<br>`, Bard `hardBreak`,
+  or a line of `<pre>`). The first cut kept the source's own line wrapping as
+  breaks; the messy-page fixture caught it. The extractors now fold source
+  whitespace to spaces before the normaliser sees it.
+- **Surprises:** (1) a fragment that is nothing but bare text came back empty,
+  because the root frame was only flushed when a block opened after it — fixed by
+  flushing at the end of the walk. (2) Pest 4 ships a global `fixture()` (path
+  under `tests/Fixtures/`) that Pest 3.8 lacks; our helper is `readFixture()`.
+  (3) `preg_replace` with `/u` returns null on invalid UTF-8, which would have
+  silently emptied a block; `mb_scrub` first, with a test.
+- **Manifest:** now requires `ext-dom`, `ext-libxml`, `ext-mbstring`; suggests
+  `ext-intl` (NFC composition, skipped without it).
+- **Left in the text on purpose, for later tasks:** inline `<code>`, footnote
+  markers like `[1]`, an `<abbr>`'s text (its `title` expansion is dropped — if
+  the acronym rule in Phase 2 wants it, extraction will need an inline
+  annotation), and site chrome such as `nav`/`footer` on a full page (A11y
+  Report's page scoping, Phase 4). All carry their tag/classes on the Origin.
+- The Bard fixture is hand-written. Reading a real entry from a production site
+  for it was refused by the permission classifier (PII) — the right call — so the
+  fixture follows that site's node-type and attribute inventory (structure only,
+  via grep counts), including sets with `enabled`/`values` and custom handles.
+- **Tests:** 48 passing (`cd packages/readability-core && vendor/bin/pest`).
