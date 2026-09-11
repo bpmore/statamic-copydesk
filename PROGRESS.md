@@ -8,7 +8,7 @@
 - [x] Text extraction + normalization: HTML/Bard → analyzable plain text
 - [x] Exclusion pipeline: code blocks, blockquotes, references, proper names, addresses, ignore-classes
 - [x] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
-- [ ] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
+- [x] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
 - [ ] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
 - [ ] Unit tests against reference texts with published scores
 - [ ] Report a grade **band**, never a decimal
@@ -201,3 +201,31 @@
   kinds count as prose — probably paragraphs, list items of sentence length, and
   Other — rather than the segmenter pretending a label is a sentence.
 - **Tests:** 120 passing.
+
+### 2026-09-11 — Phase 1, task 5: SyllableCounter
+
+- **Shipped:** `Text\SyllableCounter` (interface: `syllables(string $word): int`,
+  0 for no letters, ≥1 otherwise) and `Text\TextStatisticsSyllableCounter` over
+  `davechild/textstatistics ^1.0` (BSD-2-Clause), now a runtime dependency. Plus
+  `Text\Diacritics::strip()` — a fixed table, not intl, so the count is the same
+  on every host.
+- **Two corrections applied before the library sees a word**, because it keeps
+  only A–Z: accents come off (`café` → 2, not `caf` → 1) and a vowelless initialism
+  is read letter by letter (`CDC` → 3, `HTML` → 4; `NASA`/`COVID` still 2). Both
+  only matter when `proper_names` exclusion is off, since names and acronyms are
+  removed before grading anyway.
+- **⚠ The library is unmaintained and already deprecated on our PHP floor.** Last
+  release 2018-08-21. `Text::cleanText()` calls `utf8_decode()` (deprecated PHP
+  8.2, removal planned for PHP 9) and every public entry point goes through it, so
+  every syllable count would log a notice. The wrapper contains it with an
+  `E_DEPRECATED` handler scoped to the one call, and a test asserts nothing leaks.
+  **Decision for you:** keep the dependency (as the spec names it) or port the
+  ~250-line algorithm (Lingua::EN::Syllable rules; BSD-2 permits with attribution)
+  into this package as the first implementation. The interface makes either a
+  one-file change. I did what the task said and did not improvise the port.
+- **Accuracy, measured:** on a 36-word reference set the raw library scored 26;
+  with the two corrections the systematic misses are gone, leaving ordinary
+  heuristic misses (`science` 1, `create` 1, `area` 2, `queue` 2, `naïve` 1).
+  These are not asserted in tests — a test that asserts a wrong number keeps it
+  wrong. Good enough for a grade *band*, which is the only thing we report.
+- **Tests:** 147 passing.
