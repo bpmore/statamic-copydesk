@@ -6,7 +6,7 @@
 ## Phase 1 — Core engine (no Statamic)
 - [x] Scaffold `readability-core`, composer-installable and testable standalone
 - [x] Text extraction + normalization: HTML/Bard → analyzable plain text
-- [ ] Exclusion pipeline: code blocks, blockquotes, references, proper names, addresses, ignore-classes
+- [x] Exclusion pipeline: code blocks, blockquotes, references, proper names, addresses, ignore-classes
 - [ ] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
 - [ ] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
 - [ ] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
@@ -126,3 +126,44 @@
   fixture follows that site's node-type and attribute inventory (structure only,
   via grep counts), including sets with `enabled`/`values` and custom handles.
 - **Tests:** 48 passing (`cd packages/readability-core && vendor/bin/pest`).
+
+### 2026-09-11 — Phase 1, task 3: exclusion pipeline
+
+- **Shape:** `Exclusion::apply(Document): Document`, one class per exclusion
+  (`Code`, `Quotes`, `References`, `FiguresInTables`, `Addresses`, `IgnoredClasses`,
+  `IgnoredSets`, `ProperNames`), composed by `Pipeline`. `Pipeline::fromConfig()`
+  reads the spec's `exclude` sketch plus `code`/`addresses`/`figures`/`proper_names`
+  booleans (all default on). Whole-block drops run first; text-level cuts leave a
+  `Tidy::GAP` marker so the comma that belonged to the span goes with it.
+- **Proper names are formula-only.** SC 3.1.5 grades "after removal of proper names
+  and titles", but a long sentence is still long with the names in, the acronym
+  rule needs the acronyms, and jargon needs every word. So the rules get
+  `$pipeline->without(ProperNames::class)`. Detection is capitalisation-only and
+  deliberately conservative: it never removes a lone sentence-initial capitalised
+  word (so it misses "Mary left early."), never touches a title-case line or a
+  heading, and an opening quote, a colon, or a hard break starts a new sentence.
+  Known trade-off: a sentence-initial adverb before a name ("Yesterday John Smith
+  said") is taken with the name unless the adverb is in the openers list.
+- **Inline content needs the extractors' help.** By the time a Block exists, a
+  `<span class="no-readability">` or inline `<code>` is part of its paragraph's
+  text. `HtmlExtractor(ignoredTags:, ignoredClasses:)` and
+  `BardExtractor(ignoredMarks:)` were added for that; `Code::INLINE_TAGS` and
+  `Code::INLINE_MARKS` name what to pass. The addon must feed the same config to
+  both the extractor and the pipeline.
+- **Origin grew `ids` and `roles`** (element + ancestors) because that is what a
+  references heuristic keys on (`<section id="footnotes">`, `role="doc-endnotes"`).
+- **Surprises:** (1) a "References" heading section that ran to the next heading
+  of the same level swallowed a full page's footer when no heading followed — it
+  is now also bounded by the element the heading sat in. (2) The first title-case
+  guard skipped every word in the openers list regardless of case, so "We thank
+  Dr. Smith." looked title-cased and nothing was removed; title case now tolerates
+  only the small words a title leaves lowercase, and a line ending in `.!?` is a
+  sentence. (3) `core()` used `rtrim` with a set that lacked `.`, so `Health).`
+  kept its bracket; the token anatomy (leading/core/trailing) was rewritten as one
+  regex each.
+- **Scope note:** the address patterns are English-speaking-country shapes (US
+  street/zip, UK/CA postcodes, NA + international phones), consistent with the
+  engine being English-only. `FiguresInTables` treats a run of consecutive
+  in-table blocks as one table (HTML origins carry no table identity).
+- **Tests:** 84 passing. Pipeline goldens over `messy.html` for both views are in
+  `PipelineTest.php` and were each read line by line before being asserted.
