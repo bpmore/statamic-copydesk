@@ -214,18 +214,36 @@
   is read letter by letter (`CDC` → 3, `HTML` → 4; `NASA`/`COVID` still 2). Both
   only matter when `proper_names` exclusion is off, since names and acronyms are
   removed before grading anyway.
-- **⚠ The library is unmaintained and already deprecated on our PHP floor.** Last
-  release 2018-08-21. `Text::cleanText()` calls `utf8_decode()` (deprecated PHP
-  8.2, removal planned for PHP 9) and every public entry point goes through it, so
-  every syllable count would log a notice. The wrapper contains it with an
-  `E_DEPRECATED` handler scoped to the one call, and a test asserts nothing leaks.
-  **Decision for you:** keep the dependency (as the spec names it) or port the
-  ~250-line algorithm (Lingua::EN::Syllable rules; BSD-2 permits with attribution)
-  into this package as the first implementation. The interface makes either a
-  one-file change. I did what the task said and did not improvise the port.
+- **The library was unmaintained and already deprecated on our PHP floor.** Last
+  release 2018-08-21; `Text::cleanText()` calls `utf8_decode()` (deprecated PHP
+  8.2, removal planned for PHP 9) on every public entry point. Raised as a
+  decision; **decided: port it** (see the follow-up entry below).
 - **Accuracy, measured:** on a 36-word reference set the raw library scored 26;
   with the two corrections the systematic misses are gone, leaving ordinary
   heuristic misses (`science` 1, `create` 1, `area` 2, `queue` 2, `naïve` 1).
   These are not asserted in tests — a test that asserts a wrong number keeps it
   wrong. Good enough for a grade *band*, which is the only thing we report.
 - **Tests:** 147 passing.
+
+### 2026-09-11 — Phase 1, task 5, follow-up: the syllable rules ported in
+
+- **Decision (Brent): port the algorithm rather than depend on the library.**
+  `Text\EnglishSyllableCounter` now holds the rules of `davechild/textstatistics`
+  1.0.3 (Lingua::EN::Syllable lineage) — exceptions, one/two/three-syllable
+  affixes, the one-not-two and two-not-one sound lists, and the Kuwamoto
+  singularizer used to look plurals up in the exceptions. `davechild/textstatistics`
+  is removed from `composer.json`; the core has **no runtime dependencies** again.
+- **Fidelity verified before the library was removed:** the port matched
+  `Syllables::syllableCount()` on all 235,976 words of `/usr/share/dict/words`
+  plus plural/hyphen/possessive forms — 0 differences. A 384-word sample of the
+  library's answers is frozen in `tests/__fixtures__/syllables.json`; the test
+  that checks it says plainly that the claim is fidelity, not correctness, so a
+  rule improvement shows exactly which words it changed.
+- **Licence compliance:** BSD-2-Clause requires the copyright notice, conditions
+  and disclaimer to stay with redistributed source; they are in
+  `packages/readability-core/THIRD-PARTY-LICENSES.md`, referenced from the class.
+  The singularizer's MIT origin is credited the way the library credited it (a
+  URL; no copyright line exists to reproduce).
+- The two pre-rule corrections (diacritics off, vowelless initialisms spelled
+  out) are unchanged. `TextStatisticsSyllableCounter` is deleted.
+- **Tests:** 147 passing, none depending on the library.
