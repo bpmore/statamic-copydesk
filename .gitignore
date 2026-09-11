@@ -1,0 +1,11 @@
+# Written by run-build.sh on every unattended attempt.
+build-log.jsonl
+
+# The addon's own install, once it is scaffolded at the root (Phase 3).
+/vendor
+/node_modules
+composer.lock
+
+.phpunit.result.cache
+/.phpunit.cache
+.DS_Store
