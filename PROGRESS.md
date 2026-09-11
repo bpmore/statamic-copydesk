@@ -7,7 +7,7 @@
 - [x] Scaffold `readability-core`, composer-installable and testable standalone
 - [x] Text extraction + normalization: HTML/Bard → analyzable plain text
 - [x] Exclusion pipeline: code blocks, blockquotes, references, proper names, addresses, ignore-classes
-- [ ] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
+- [x] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
 - [ ] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
 - [ ] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
 - [ ] Unit tests against reference texts with published scores
@@ -167,3 +167,37 @@
   in-table blocks as one table (HTML origins carry no table identity).
 - **Tests:** 84 passing. Pipeline goldens over `messy.html` for both views are in
   `PipelineTest.php` and were each read line by line before being asserted.
+
+### 2026-09-11 — Phase 1, task 4: sentence segmentation
+
+- **Evaluated before hand-rolling, as the spec asked.** A 32-case corpus of the
+  traps (honorifics, initials, dotted acronyms before names vs. at sentence end,
+  "a.m."/"p.m.", "e.g.", decimals, domains, section numbers, ellipses, dialogue
+  attribution, brackets, units, days/months) with the count a reader would give.
+  Exact-count scores: **ICU `IntlBreakIterator` 25/32** (breaks after every
+  honorific — PHP's intl does not expose ICU's CLDR abbreviation suppressions —
+  and intl is optional for us anyway); **`vanderlee/php-sentence` 22/32** (wrong
+  in both directions: "One. Two. Three." → 1, splits `example.com`, splits
+  "a.m. | on Monday" before a lowercase word); **`davechild/textstatistics`
+  10/32** (counts `.!?` characters; its own comment admits it); **`opencat/
+  segmentation`** has no stable release and 0 downloads, not evaluated;
+  **rule-based, ours: 32/32.** The corpus is my own, built from the spec's
+  example and health-content patterns, not an external benchmark.
+- **Shipped:** `Text\Segmenter` (interface) + `Text\EnglishSegmenter` +
+  `Text\Sentence` (text, byte offset in the block). Rules: a run of `.!?` plus
+  closers plus whitespace is a boundary unless a lowercase letter follows, the
+  period is an honorific's or an initial's, or it is an abbreviation's / dotted
+  acronym's and the next word is not a sentence opener (or a digit follows).
+  Callers segment block by block; a hard break inside a block is a boundary.
+- **Word lists moved to `Text\English`** (TITLES, ABBREVIATIONS, OPENERS,
+  CONNECTORS, SMALL_IN_TITLES, `isDotted()`), shared by the segmenter and
+  `ProperNames` so the two cannot disagree on whether "Inc." ends a sentence.
+- **Known misses, accepted:** a single-letter word before a period ("vitamin C.
+  Drink water", "Plan B. Then") reads as an initial; "U.S." followed by an
+  opener-like proper name ("U.S. The Company") would break.
+- **For task 6 (formulas):** headings, list items, captions and labels come out as
+  one-sentence blocks ("Especially:", "Search"). Averaging words-per-sentence
+  over those will flatter a page. The formula layer needs to decide which block
+  kinds count as prose — probably paragraphs, list items of sentence length, and
+  Other — rather than the segmenter pretending a label is a sentence.
+- **Tests:** 120 passing.
