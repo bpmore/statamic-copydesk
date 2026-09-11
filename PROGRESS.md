@@ -10,7 +10,7 @@
 - [x] Sentence segmentation that survives "Dr. Smith went to St. Louis Inc." — evaluate a real segmenter before hand-rolling
 - [x] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
 - [x] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
-- [ ] Unit tests against reference texts with published scores
+- [x] Unit tests against reference texts with published scores
 - [ ] Report a grade **band**, never a decimal
 - [ ] Locale guard: English only; disable with an explicit message otherwise
 
@@ -282,3 +282,35 @@
   fixed `Counts`; the tally is tested with a table-driven stub counter so the
   arithmetic does not depend on the syllable rules. Reference texts with
   published scores are task 7, not done here.
+
+### 2026-09-11 — Phase 1, task 7: reference texts with published scores
+
+- **Sources:** the worked examples in Wikipedia's articles on each formula,
+  fetched today rather than recalled. Flesch–Kincaid: "The cat sat on the mat."
+  (RE 116), "This sentence, taken as a reading passage unto itself…" (RE 69), and
+  the Australian platypus sentence (13 words, 24 syllables, RE 37.5, grade 11.3),
+  plus Green Eggs and Ham's published ratios (5.7 w/s, 1.02 syl/w → −1.3).
+  Coleman–Liau: the abstract of Coleman & Liau's own 1975 paper (5 sentences,
+  119 words, 639 letters → 14.5). **No accessible source has a worked passage for
+  SMOG or Gunning Fog** (both articles define the formula only; a university
+  health-literacy PDF with a SMOG example was not text-extractable). Those two
+  rest on the hand-computed formula tests from task 6 and the shared counts.
+- **Results:** three of four texts exact through the whole chain — tokenizer,
+  segmenter, syllable counter, formula. The Coleman–Liau abstract matches on all
+  four published numbers (its fifth sentence runs past "U.S. Office", which the
+  segmenter handles). The platypus sentence counts 26 syllables to the article's
+  24 because "Australian" and "reptilian" are four here and three there, and
+  Merriam-Webster allows either; the test asserts the undisputed counts exactly,
+  the scores within what two syllables move them, and that the formulas give
+  37.5/11.3 from the published syllable count.
+- **Two syllable-rule defects found and fixed** (the point of owning the rules):
+  (1) the add-rule `[aeiouy]sh?e[rsd]$` gave every "-sed"/"-shed" past participle
+  an extra syllable — used, based, closed, washed, finished, published, diagnosed,
+  advised, surprised; narrowed to `[rs]`, 427 dictionary words change by −1, all
+  to the dictionary's answer (checked against the pre-change counter over the
+  whole dictionary; sample reviewed by eye). (2) the `^pro` prefix rule took a
+  syllable from prove/proved/proud(ly/er/est)/proof/prose/probe(d)/prone; added
+  to EXCEPTIONS. Both departures are marked in the class at the point of change.
+  The frozen fidelity sample moved on exactly one word ("polishedness" 4→3,
+  correct), updated deliberately with the reason in the test's docblock.
+- **Tests:** 172 passing.
