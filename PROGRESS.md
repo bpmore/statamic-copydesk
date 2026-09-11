@@ -11,7 +11,7 @@
 - [x] `SyllableCounter` interface with `davechild/textstatistics` as the first implementation
 - [x] Formula layer implemented in-house over the counter (Flesch-Kincaid, SMOG, Gunning Fog, Coleman-Liau)
 - [x] Unit tests against reference texts with published scores
-- [ ] Report a grade **band**, never a decimal
+- [x] Report a grade **band**, never a decimal
 - [ ] Locale guard: English only; disable with an explicit message otherwise
 
 ## Phase 2 — Rules
@@ -314,3 +314,25 @@
   The frozen fidelity sample moved on exactly one word ("polishedness" 4→3,
   correct), updated deliberately with the reason in the test's docblock.
 - **Tests:** 172 passing.
+
+### 2026-09-11 — Phase 1, task 8: the band
+
+- **Shipped:** `Formula\Band` (whole-grade range; `of(float)` floors, clamps to
+  1–2 at the bottom and `17+` open at the top; `around(grade, tolerance)` for
+  targets; `label()` is an English convenience — the addon formats from `low`/
+  `high` with its own translations), `Formula\Comparison` (OnTarget/Above/Below),
+  `Formula\Target` (`fromConfig(['grade' => 8, 'tolerance' => 1])` → 7–9; defaults
+  8 ± 1), and on `Grades`: `consensus()` (median of the four formulas) and
+  `band()`.
+- **Median, not mean:** SMOG was normed on 30-sentence samples and sits at its
+  3.1 floor on short text; a median ignores one wandering formula. Consensus
+  stays a decimal for ordering (worst offenders, trend) and the details view —
+  its docblock says never as the headline.
+- **The verdict is made from the band, not the decimal.** A band overlapping the
+  target is *on target*: 9.99 shows as "Grade 9–10" and is on target for 7–9,
+  because telling the reader "above" would contradict the two ranges they can
+  see. This is deliberately generous by up to a grade; the tolerance config is
+  where a site tightens it. "Below" is informational only.
+- A negative tolerance in config is read as its distance (abs), not an inverted
+  band.
+- **Tests:** 179 passing.
