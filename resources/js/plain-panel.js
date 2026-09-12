@@ -105,6 +105,29 @@
                 }
             }
 
+            // What the gate said when it refused a publish, drawn where the
+            // author is already looking. Statamic puts a 422's `errors` onto
+            // the publish container keyed as the endpoint sent them, and the
+            // toast says only "The given data was invalid.", so this is the
+            // one place the refusal is read. Whichever is newest is shown: a
+            // refusal clears an older check, and Statamic hands the container
+            // a new errors object on every failed save, so a second refusal
+            // clears a check pressed in between.
+            const refusal = Vue.computed(() => {
+                const lines = (container.errors?.value ?? {}).plain;
+
+                return Array.isArray(lines) ? lines : [];
+            });
+
+            Vue.watch(refusal, (lines) => {
+                if (lines.length > 0) {
+                    state.result = null;
+                    state.failed = null;
+                }
+            });
+
+            const showRefusal = Vue.computed(() => refusal.value.length > 0 && ! state.result && ! state.failed && ! state.checking);
+
             const verdict = Vue.computed(() => {
                 const r = state.result;
 
@@ -143,7 +166,7 @@
                 return spans.slice(0, 5);
             }
 
-            return { state, check, verdict, groups, sections, highlighted, shown };
+            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal };
         },
 
         // No panel or header of its own: a field is already drawn inside the
@@ -164,6 +187,13 @@
         // who wants them; the decimals are never the headline.
         template: `
             <div class="space-y-3">
+                <ui-alert
+                    v-if="showRefusal"
+                    variant="error"
+                    :heading="refusal[0]"
+                    :text="refusal.slice(1).join(' ')"
+                />
+
                 <div>
                     <ui-button
                         size="sm"

@@ -19,6 +19,23 @@ a heading on its own, and what to fix, with the flagged words marked in
 their sentence. The rest of the control-panel surface arrives task by
 task; `PROGRESS.md` is the record.
 
+## The gate
+
+Off by default. Turned on, it stops a publish — never a draft — in the
+collections you name (or all of them, if you name none), and only for the
+findings of the rules in `block_on`: a very long sentence, and a banned
+term from the dictionary, one you gave nothing to say instead of. A term
+with a suggested replacement is a warning to fix, not a reason to stop a
+publish.
+
+**It never blocks on a grade, and it cannot be configured to.** A grade
+band is a heuristic. A press release stopped for scoring 11 is how a
+checker gets uninstalled, and the restraint is the point.
+
+When the check itself cannot run, the save goes through and the log says
+so: a readability check that fails is this addon's problem, and this
+addon must never be the reason a site cannot publish.
+
 Configuration is `config/statamic-plain.php` (publish it with
 `php please vendor:publish --tag=statamic-plain-config`): the locales that
 are English, the target grade and tolerance, which fields are prose by

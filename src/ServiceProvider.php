@@ -36,6 +36,7 @@ class ServiceProvider extends AddonServiceProvider
         parent::register();
 
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
+        $this->app->bind(Gate\GateSettings::class, static fn ($app): Gate\GateSettings => $app->make(Settings::class)->gate());
     }
 
     public function bootAddon(): void

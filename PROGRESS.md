@@ -27,7 +27,7 @@
 ## Phase 3 — Statamic addon
 - [x] Scaffold `statamic-plain`
 - [x] Publish-form panel: grade band vs target, per-section grades, inline highlighting
-- [ ] Gate: opt-in per collection, **never blocks on grade alone**
+- [x] Gate: opt-in per collection, **never blocks on grade alone**
 - [ ] Jargon dictionary editor, per site, import/export, starter dictionary shipped
 - [ ] Utility screen: distribution, worst offenders, acronym/jargon frequency
 - [ ] Dashboard widget
@@ -651,3 +651,38 @@
   (ported from A11y Report) now tolerates `:prop`/`@event` names and `>` inside
   attribute values.
 - **Tests:** root suite 19 (boots Statamic), engine 268.
+
+### 2026-09-12 — Phase 3, task 3: the gate
+
+- **Shipped:** `Gate\GateSettings` (`enabled` off by default; `collections` empty =
+  every collection once enabled; `block_on` defaults `['very_long_sentence',
+  'jargon']`), `Gate\GateResult`, `Gate\PublishGate::inspect(Entry)` (draft →
+  not applicable; collection not gated → n/a; locale refused → n/a with the
+  guard's words; analyzer throws → could-not-check), `Listeners\RefuseUnlessPlain`
+  on `EntrySaving` (throws `ValidationException` keyed `plain`, status 422, as
+  A11y Gate does and for its reasons: returning false says nothing). The panel
+  now draws `errors.plain` as an alert. `Settings::gate()` returns `GateSettings`,
+  bound in the container.
+- **Never on a grade — structurally.** `GateSettings` has no field for a grade or
+  a band; `PublishGate::blocking()` filters findings by rule handle only. A test
+  saves a page that reads Grade 17+ on every formula and asserts the settings
+  object has exactly `enabled`, `collections`, `blockOn`.
+- **`jargon` in `block_on` means banned terms.** The spec's blockable thing is
+  "banned phrases"; a dictionary entry with a replacement is a warning to fix
+  (`utilize`), one with nothing to say instead is banned (`please be advised
+  that`) and blocks. Implemented as `suggestion === null`. **Flagged as a
+  reading — easy to widen to every jargon finding if that was the intent.**
+- **Fails open, on purpose** — the opposite of A11y Gate. There, an unrenderable
+  page is the page's problem and the save is refused. Here, an analyzer exception
+  (a broken `rules` config, say) is this addon's problem: the entry saves and the
+  log gets an error line naming the cause. A readability checker must never be
+  why a site cannot publish. Tested with an unknown rule handle in config.
+- Refusal lines: "This page was not published. One thing has to be fixed first."
+  / each blocking finding's message with "(in content)" / "The grade never stops
+  a publish, and neither do the other findings; they are in the Readability
+  panel." The toast still says "The given data was invalid." — Statamic's
+  `ValidationException::summarize()` — which is why the panel draws the lines.
+- Test-data lessons: a collection with no fixture blueprint gets Statamic's
+  default one, where `content` is markdown and wants a string, not a Bard tree;
+  and a sixty-word constant had sixty-one words — now a computed helper.
+- **Tests:** root 30 (boots Statamic), engine 268.

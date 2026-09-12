@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bpmore\Plain;
 
+use Bpmore\Plain\Gate\GateSettings;
 use Bpmore\ReadabilityCore\Exclusion\Pipeline;
 use Bpmore\ReadabilityCore\Formula\Target;
 use Bpmore\ReadabilityCore\Locale\LocaleGuard;
@@ -86,11 +87,8 @@ final class Settings
         return RuleSet::fromConfig((array) ($this->config['rules'] ?? []));
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function gate(): array
+    public function gate(): GateSettings
     {
-        return (array) ($this->config['gate'] ?? []);
+        return GateSettings::fromConfig((array) ($this->config['gate'] ?? []));
     }
 }
