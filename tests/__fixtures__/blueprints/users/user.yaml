@@ -1,0 +1,9 @@
+tabs:
+  main:
+    sections:
+      -
+        fields:
+          -
+            handle: content
+            field:
+              type: bard

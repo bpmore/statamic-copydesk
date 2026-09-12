@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Bpmore\Plain\Fieldtypes;
+
+use Statamic\Fields\Fieldtype;
+
+/**
+ * The readability panel, as a field a site can place in a blueprint.
+ *
+ * A fieldtype rather than something injected into the publish form,
+ * because it is the extension point Statamic offers inside the entry
+ * screen. Where it appears is the site's decision, and the sidebar is the
+ * obvious home; the listener puts it there for any form it can read.
+ *
+ * It stores nothing. `process()` and `preProcess()` return null so a
+ * blueprint carrying this field never writes a key into the entry's file:
+ * a grade left in the content directory would be a stale copy of an
+ * answer that changes every time the page does.
+ *
+ * The handle is derived from the class name: `readability_panel`, and the
+ * Vue component is `readability_panel-fieldtype`. Renaming the class
+ * renames the field and breaks every blueprint using it.
+ */
+class ReadabilityPanel extends Fieldtype
+{
+    protected $icon = 'fieldtype-textarea';
+
+    protected static $title = 'Readability';
+
+    public function preProcess($data)
+    {
+        return null;
+    }
+
+    public function process($data)
+    {
+        return null;
+    }
+
+    public function augment($value)
+    {
+        return null;
+    }
+}

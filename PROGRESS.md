@@ -26,7 +26,7 @@
 
 ## Phase 3 — Statamic addon
 - [x] Scaffold `statamic-plain`
-- [ ] Publish-form panel: grade band vs target, per-section grades, inline highlighting
+- [x] Publish-form panel: grade band vs target, per-section grades, inline highlighting
 - [ ] Gate: opt-in per collection, **never blocks on grade alone**
 - [ ] Jargon dictionary editor, per site, import/export, starter dictionary shipped
 - [ ] Utility screen: distribution, worst offenders, acronym/jargon frequency
@@ -602,3 +602,52 @@
   `.gitkeep` is tracked); the harness's manifest has no display name, so the
   smoke test reads "Plain" from `composer.json` directly.
 - **Tests:** root suite 4 passing (boots Statamic); engine suite 267.
+
+### 2026-09-11 — Phase 3, task 2: the publish-form panel
+
+- **Shipped:** `config/statamic-plain.php` (the spec's sketch, every key
+  documented) and `Settings` (read once, a value); `Analysis\FieldText` (a field's
+  value → blocks by fieldtype: Bard node tree, markdown rendered by the site's own
+  parser, textarea/text plain; anything else is not prose), `Analysis\Analyzer`
+  (locale guard → configured fields → exclusions per field → grade vs target →
+  sections → rules) and `Analysis\Report` (`toArray()` is the endpoint's JSON);
+  `Fieldtypes\ReadabilityPanel` (`readability_panel`, stores nothing);
+  `Listeners\AddPanelToBlueprints` (sidebar of every collection blueprint that
+  has a configured prose field, stamped with collection + blueprint for the
+  create screen); `Http\Controllers\CheckEntryController` at `POST cp/plain/
+  check` (`plain.check`); `resources/js/plain-panel.js` registered via
+  `$scripts`. The engine gained `Pipeline::only()`.
+- **The pattern is A11y Gate's, deliberately**: fieldtype as the extension
+  point, the field ensured by handle like `slug` and `date`, values processed
+  through the blueprint as a save would, the create screen served from stamped
+  field config, the same authorization as opening the entry, a sentence for
+  every failure (a bare `abort()` draws nothing, which looks like a clean page),
+  and a plain script on the runtime Vue compiler — no npm.
+- **One block numbering, again.** Exclusions drop blocks, so each field is
+  excluded on its own *before* the fields are joined; the block→field map is
+  exact and a finding names its field. `Sections` gets the grading exclusion
+  (`only(ProperNames::class)`) per section as designed in Phase 2.
+- **"Inline highlighting" as built:** every finding comes with `context` — the
+  sentence it sits in and the flagged span's place in it, **in characters, not
+  bytes**, because the panel is JavaScript and "café" would shift the mark — and
+  the panel draws the sentence with `<mark>` around the words. A whole-document
+  finding (passive-voice rate) carries its sentences as `spans`; the first five
+  are drawn. **Not built: decoration inside the Bard editor itself.** That needs a
+  Tiptap extension registered through `Statamic.$bard`, which means reading how
+  the 6.x bundle exposes ProseMirror's `Plugin`/`Decoration` — a separate
+  exploration, recorded here as the follow-up rather than half-done.
+- **Verified in the host:** it boots again (the LMS sibling moved on); Plain is
+  discovered by name, the fieldtype is registered, `cp/plain/check` routes, the
+  script is published (`php please vendor:publish --tag=statamic-plain`; a real
+  install publishes on `composer update`) and served as JavaScript with the
+  component registration, and an anonymous POST gets 419, not 500. **Not seen
+  with eyes**: the Chrome extension was not connected this session, so the panel
+  has not been opened in a browser. First thing to do next session: open
+  `/cp/collections/pages/entries/<id>` and press Check.
+- **Test notes:** a test heading "Notes" vanished — the References exclusion
+  treats a "Notes" heading as a references section, correctly; renamed. A fake
+  asset id in a test made Statamic's own assets fieldtype throw during
+  `process()`, as a save would; removed. The Vue-template well-formedness helper
+  (ported from A11y Report) now tolerates `:prop`/`@event` names and `>` inside
+  attribute values.
+- **Tests:** root suite 19 (boots Statamic), engine 268.

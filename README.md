@@ -11,8 +11,18 @@ addon is its Statamic surface.
 
 ## Status
 
-Scaffolded. The engine is complete; the control-panel surface arrives task
-by task. `PROGRESS.md` is the record.
+The engine is complete. On the publish form: a readability panel in the
+sidebar of every entry form that has a configured prose field, with a
+"Check readability" button that grades the page as it stands, unsaved
+changes included — the band against the site's target, each section under
+a heading on its own, and what to fix, with the flagged words marked in
+their sentence. The rest of the control-panel surface arrives task by
+task; `PROGRESS.md` is the record.
+
+Configuration is `config/statamic-plain.php` (publish it with
+`php please vendor:publish --tag=statamic-plain-config`): the locales that
+are English, the target grade and tolerance, which fields are prose by
+blueprint, the exclusions, each rule's options, and the gate.
 
 ## Working on it
 

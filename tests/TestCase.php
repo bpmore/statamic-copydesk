@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Plain\Tests;
 
 use Bpmore\Plain\ServiceProvider;
+use Statamic\Facades\Blueprint;
 use Statamic\Testing\AddonTestCase;
 use Statamic\Testing\Concerns\FakesViews;
 use Statamic\Testing\Concerns\PreventsSavingStacheItemsToDisk;
@@ -30,5 +31,15 @@ abstract class TestCase extends AddonTestCase
         // Testbench ships no app key, and the control-panel routes go through
         // the session middleware, which encrypts.
         $app['config']->set('app.key', 'base64:'.base64_encode(random_bytes(32)));
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // A real blueprint with a Bard, a textarea and a markdown field,
+        // because the endpoint processes submitted values through one and a
+        // blueprint with no fields silently processes them to nothing.
+        Blueprint::setDirectory(__DIR__.'/__fixtures__/blueprints');
     }
 }
