@@ -32,7 +32,7 @@
 - [x] Utility screen: distribution, worst offenders, acronym/jargon frequency
 - [x] Dashboard widget
 - [x] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
-- [ ] `{{ plain:score }}` Antlers tag
+- [x] `{{ plain:score }}` Antlers tag
 - [ ] `php please plain:check` with CSV export and CI exit code
 - [ ] Permissions: view / manage dictionary / configure
 
@@ -823,3 +823,23 @@
   Plain's class. The CP session had expired, so the tile was confirmed from its
   data rather than a screenshot; sign in and the dashboard draws it.
 - **Tests:** root 63 (boots Statamic), engine 268.
+
+### 2026-09-12 — Phase 3: the `{{ plain:score }}` tag
+
+- **Shipped:** `Tags\Plain` (handle `plain`, autoloaded from `src/Tags`), `score()`.
+  Alone: the band label, or nothing when the page cannot be graded (off, not
+  English, nothing to read, no entry) — a visitor is not the person to tell why.
+  As a pair: `graded`, `band`, `low`, `high`, `target`, `target_low`/`_high`,
+  `comparison`, `on_target`, `above_target`, `words`, `sentences`, `reason`.
+  Current page from the context's `id`, or `entry="<id>"`.
+- **Cached a day per entry, its last-modified time, and its site's locale** — a
+  template renders on every visit and a grade does not change until the page
+  does. The locale is in the key because a site that changes its language must
+  not keep grades from when it was English.
+- **Test artifact worth knowing:** `Entry::site()` memoizes the `Site` object on
+  the entry, so an entry loaded before `Site::setSites()` keeps reporting the old
+  locale. Set the site before making the entry. (The endpoint test had done that
+  by accident; this one found out why.)
+- Verified on the host's Home page: alone `Grade 6–7`; pair `Reading level:
+  Grade 6–7 — 19 words`.
+- **Tests:** root 69 (boots Statamic), engine 268.

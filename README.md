@@ -55,6 +55,27 @@ the target, fair under a tenth of pages, overcast under a quarter, rain
 under half, storm from half. Not turned on, not English, or nothing
 scanned reads as unknown with the next step, never as clear.
 
+## On the page itself
+
+Some health systems want the reading level visible to patients.
+
+```antlers
+{{ plain:score }}                                   {{# Grade 6–7 #}}
+
+{{ plain:score }}
+    {{ if graded }}
+        Reading level: {{ band }}{{ if !on_target }} (we aim for {{ target }}){{ /if }}
+    {{ /if }}
+{{ /plain:score }}
+```
+
+Alone, the tag prints the band and nothing else; a page that cannot be
+graded prints nothing, since a visitor is not the person to tell why. As a
+pair it hands the site `graded`, `band`, `low`, `high`, `target`,
+`comparison`, `on_target`, `above_target`, `words`, `sentences` and a
+`reason` when not graded. `entry="<id>"` grades another entry. Cached per
+entry and its last change.
+
 ## The gate
 
 Off by default. Turned on, it stops a publish — never a draft — in the
