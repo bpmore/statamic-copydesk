@@ -37,19 +37,36 @@
             .replace(/"/g, '&quot;');
     }
 
-    // The flagged words marked inside their own sentence. Offsets are in
-    // characters, converted on the server, so an accent before the mark
-    // does not shift it. `<mark>` is bare: the browser's own yellow, and no
-    // class the control panel's stylesheet could have dropped.
+    // How much of a long sentence to show either side of the mark. A
+    // 46-word sentence with five things wrong in it was drawn five times
+    // over, in full, in a sidebar; seen on a real screen, not guessed.
+    const WINDOW = 70;
+
+    // The flagged words marked inside their own sentence, or, when the
+    // sentence is long and the mark is not the whole of it, inside a window
+    // of it cut at word boundaries. Offsets are in characters, converted on
+    // the server, so an accent before the mark does not shift it. `<mark>`
+    // is bare: the browser's own yellow, and no class the control panel's
+    // stylesheet could have dropped.
     function highlighted(context) {
         if (! context) {
             return '';
         }
 
         const chars = Array.from(context.text);
-        const before = chars.slice(0, context.offset).join('');
+        let before = chars.slice(0, context.offset).join('');
         const marked = chars.slice(context.offset, context.offset + context.length).join('');
-        const after = chars.slice(context.offset + context.length).join('');
+        let after = chars.slice(context.offset + context.length).join('');
+
+        if (chars.length > 2 * WINDOW && context.length < chars.length) {
+            if (before.length > WINDOW) {
+                before = '…' + before.slice(-WINDOW).replace(/^\S*\s/, '');
+            }
+
+            if (after.length > WINDOW) {
+                after = after.slice(0, WINDOW).replace(/\s\S*$/, '') + '…';
+            }
+        }
 
         return escapeHtml(before) + '<mark>' + escapeHtml(marked) + '</mark>' + escapeHtml(after);
     }

@@ -146,7 +146,7 @@
             <form method="post" action="{!! e(cp_route('utilities.plain.import', $site->handle())) !!}" enctype="multipart/form-data" class="space-y-3">
                 {!! csrf_field() !!}
                 <div class="space-y-1">
-                    <label class="text-sm font-medium" for="plain-file-{!! e($site->handle()) !!}">A dictionary file to bring in</label>
+                    <label class="block text-sm font-medium" for="plain-file-{!! e($site->handle()) !!}">A dictionary file to bring in</label>
                     <input id="plain-file-{!! e($site->handle()) !!}" type="file" name="file" accept="application/json,.json" required="required" class="text-sm" />
                 </div>
                 <div class="space-y-1 text-sm">

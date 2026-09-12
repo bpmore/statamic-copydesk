@@ -773,3 +773,24 @@
 - The new Site Weather task landed in PROGRESS.md while task 5 was under way and
   was committed with it; read, and next.
 - **Tests:** root 56 (boots Statamic), engine 268.
+
+### 2026-09-12 — Seen with eyes: the control panel, verified in Chrome
+
+- The browser extension connected. Walked every surface in the host's CP:
+  **the panel** on an entry (idle sentence; Grade 6–7 on target for the real
+  page; with unsaved jargon-laden text pasted in: Grade 17+, "harder than your
+  target", 8 to look at, each with its message and the flagged words marked);
+  **the page under Tools** (distribution, collection summary, hardest pages with
+  a link, both frequency sections, dictionary export/import per site — the
+  host's French site listed too); **the settings screen** (the grid renders all
+  four columns, including `list` and `sites`); **the dashboard widget** (median
+  page, target, above-count, trend line, last scan).
+- **Two fixes from looking:** (1) a long sentence with five findings in it was
+  drawn five times in full in the sidebar — contexts over 140 characters are
+  now a ~70-character window either side of the mark, cut at word boundaries
+  with ellipses; the sentence-length finding itself still shows whole.
+  (2) The import file input ran into its label; the label is now `block`.
+- The dev site's `config/statamic/cp.php` now lists the `readability` widget.
+  Site Weather's tile still shows the demo provider's fake "Readability:
+  Overcast" band, which the next task replaces.
+- Nothing was saved in the CP; unsaved test text was discarded each time.
