@@ -17,7 +17,7 @@
 ## Phase 2 — Rules
 - [x] One class per rule, individually testable
 - [x] Long sentence / very long sentence
-- [ ] Long paragraph
+- [x] Long paragraph
 - [ ] Passive voice — **document-level rate, not per-instance**
 - [ ] Unexpanded acronyms
 - [ ] Jargon / banned phrases with suggested replacements
@@ -411,3 +411,15 @@
 - One thing learned writing the smoke test: synthetic sentences must start with a
   capital, or the segmenter (correctly) reads "word. word" as one sentence.
 - **Tests:** 203 passing.
+
+### 2026-09-11 — Phase 2, task 3: long paragraph
+
+- **Shipped:** `Rule\LongParagraph` (`long_paragraph`; > `words` [150] **or** >
+  `sentences` [8]; warning), registered. The spec's config gives only `words`;
+  the `sentences` default of 8 is plainlanguage.gov's ("no more than 150 words in
+  three to eight sentences").
+- Every block but a heading counts — a 160-word bullet is a paragraph in
+  disguise. The finding covers the whole block (offset 0, full length); the
+  excerpt is the first sentence so the panel can name it. The message says which
+  limit was crossed, or both.
+- **Tests:** 209 passing.
