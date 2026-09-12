@@ -18,7 +18,7 @@
 - [x] One class per rule, individually testable
 - [x] Long sentence / very long sentence
 - [x] Long paragraph
-- [ ] Passive voice — **document-level rate, not per-instance**
+- [x] Passive voice — **document-level rate, not per-instance**
 - [ ] Unexpanded acronyms
 - [ ] Jargon / banned phrases with suggested replacements
 - [ ] Nominalizations, hedging and filler (tips)
@@ -429,3 +429,25 @@
   committing, run `vendor/bin/pest` unpiped and let its exit status gate the
   commit** — `vendor/bin/pest > /dev/null 2>&1 && git commit …`.
 - **Tests:** 209 passing.
+
+### 2026-09-11 — Phase 2, task 4: passive voice, as a rate
+
+- **Shipped:** `Rule\PassiveVoice` (`passive_voice`; `max_percent` [20],
+  `min_sentences` [5], warning), registered. `PassiveVoice::isPassive(string)` is
+  public for reuse. **One finding about the whole document** (location null) when
+  the share of passive *sentences* passes the limit; nothing at all below it.
+- **`Finding` gained `spans`** (list of Locations, default []): the places a
+  whole-document finding points at, for highlighting. The passive finding attaches
+  every passive sentence so the panel can mark them without them being findings
+  of their own — which is how "flagged sentences with inline highlighting" and
+  "a rate, not a count" both hold.
+- **Detection:** a form of *to be*, up to three steps over adverbs / `not` /
+  `being` / `-ly` words, then a participle (`-ed` of ≥4 letters, or ~120
+  irregulars). A short list of participial adjectives (`tired`, `interested`,
+  `worried`, `supposed`…) is left alone; the rest of the false positives are what
+  the rate is for. "The clinic was founded in 1879" counts — it is passive — and
+  that is fine at 1 of 10. 17/17 on the sentence set; contractions ("they're
+  treated") are not handled, noted.
+- **`min_sentences`** (default 5) is an addition to the spec's config: 1 passive
+  in 3 sentences is 33% and means nothing.
+- **Tests:** 231 passing (exit status checked).
