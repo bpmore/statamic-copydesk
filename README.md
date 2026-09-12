@@ -19,6 +19,21 @@ a heading on its own, and what to fix, with the flagged words marked in
 their sentence. The rest of the control-panel surface arrives task by
 task; `PROGRESS.md` is the record.
 
+## The dictionary
+
+The sticky feature: the words and phrases your readers do not know, with
+what to say instead. A starter of plainlanguage.gov's substitutions is
+built in. What a site adds goes on top, edited under **Addons, Plain,
+Settings** — a term, what to say instead (empty to ban it), a note, and
+the sites it is for (none for every site) — and is kept in
+`resources/addons/statamic-plain.yaml`, in version control with the rest
+of the site.
+
+Under **Tools, Readability**, a site's own entries come out as a JSON
+file and a file goes in, merging or replacing, so a list built for one
+site can be carried to another or edited by hand and brought back. The
+file is the same shape the starter ships in.
+
 ## The gate
 
 Off by default. Turned on, it stops a publish — never a draft — in the

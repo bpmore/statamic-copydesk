@@ -8,6 +8,8 @@ use Bpmore\Plain\Gate\GateSettings;
 use Bpmore\ReadabilityCore\Exclusion\Pipeline;
 use Bpmore\ReadabilityCore\Formula\Target;
 use Bpmore\ReadabilityCore\Locale\LocaleGuard;
+use Bpmore\ReadabilityCore\Rule\Dictionary;
+use Bpmore\ReadabilityCore\Rule\Jargon;
 use Bpmore\ReadabilityCore\Rule\RuleSet;
 
 /**
@@ -82,9 +84,23 @@ final class Settings
         return array_values(array_filter(array_map(strval(...), (array) ($this->exclude()['html_classes'] ?? []))));
     }
 
-    public function rules(): RuleSet
+    /**
+     * The rules, with the jargon rule on the given dictionary rather than
+     * the bare starter: the site's own entries come from the settings
+     * screen, not the config file.
+     */
+    public function rules(?Dictionary $dictionary = null): RuleSet
     {
-        return RuleSet::fromConfig((array) ($this->config['rules'] ?? []));
+        $config = (array) ($this->config['rules'] ?? []);
+        $rules = RuleSet::fromConfig($config);
+
+        if ($dictionary === null || ! in_array(Jargon::HANDLE, $rules->handles(), true)) {
+            return $rules;
+        }
+
+        $options = is_array($config[Jargon::HANDLE] ?? null) ? $config[Jargon::HANDLE] : [];
+
+        return $rules->without(Jargon::HANDLE)->with(new Jargon($options, $dictionary));
     }
 
     public function gate(): GateSettings

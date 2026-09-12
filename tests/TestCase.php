@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Plain\Tests;
 
 use Bpmore\Plain\ServiceProvider;
+use Illuminate\Support\Facades\File;
 use Statamic\Facades\Blueprint;
 use Statamic\Testing\AddonTestCase;
 use Statamic\Testing\Concerns\FakesViews;
@@ -41,5 +42,10 @@ abstract class TestCase extends AddonTestCase
         // because the endpoint processes submitted values through one and a
         // blueprint with no fields silently processes them to nothing.
         Blueprint::setDirectory(__DIR__.'/__fixtures__/blueprints');
+
+        // The addon's settings are a real file in the app's resource path,
+        // and a test that saves one would otherwise decide the answer for
+        // every test after it.
+        File::delete(resource_path('addons/statamic-plain.yaml'));
     }
 }

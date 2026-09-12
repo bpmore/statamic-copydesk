@@ -1,0 +1,59 @@
+# The addon's settings, as a form in the control panel. Statamic gives this
+# screen for free: this file is the whole implementation, and it appears at
+# Addons, Plain, Settings.
+#
+# Written for the person who was handed the site, not the developer who
+# installed the addon. No handles, no file paths, no words like "blueprint"
+# where "form" will do.
+#
+# Only the dictionary lives here for now. The target grade, the languages, the
+# fields read and the gate are in the config file; putting them on this screen
+# the way Accessibility Gate does, with the screen laid over the file, is a
+# follow-up recorded in PROGRESS.md.
+
+tabs:
+  main:
+    display: Settings
+    sections:
+      -
+        display: 'Words to avoid'
+        instructions: 'Words and phrases your readers do not know, with what to say instead. A starter list of plain-language substitutions ("utilize" to "use", "prior to" to "before") is built in and not shown here; what you add goes on top of it, and a term you add with the same words replaces the built-in one. Import a list, or export this one, under Tools, Readability.'
+        fields:
+          -
+            handle: dictionary
+            field:
+              type: grid
+              display: 'Your dictionary'
+              instructions: 'Leave "Say instead" empty to ban a term outright; with the gate on, a banned term stops a publish. A row with no site chosen applies to every site.'
+              mode: table
+              add_row: 'Add a term'
+              fields:
+                -
+                  handle: term
+                  field:
+                    type: text
+                    display: 'Term'
+                    validate:
+                      - required
+                    width: 25
+                -
+                  handle: say
+                  field:
+                    type: list
+                    display: 'Say instead'
+                    instructions: 'In order of preference. Empty means: do not use this term at all.'
+                    width: 30
+                -
+                  handle: note
+                  field:
+                    type: text
+                    display: 'Note'
+                    instructions: 'Shown with the suggestion, when the replacements alone do not say it.'
+                    width: 25
+                -
+                  handle: sites
+                  field:
+                    type: sites
+                    display: 'Sites'
+                    instructions: 'Leave empty for every site.'
+                    width: 20

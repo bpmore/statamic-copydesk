@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bpmore\Plain\Analysis;
 
+use Bpmore\Plain\Dictionaries;
 use Bpmore\Plain\Settings;
 use Bpmore\ReadabilityCore\Exclusion\ProperNames;
 use Bpmore\ReadabilityCore\Formula\Grades;
@@ -26,12 +27,16 @@ use Statamic\Fields\Blueprint;
  */
 final class Analyzer
 {
-    public function __construct(private readonly Settings $settings) {}
+    public function __construct(
+        private readonly Settings $settings,
+        private readonly Dictionaries $dictionaries,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $values  the form's values, processed through the blueprint
+     * @param  ?string  $site  the site the entry is for, whose dictionary the jargon rule uses; the starter alone without one
      */
-    public function analyze(Blueprint $blueprint, array $values, string $locale): Report
+    public function analyze(Blueprint $blueprint, array $values, string $locale, ?string $site = null): Report
     {
         $target = $this->settings->target();
         $decision = $this->settings->localeGuard()->check($locale);
@@ -87,7 +92,7 @@ final class Analyzer
             $counts,
             Grades::of($counts),
             Sections::of($document, $tally, $grading),
-            $this->settings->rules()->check($document),
+            $this->settings->rules($site === null ? null : $this->dictionaries->forSite($site))->check($document),
             $notices,
         );
     }

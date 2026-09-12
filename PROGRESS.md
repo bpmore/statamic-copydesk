@@ -28,7 +28,7 @@
 - [x] Scaffold `statamic-plain`
 - [x] Publish-form panel: grade band vs target, per-section grades, inline highlighting
 - [x] Gate: opt-in per collection, **never blocks on grade alone**
-- [ ] Jargon dictionary editor, per site, import/export, starter dictionary shipped
+- [x] Jargon dictionary editor, per site, import/export, starter dictionary shipped
 - [ ] Utility screen: distribution, worst offenders, acronym/jargon frequency
 - [ ] Dashboard widget
 - [ ] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
@@ -686,3 +686,39 @@
   default one, where `content` is markdown and wants a string, not a Bard tree;
   and a sixty-word constant had sixty-one words — now a computed helper.
 - **Tests:** root 30 (boots Statamic), engine 268.
+
+### 2026-09-12 — Phase 3, task 4: the jargon dictionary — editor, per site, import/export
+
+- **Editor = the addon settings screen** (`resources/blueprints/settings.yaml`,
+  auto-registered by Statamic 6 at Addons → Plain → Settings; "this file is the
+  whole implementation", as A11y Gate put it). One grid, `dictionary`: `term`,
+  `say` (list; empty = banned), `note`, `sites` (`sites` fieldtype; empty = every
+  site). Stored at `resources/addons/statamic-plain.yaml`, in version control
+  with the site. Plain-worded, with a test that bans "handle", "config/",
+  "blueprint", "yaml", "json" from its labels.
+- **Per site by row, not by file.** `Dictionaries::forSite($site)` = starter →
+  every-site rows → this site's rows, later winning; `own($site)` = the site's
+  entries without the starter. The starter stays in the core (task 6 of Phase 2)
+  and is never shown in the grid — what a site adds goes on top, and the same
+  term overrides.
+- **Import/export = a utility page** (Tools → Readability; `plain::utilities.
+  dictionary`, compiled as a Vue template like A11y Gate's), because a settings
+  form can hold neither a download link nor a file upload. Per site: an export
+  button (`GET utilities/plain/export/{site}` → JSON download, `Content-
+  Disposition` attachment) and an import form (`POST utilities/plain/import/
+  {site}`, `file` + `mode` merge|replace; a non-dictionary file is refused in a
+  sentence; success flashes the new count). Routes live under the utility via
+  `Utility::routes()`, so its permission covers them. The file shape is
+  `Dictionary::toArray()`, the same the starter ships in; round trip tested.
+- **Threaded through:** `Settings::rules(?Dictionary)` swaps the jargon rule for
+  one on the site's dictionary; `Analyzer::analyze(…, ?string $site)`; the
+  endpoint and the gate pass the entry's site handle. A banned site term shows
+  up on the panel with its note and, with the gate on, stops a publish.
+- **Verified in the host:** settings screen at `/cp/addons/statamic-plain/
+  settings`, utility "Readability" registered, both routes resolve, an anonymous
+  GET redirects to login. Not seen in a browser (extension still not connected).
+- **Follow-up recorded:** the rest of the config (target, locales, fields, gate)
+  is not on the settings screen; A11y Gate lays the screen over the file with an
+  `effective()` merge. Worth doing before Phase 5.
+- **Tests:** root 41 (boots Statamic), engine 268. The Vue-template helper now
+  self-closes the void `<input>` that `csrf_field()` emits.

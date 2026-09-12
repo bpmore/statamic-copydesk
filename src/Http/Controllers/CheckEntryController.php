@@ -32,18 +32,18 @@ class CheckEntryController extends CpController
     {
         $reference = (string) $request->input('reference');
 
-        [$blueprint, $values, $locale] = $reference === ''
+        [$blueprint, $values, $site] = $reference === ''
             ? $this->beingCreated($request)
             : $this->beingEdited($request, $reference);
 
-        return $analyzer->analyze($blueprint, $values, $locale)->toArray();
+        return $analyzer->analyze($blueprint, $values, (string) $site->locale(), (string) $site->handle())->toArray();
     }
 
     /**
      * An entry that exists: its blueprint, the form's values laid over it,
-     * and its site's language.
+     * and its site.
      *
-     * @return array{Blueprint, array<string, mixed>, string}
+     * @return array{Blueprint, array<string, mixed>, \Statamic\Sites\Site}
      */
     private function beingEdited(Request $request, string $reference): array
     {
@@ -58,7 +58,7 @@ class CheckEntryController extends CpController
 
         $blueprint = $entry->blueprint();
 
-        return [$blueprint, $this->submitted($request, $blueprint), (string) $entry->site()->locale()];
+        return [$blueprint, $this->submitted($request, $blueprint), $entry->site()];
     }
 
     /**
@@ -66,7 +66,7 @@ class CheckEntryController extends CpController
      * from the panel's own field config, stamped there by the listener that
      * places the field, and the site is the one the form is for.
      *
-     * @return array{Blueprint, array<string, mixed>, string}
+     * @return array{Blueprint, array<string, mixed>, \Statamic\Sites\Site}
      */
     private function beingCreated(Request $request): array
     {
@@ -91,7 +91,7 @@ class CheckEntryController extends CpController
 
         $site = Site::get((string) $request->input('site')) ?? Site::selected();
 
-        return [$blueprint, $this->submitted($request, $blueprint), (string) $site->locale()];
+        return [$blueprint, $this->submitted($request, $blueprint), $site];
     }
 
     /**

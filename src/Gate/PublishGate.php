@@ -48,7 +48,7 @@ final class PublishGate
         }
 
         try {
-            $report = $this->analyzer->analyze($entry->blueprint(), $entry->data()->all(), (string) $entry->site()->locale());
+            $report = $this->analyzer->analyze($entry->blueprint(), $entry->data()->all(), (string) $entry->site()->locale(), (string) $entry->site()->handle());
         } catch (Throwable $e) {
             return GateResult::couldNotCheck($e->getMessage());
         }

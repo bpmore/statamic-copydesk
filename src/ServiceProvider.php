@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Bpmore\Plain;
 
+use Bpmore\Plain\Http\Controllers\DictionaryController;
+use Statamic\Facades\Site;
+use Statamic\Facades\Utility;
 use Statamic\Providers\AddonServiceProvider;
 
 /**
@@ -31,6 +34,8 @@ class ServiceProvider extends AddonServiceProvider
         __DIR__.'/../resources/js/plain-panel.js',
     ];
 
+    protected $viewNamespace = 'plain';
+
     public function register(): void
     {
         parent::register();
@@ -39,8 +44,31 @@ class ServiceProvider extends AddonServiceProvider
         $this->app->bind(Gate\GateSettings::class, static fn ($app): Gate\GateSettings => $app->make(Settings::class)->gate());
     }
 
+    /**
+     * A page under Tools for the dictionary's file in and file out, which
+     * the settings screen's form cannot do. The page and its two routes
+     * live under the utility, so its permission covers them.
+     */
     public function bootAddon(): void
     {
-        //
+        Utility::extend(fn () => Utility::register(
+            Utility::make('plain')
+                ->title('Readability')
+                ->navTitle('Readability')
+                ->icon('fieldtype-textarea')
+                ->description('Export a site\'s dictionary of words to avoid, or import one.')
+                ->view('plain::utilities.dictionary', function () {
+                    $dictionaries = $this->app->make(Dictionaries::class);
+
+                    return [
+                        'sites' => Site::all()->values(),
+                        'counts' => Site::all()->mapWithKeys(fn ($site) => [$site->handle() => count($dictionaries->own($site->handle()))])->all(),
+                    ];
+                })
+                ->routes(function ($router) {
+                    $router->get('export/{site}', [DictionaryController::class, 'export'])->name('export');
+                    $router->post('import/{site}', [DictionaryController::class, 'import'])->name('import');
+                })
+        ));
     }
 }

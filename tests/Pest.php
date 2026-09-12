@@ -35,6 +35,9 @@ function bard(string ...$paragraphs): array
  */
 function assertVueTemplateIsWellFormed(string $html): void
 {
+    // The one void element Blade emits, made self-closing for the parser.
+    $html = (string) preg_replace('/<input([^>]*?)\s*\/?>/', '<input$1 />', $html);
+
     // A comparison inside an attribute value ("v-if" with a ">") would end
     // the tag early for the rewrite below. Vue never sees this copy.
     $html = (string) preg_replace_callback('/="([^"]*)"/', fn ($m) => '="'.str_replace(['<', '>'], ['&lt;', '&gt;'], $m[1]).'"', $html);
