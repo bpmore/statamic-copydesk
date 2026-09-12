@@ -422,4 +422,10 @@
   disguise. The finding covers the whole block (offset 0, full length); the
   excerpt is the first sentence so the panel can name it. The message says which
   limit was crossed, or both.
+- **Process slip, fixed in the next commit:** `496445d` went in with two failing
+  tests because `pest | grep` hid pest's exit status. Neither failure was in the
+  code (one test used single letters as words, which the segmenter reads as
+  initials; the other's 152-word paragraph tripped the new rule). **Before
+  committing, run `vendor/bin/pest` unpiped and let its exit status gate the
+  commit** — `vendor/bin/pest > /dev/null 2>&1 && git commit …`.
 - **Tests:** 209 passing.
