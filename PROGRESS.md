@@ -31,6 +31,7 @@
 - [ ] Jargon dictionary editor, per site, import/export, starter dictionary shipped
 - [ ] Utility screen: distribution, worst offenders, acronym/jargon frequency
 - [ ] Dashboard widget
+- [ ] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
 - [ ] `{{ plain:score }}` Antlers tag
 - [ ] `php please plain:check` with CSV export and CI exit code
 - [ ] Permissions: view / manage dictionary / configure
