@@ -15,7 +15,7 @@
 - [x] Locale guard: English only; disable with an explicit message otherwise
 
 ## Phase 2 — Rules
-- [ ] One class per rule, individually testable
+- [x] One class per rule, individually testable
 - [ ] Long sentence / very long sentence
 - [ ] Long paragraph
 - [ ] Passive voice — **document-level rate, not per-instance**
@@ -360,3 +360,29 @@
   segmentation → syllables → tallies → four formulas → band vs target, plus the
   locale guard. No runtime dependencies. 186 tests. Nothing in `Phase 2` has been
   started.
+
+### 2026-09-11 — Phase 2, task 1: the rule engine's contracts
+
+- **Shipped:** `Rule\Rule` (`handle()`, `check(Document): list<Finding>`),
+  `Rule\ConfiguredRule` (options from the spec's `['words' => 25, 'severity' =>
+  'warning']` shape; per-rule default severity; `intOption()` falls back on
+  nonsense), `Rule\Severity` (error/warning/tip, ranked; an unknown value throws),
+  `Rule\Location` (block index + byte offset + length), `Rule\Finding` (handle,
+  severity, plain-words message, location or null for document-level, excerpt,
+  optional suggestion), `Rule\Findings` (reading order, document-level last;
+  filters by rule/severity/block/scope; merge), `Rule\RuleSet` (`fromConfig`
+  binds options by handle, defaults for unmentioned rules, `enabled => false`
+  skips, **unknown handle throws** naming the known ones; `check()`, `without()`,
+  `with()`).
+- **Messages are for the author, not the developer:** "This sentence is 34 words;
+  try breaking it in two", never "long_sentence threshold exceeded". The handle
+  is for the gate and the config. Each rule writes its own message; the core
+  ships English and carries enough on the Finding for the addon to translate.
+- **Registry is empty on purpose.** `RuleSet::registry()` is where each later
+  task adds its rule (handle → factory taking options). The test "ships no rules
+  yet" is a statement about now and is replaced as rules land.
+- Rules receive the document **with names in** (`Pipeline::without(ProperNames::
+  class)`), per the task-3 decision; a rule that needs sentences takes a
+  Segmenter.
+- **Tests:** 196 passing; the engine is tested with two stub rules defined in the
+  test file (one located, one document-level).
