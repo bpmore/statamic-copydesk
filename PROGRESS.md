@@ -21,7 +21,7 @@
 - [x] Passive voice — **document-level rate, not per-instance**
 - [x] Unexpanded acronyms
 - [x] Jargon / banned phrases with suggested replacements
-- [ ] Nominalizations, hedging and filler (tips)
+- [x] Nominalizations, hedging and filler (tips)
 - [ ] Per-section scoring by heading, not just whole-document
 
 ## Phase 3 — Statamic addon
@@ -505,3 +505,27 @@
   starter (hypertension → high blood pressure…) would be valuable for the
   buyers; not in the spec, not done, noted.
 - **Tests:** 251 passing (exit status checked).
+
+### 2026-09-11 — Phase 2, task 7: nominalizations, hedging and filler
+
+- **Shipped:** `Rule\Filler` (`filler`; built-in `FILLER` and `HEDGES` lists, `ignore`
+  option; tip — "adds nothing. Cut it." / "hedges. Say it plainly, or say how
+  likely it is.") and `Rule\Nominalization` (`nominalization`; tip — "hides the
+  verb. Say \"decide\"." with the verb as `suggestion`). Both registered. Phrase
+  matching moved out of `Jargon` into an internal `Rule\Phrases` helper that all
+  three share (whole words, any case, across hard breaks, optional inflections,
+  longest match wins).
+- **No double-flagging with jargon.** The spec's examples for this row ("in order
+  to", "utilize", "please be advised") are in the jargon starter at warning level,
+  so the filler lists deliberately exclude them; a test asserts the intersection
+  with the starter is empty. Rule: a span gets one finding.
+- **Nominalizations are a curated map, not a suffix heuristic.** The first cut
+  matched any `-tion/-ment/-ance/-al` noun after a light verb or before "of" and
+  would have flagged *make an appointment*, *the department of health*, *the goal
+  of this page* — the first is the most important phrase on a health site. Now
+  only ~90 mapped nouns count (two shapes: light verb + noun, determiner + noun +
+  "of"); `insurance`/`assurance` dropped (*have insurance*), `seek`/`require`
+  dropped as light verbs (*seek treatment*). A test pins those phrases as
+  untouched.
+- Both are per-occurrence tips; the panel groups by severity.
+- **Tests:** 260 passing (exit status checked).
