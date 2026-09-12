@@ -22,7 +22,7 @@
 - [x] Unexpanded acronyms
 - [x] Jargon / banned phrases with suggested replacements
 - [x] Nominalizations, hedging and filler (tips)
-- [ ] Per-section scoring by heading, not just whole-document
+- [x] Per-section scoring by heading, not just whole-document
 
 ## Phase 3 — Statamic addon
 - [ ] Scaffold `statamic-plain`
@@ -529,3 +529,32 @@
   untouched.
 - Both are per-occurrence tips; the panel groups by severity.
 - **Tests:** 260 passing (exit status checked).
+
+### 2026-09-11 — Phase 2, task 8: per-section scoring — Phase 2 complete
+
+- **Shipped:** `Formula\Section` (heading or null for the lead, block indexes and
+  blocks, `Counts`; `title()`, `level()`, `isLead()`, `isEmpty()`, `grades()`,
+  `band()`, `contains()`, `findings(Findings)`) and `Formula\Sections::of(Document,
+  Tally, ?Exclusion $beforeGrading)` + `hardestFirst()`. `Findings::inBlocks()`
+  added.
+- **Chunking is by block kind, every heading level, flat.** Answers the spec's
+  open question: HTML, Bard and rendered markdown arrive as the same `Document`,
+  so they chunk identically — one test runs the same assertions over both
+  fixtures. A heading with nothing under it is a section with nothing to grade
+  (`band()` null); the panel decides what to show.
+- **One block numbering.** Sections are cut from the *rules'* document (names
+  in), so their indexes are the ones findings carry. `ProperNames` can drop a
+  block that was only a name ("Mary Smith."), which would shift every index after
+  it — so the grading exclusion is applied per section, to that section's blocks
+  alone. Same numbering everywhere; names still out of the grade. The whole-
+  document grade should be computed the same way: `Grades::of($tally->of((new
+  ProperNames)->apply($forRules)))`.
+- **The spec's scenario reproduces:** a page at Grade 12–13 whose three sections
+  read 1–6 and whose "fine print" reads 17+.
+- No minimum section size is enforced in the core; a one-sentence section gets
+  a grade because that is the point. The addon may choose to label very short
+  sections rather than grade them.
+- **Phase 2 is complete.** Eight rules (`long_sentence`, `very_long_sentence`,
+  `long_paragraph`, `passive_voice`, `unexpanded_acronym`, `jargon`,
+  `nominalization`, `filler`) and per-section grades. 267 tests. Nothing in
+  Phase 3 has been started; the addon is not scaffolded.
