@@ -20,7 +20,7 @@
 - [x] Long paragraph
 - [x] Passive voice — **document-level rate, not per-instance**
 - [x] Unexpanded acronyms
-- [ ] Jargon / banned phrases with suggested replacements
+- [x] Jargon / banned phrases with suggested replacements
 - [ ] Nominalizations, hedging and filler (tips)
 - [ ] Per-section scoring by heading, not just whole-document
 
@@ -476,3 +476,32 @@
   (`IV`, `XIV`, `MCMXC` are numerals; `CDC`, `DVD` are not). Found by the test for
   possessives, which is why there is one.
 - **Tests:** 241 passing (exit status checked).
+
+### 2026-09-11 — Phase 2, task 6: jargon and banned phrases
+
+- **Shipped:** `Rule\Dictionary` + `Rule\DictionaryEntry` (term → replacements +
+  optional note; `fromArray()` in every shape a site file will take, `merge()`
+  site-over-starter, `without()`, `toArray()` for export, `starter()`), the
+  starter at `resources/dictionaries/plain-language.json` (177 entries from
+  plainlanguage.gov's simple-words list — US federal, public domain; `_source`
+  key documents it), and `Rule\Jargon` (`jargon`; `dictionary` option: `'default'`
+  = starter, an array, a `Dictionary`, `'none'`; a Dictionary passed directly to
+  the constructor wins, which is how the addon will supply a stored per-site one;
+  an unknown handle string throws — the addon resolves handles). Registered.
+- **One finding per occurrence** — each is a concrete edit, unlike passive voice
+  — with the first replacement as `suggestion` and a message that says what to
+  say instead ("Say \"use\" instead of \"utilize\"."), the entry's note appended.
+  Banned terms (no replacements): "…is on the site's list of words to avoid. Say
+  it another way."
+- **Matching:** whole words, any case; a phrase's spaces match across a hard
+  break; a single-word term takes its inflections with a three-rule stemmer
+  (`utilize`→utilizes/utilized/utilizing, `notify`→notifies/notified/notifying,
+  `assist`→assists/assisted/assisting — not `assistance`, which is its own
+  entry); where two terms overlap the longer speaks and the shorter is not
+  repeated inside it. Findings come back in reading order regardless of
+  dictionary order.
+- The CP editor, import/export UI and per-site storage are Phase 3; the core's
+  `toArray()`/`fromArray()` round-trip is what they will use. A health-specific
+  starter (hypertension → high blood pressure…) would be valuable for the
+  buyers; not in the spec, not done, noted.
+- **Tests:** 251 passing (exit status checked).
