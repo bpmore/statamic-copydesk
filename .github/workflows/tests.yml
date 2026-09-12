@@ -106,6 +106,17 @@ jobs:
       - name: Check the manifest is well formed
         run: composer validate --strict
 
+      # Site Weather is a dev dependency by path, ../statamic-site-weather,
+      # which exists beside this repo on a developer's machine and nowhere
+      # else; Composer refuses to load a path repository whose directory is
+      # missing. So the runner drops it before installing, and the Site
+      # Weather tests skip themselves when the contract is not there. The
+      # real contract is what is tested wherever it is installed.
+      - name: Drop the Site Weather path dependency, which is not on this runner
+        run: |
+          composer config --unset repositories.bpmore-site-weather
+          composer remove --dev bpmore/statamic-site-weather --no-update --no-interaction
+
       # The engine comes from the path repository in this same checkout, so
       # the addon is always tested against the engine it sits beside.
       - name: Install dependencies

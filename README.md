@@ -49,6 +49,12 @@ Every scan is also kept, the last ninety per site, in
 median page's band against the target, how many pages read above it, and
 which way both moved since the last scan. It never scans on its own.
 
+With [Site Weather](../statamic-site-weather) installed, the same stored
+scan puts a Readability band on its tile: clear when no page reads above
+the target, fair under a tenth of pages, overcast under a quarter, rain
+under half, storm from half. Not turned on, not English, or nothing
+scanned reads as unknown with the next step, never as clear.
+
 ## The gate
 
 Off by default. Turned on, it stops a publish — never a draft — in the

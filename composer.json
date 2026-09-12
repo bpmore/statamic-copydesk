@@ -23,9 +23,13 @@
         "statamic/cms": "^6.27"
     },
     "require-dev": {
+        "bpmore/statamic-site-weather": "^1.0",
         "laravel/pint": "^1.27",
         "orchestra/testbench": "^10.11 || ^11.0",
         "pestphp/pest": "^3.8 || ^4.0"
+    },
+    "suggest": {
+        "bpmore/statamic-site-weather": "Shows a Readability band on the Site Weather dashboard tile."
     },
     "repositories": [
         {
@@ -36,6 +40,17 @@
                 "symlink": true,
                 "versions": {
                     "bpmore/readability-core": "0.1.0"
+                }
+            }
+        },
+        {
+            "name": "bpmore-site-weather",
+            "type": "path",
+            "url": "../statamic-site-weather",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "bpmore/statamic-site-weather": "1.0.0"
                 }
             }
         }

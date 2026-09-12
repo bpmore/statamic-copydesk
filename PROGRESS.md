@@ -31,7 +31,7 @@
 - [x] Jargon dictionary editor, per site, import/export, starter dictionary shipped
 - [x] Utility screen: distribution, worst offenders, acronym/jargon frequency
 - [x] Dashboard widget
-- [ ] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
+- [x] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
 - [ ] `{{ plain:score }}` Antlers tag
 - [ ] `php please plain:check` with CSV export and CI exit code
 - [ ] Permissions: view / manage dictionary / configure
@@ -794,3 +794,32 @@
   Site Weather's tile still shows the demo provider's fake "Readability:
   Overcast" band, which the next task replaces.
 - Nothing was saved in the CP; unsaved test text was discarded each time.
+
+### 2026-09-12 — Phase 3: the Readability band on Site Weather
+
+- **Shipped:** `Weather\ReadabilityContributor` (`key()` `readability`, `label()`
+  `Readability`, `reading()`), tagged by name as `site-weather.contributors` in
+  the provider's `register()`. `reading()` reads `ScanHistory::latest()` for the
+  selected site and never scans; asks first whether the addon is enabled and the
+  site is English; `Reading::unknown()` with the next step when off, not English,
+  never scanned, or nothing graded; a measured state carries the snapshot's
+  `computed_at`; `url` is the utility page. Modelled on
+  `statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test.
+- **Thresholds, this product's call:** share of graded pages above the target —
+  clear none, fair under a tenth, overcast under a quarter, rain under half,
+  storm from half. Below-target pages never count against the site. Boundaries
+  are "under": exactly a tenth is overcast (a test pins it, after my own
+  arithmetic got it wrong first).
+- **Manifest:** `suggest` bpmore/statamic-site-weather; `require-dev` `^1.0` via a
+  path repository `../statamic-site-weather` pinned with `versions` (it is
+  tagged v1.0.0 but has no remote). **CI:** the runner has no sibling checkout
+  and Composer refuses to load a path repository whose directory is missing, so
+  the workflow unsets that repository and requirement before installing, and
+  `SiteWeatherTest` skips itself when the contract is absent. Locally the real
+  contract is what is tested (7 tests, end to end through `Forecast`).
+- **Dev site:** the fake `readability` band is gone from
+  `SiteWeatherDemoProvider`; `Forecast::from(Contributors)` in the host now lists
+  `readability clear "All 1 page on or below the target of Grade 7–9"` from
+  Plain's class. The CP session had expired, so the tile was confirmed from its
+  data rather than a screenshot; sign in and the dashboard draws it.
+- **Tests:** root 63 (boots Statamic), engine 268.

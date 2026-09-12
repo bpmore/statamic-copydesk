@@ -51,6 +51,12 @@ class ServiceProvider extends AddonServiceProvider
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
         $this->app->bind(Gate\GateSettings::class, static fn ($app): Gate\GateSettings => $app->make(Settings::class)->gate());
         $this->app->singleton(ScanHistory::class, static fn ($app): ScanHistory => ScanHistory::inStorage($app->make(Filesystem::class)));
+
+        // The Readability band on Site Weather's tile. Tagged by name, as a
+        // string: if Site Weather is not installed nothing resolves the tag,
+        // the class is never autoloaded, and its missing interface is never
+        // noticed. Site Weather is a suggestion, not a dependency.
+        $this->app->tag(Weather\ReadabilityContributor::class, 'site-weather.contributors');
     }
 
     /**
