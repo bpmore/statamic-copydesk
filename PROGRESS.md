@@ -37,7 +37,7 @@
 - [x] Permissions: view / manage dictionary / configure
 
 ## Phase 4 — A11y Report integration
-- [ ] A11y Report depends on `readability-core`
+- [x] A11y Report depends on `readability-core`
 - [ ] Readability as a scan dimension
 - [ ] SC 3.1.5 as a **AAA row reported separately from the AA claim** — never a WCAG failure
 - [ ] Both-installed notice explaining the division of surfaces
@@ -905,3 +905,36 @@
   JSON request gets the 403. `FakesRoles::setTestRoles()` is the way to give a
   test user a permission set.
 - **Tests:** root 82 (boots Statamic), engine 267.
+
+### 2026-09-12 — Phase 4, task 1: A11y Report depends on `readability-core`
+
+- **Where the work is:** not in this repo. A11y Report is `../ally-report`
+  (`bpmore/statamic-a11y-report`, public on GitHub), and its own `CLAUDE.md`
+  rules apply there: branch, tests, PR; never push or merge unless asked; no em
+  dashes; add a `docs/DECISIONS.md` entry. Its checkout was on
+  `feature/site-weather-band` (three commits ahead of `main`, unmerged); the
+  work is on a new branch **`readability-core`, off `main`**, commit `0b35c4c`,
+  and the checkout is left on that branch. **Nothing was pushed.** The host site
+  runs whichever branch is checked out there.
+- **Shipped there:** `require bpmore/readability-core ^0.1` through a path
+  repository at `../statamic-plain/packages/readability-core` with the
+  `versions` pin (same shape as this repo's); `tests/Unit/ReadabilityEngineTest`
+  grades with the engine and nothing booted (easy bands below hard, hard is
+  `Grade 17+` and `above` a target of 8, names and a quotation left out before
+  counting, `fr_FR` refused); a DECISIONS entry with the alternatives turned
+  down (depend on Plain itself; copy the engine in; `suggest`). Its suite: 325
+  passed, one Chrome skip. The host site's lock was refreshed
+  (`composer update bpmore/statamic-a11y-report`) and boots.
+- **Blocker for the user, not for the next task:** the engine is not published
+  anywhere (this repo has no remote), so **A11y Report's CI is red at
+  `composer install` on that branch** until it is: a repository of its own from
+  `git subtree split -P packages/readability-core`, then Packagist, then the
+  `repositories` block comes out of A11y Report's manifest (and this repo's).
+  Turned down: removing the dependency before install in CI, the way this repo
+  drops Site Weather, because there it is dev-only and the tests skip, and here
+  the engine is what Phase 4 is made of. The next three tasks build locally and
+  on the dev site regardless.
+- **Engine detail worth knowing:** `ProperNames` drops the names and titles,
+  not the sentence: "Dr. Nguyen, Dr. Okonkwo and Dr. Bergström saw you." counts
+  4 words, not 0, so a page of names still grades (on "and", "saw", "you").
+- **Tests:** root 82, engine 267 (unchanged here; nothing in this repo moved).
