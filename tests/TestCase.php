@@ -8,6 +8,7 @@ use Bpmore\Plain\ServiceProvider;
 use Illuminate\Support\Facades\File;
 use Statamic\Facades\Blueprint;
 use Statamic\Testing\AddonTestCase;
+use Statamic\Testing\Concerns\FakesRoles;
 use Statamic\Testing\Concerns\FakesViews;
 use Statamic\Testing\Concerns\PreventsSavingStacheItemsToDisk;
 
@@ -20,6 +21,7 @@ use Statamic\Testing\Concerns\PreventsSavingStacheItemsToDisk;
  */
 abstract class TestCase extends AddonTestCase
 {
+    use FakesRoles;
     use FakesViews;
     use PreventsSavingStacheItemsToDisk;
 

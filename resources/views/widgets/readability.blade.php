@@ -4,7 +4,9 @@
     is mistaken for Vue's own braces.
 --}}
 <ui-card-panel heading="Readability">
-    @if ($latest === null)
+    @if (! $can)
+        <p class="text-sm">Checking readability is not something your role can do.</p>
+    @elseif ($latest === null)
         <div class="space-y-3">
             <p class="text-sm">No scan has run yet. Open the readability page and the site is graded there.</p>
             @if ($url)<div><ui-button size="sm" href="{!! e($url) !!}" text="Open the readability page" /></div>@endif

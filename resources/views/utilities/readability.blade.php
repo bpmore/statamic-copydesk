@@ -142,10 +142,13 @@
     <ui-card-panel heading="{!! e($site->name()) !!}">
         <div class="space-y-4">
             <div class="flex flex-wrap items-center gap-3">
-                <ui-button size="sm" href="{!! e(cp_route('utilities.plain.export', $site->handle())) !!}" text="Export this site's entries" />
+                @if ($canManage)<ui-button size="sm" href="{!! e(cp_route('utilities.plain.export', $site->handle())) !!}" text="Export this site's entries" />@endif
                 <span class="text-sm">{!! e($counts[$site->handle()] === 1 ? '1 entry of its own' : $counts[$site->handle()].' entries of its own') !!}, on top of the starter.</span>
             </div>
 
+            @if (! $canManage)
+            <p class="text-sm">Importing and exporting the dictionary is not something your role can do.</p>
+            @else
             <form method="post" action="{!! e(cp_route('utilities.plain.import', $site->handle())) !!}" enctype="multipart/form-data" class="space-y-3">
                 {!! csrf_field() !!}
                 <div class="space-y-1">
@@ -158,6 +161,7 @@
                 </div>
                 <div><ui-button size="sm" type="submit" text="Import" /></div>
             </form>
+            @endif
         </div>
     </ui-card-panel>
     @endforeach

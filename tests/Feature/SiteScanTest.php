@@ -168,7 +168,7 @@ it('ships a page Vue can compile, in every state', function () {
     $counts = ['default' => 0, 'other' => 0];
 
     foreach ([$scan->run('default'), $scan->run('other'), new ScanReport('default', $scan->run('default')->target, [], 0, now()->toIso8601String(), 'Not checked.')] as $report) {
-        assertVueTemplateIsWellFormed(view('plain::utilities.readability', ['site' => Site::get('default'), 'scan' => $report, 'sites' => $sites, 'counts' => $counts])->render());
+        assertVueTemplateIsWellFormed(view('plain::utilities.readability', ['site' => Site::get('default'), 'scan' => $report, 'sites' => $sites, 'counts' => $counts, 'canManage' => true])->render());
     }
 });
 

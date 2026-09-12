@@ -7,6 +7,7 @@ namespace Bpmore\Plain\Widgets;
 use Bpmore\Plain\Scan\ScanHistory;
 use Bpmore\Plain\Settings;
 use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Facades\Utility;
 use Statamic\Widgets\Widget;
 
@@ -30,6 +31,7 @@ class Readability extends Widget
         $previous = $history->previous($site);
 
         return view('plain::widgets.readability', [
+            'can' => (bool) User::current()?->can('view readability'),
             'site' => Site::get($site),
             'latest' => $latest,
             'previous' => $previous,

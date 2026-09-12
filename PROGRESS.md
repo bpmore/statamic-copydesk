@@ -34,7 +34,7 @@
 - [x] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
 - [x] `{{ plain:score }}` Antlers tag
 - [x] `php please plain:check` with CSV export and CI exit code
-- [ ] Permissions: view / manage dictionary / configure
+- [x] Permissions: view / manage dictionary / configure
 
 ## Phase 4 — A11y Report integration
 - [ ] A11y Report depends on `readability-core`
@@ -873,3 +873,35 @@
 - On the host: 3 pages graded (two LMS lessons with HTML-saved Bard now among
   them), 10 with nothing to grade, French site refused, CSV written.
 - **Tests:** root 77 (boots Statamic), engine 268.
+
+### 2026-09-12 — Phase 3: permissions — Phase 3 complete
+
+- **Shipped:** three permissions in a **Plain** group, in the role editor's own
+  words: `view readability` ("Check readability"), `manage jargon dictionary`
+  ("Manage the dictionary"), `configure readability` ("Configure readability").
+  The check endpoint answers 403 in a sentence without the first; the panel
+  fieldtype preloads `can` and the panel says so instead of drawing the button;
+  the widget says so instead of the median. Import and export answer 403 without
+  the second, and the utility page shows the sentence in place of the forms.
+  Statamic's own settings gate (`AddonPolicy::editSettings`, which asks for
+  `edit bpmore/statamic-plain settings`) is answered by an `Access::before`
+  hook for this addon only: super, or either of the last two permissions. The
+  utility page itself keeps Statamic's `access plain utility`. The gate is not a
+  permission: a page is publishable or it is not, whoever is saving.
+- **Bit, hard:** importing `Illuminate\Support\Facades\Gate` into the provider
+  turned `Gate\GateSettings::class` in `register()` — relative to the addon's
+  namespace until then — into `Illuminate\Support\Facades\Gate\GateSettings`.
+  The binding pointed at a class that does not exist, Laravel auto-wired the real
+  `GateSettings` with its constructor defaults (gate off), and every gate test
+  went "not gated" while the config plainly said otherwise. An hour of probing
+  Settings resolution timing for a namespace collision. The facade is imported
+  as `Access` now and `GateSettings` by name. Rule for next time: **never import
+  a facade whose short name is one of this addon's sub-namespaces**
+  (`Gate`, `Scan`, `Analysis`, `Weather`...).
+- **Statamic, for next time:** more than one user in a test needs
+  `statamic.editions.pro`; checking an entry also needs `view {collection}
+  entries` (the controller authorizes `view` on it, on purpose); an unauthorized
+  CP page view is a 302 to the dashboard with `error` flashed, not a 403 — only a
+  JSON request gets the 403. `FakesRoles::setTestRoles()` is the way to give a
+  test user a permission set.
+- **Tests:** root 82 (boots Statamic), engine 267.

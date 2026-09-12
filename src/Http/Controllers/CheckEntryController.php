@@ -10,6 +10,7 @@ use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Data;
 use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Fields\Blueprint;
 use Statamic\Http\Controllers\CP\CpController;
 use Statamic\Support\Arr;
@@ -30,6 +31,8 @@ class CheckEntryController extends CpController
 {
     public function __invoke(Request $request, Analyzer $analyzer): array
     {
+        abort_unless(User::current()?->can('view readability'), 403, 'You do not have permission to check readability.');
+
         $reference = (string) $request->input('reference');
 
         [$blueprint, $values, $site] = $reference === ''

@@ -200,7 +200,9 @@ it('refuses a file that is not a dictionary, in a sentence', function () {
 
 it('ships a utility view Vue can compile', function () {
     $scan = app(SiteScan::class)->run('default');
-    $view = view('plain::utilities.readability', ['site' => Site::get('default'), 'scan' => $scan, 'sites' => Site::all()->values(), 'counts' => ['default' => 0, 'clinic' => 1]])->render();
+    $data = ['site' => Site::get('default'), 'scan' => $scan, 'sites' => Site::all()->values(), 'counts' => ['default' => 0, 'clinic' => 1]];
 
-    assertVueTemplateIsWellFormed($view);
+    // With the import and export forms, and with the sentence in their place.
+    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => true])->render());
+    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => false])->render());
 });

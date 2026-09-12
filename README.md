@@ -115,6 +115,26 @@ Configuration is `config/statamic-plain.php` (publish it with
 are English, the target grade and tolerance, which fields are prose by
 blueprint, the exclusions, each rule's options, and the gate.
 
+## Who may do what
+
+Three permissions, under **Plain** on a role, beside the two Statamic
+gives every addon (`access plain utility` for the Readability page, and
+the settings one, which this addon answers itself):
+
+- **Check readability** — grade a page from the publish form, and see the
+  dashboard widget. Without it the panel says so instead of offering the
+  button, and the widget says so instead of the median. Checking an entry
+  also needs whatever Statamic needs to open it.
+- **Manage the dictionary** — import and export the words to avoid, and
+  open the settings screen where they are edited.
+- **Configure readability** — open the settings screen. Today that is the
+  dictionary; the target and gate land there as they move off the config
+  file.
+
+A super user may do all of it, as everywhere else. The gate is not a
+permission: it runs on every save Statamic lets through, whoever is
+saving, because a page is either publishable or it is not.
+
 ## Working on it
 
 ```sh

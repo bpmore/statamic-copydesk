@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace Bpmore\Plain;
 
+use Bpmore\Plain\Gate\GateSettings;
 use Bpmore\Plain\Http\Controllers\DictionaryController;
 use Bpmore\Plain\Scan\ScanHistory;
 use Bpmore\Plain\Scan\SiteScan;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Gate as Access;
+use Statamic\Addons\Addon;
+use Statamic\Facades\Permission;
 use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Facades\Utility;
 use Statamic\Providers\AddonServiceProvider;
 
@@ -53,7 +58,7 @@ class ServiceProvider extends AddonServiceProvider
         parent::register();
 
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
-        $this->app->bind(Gate\GateSettings::class, static fn ($app): Gate\GateSettings => $app->make(Settings::class)->gate());
+        $this->app->bind(GateSettings::class, static fn ($app): GateSettings => $app->make(Settings::class)->gate());
         $this->app->singleton(ScanHistory::class, static fn ($app): ScanHistory => ScanHistory::inStorage($app->make(Filesystem::class)));
 
         // The Readability band on Site Weather's tile. Tagged by name, as a
@@ -71,6 +76,8 @@ class ServiceProvider extends AddonServiceProvider
      */
     public function bootAddon(): void
     {
+        $this->bootPermissions();
+
         Utility::extend(fn () => Utility::register(
             Utility::make('plain')
                 ->title('Readability')
@@ -86,6 +93,7 @@ class ServiceProvider extends AddonServiceProvider
                         'scan' => $this->app->make(SiteScan::class)->cached($site->handle()),
                         'sites' => Site::all()->values(),
                         'counts' => Site::all()->mapWithKeys(fn ($s) => [$s->handle() => count($dictionaries->own($s->handle()))])->all(),
+                        'canManage' => (bool) User::current()?->can('manage jargon dictionary'),
                     ];
                 })
                 ->routes(function ($router) {
@@ -94,5 +102,54 @@ class ServiceProvider extends AddonServiceProvider
                     $router->post('import/{site}', [DictionaryController::class, 'import'])->name('import');
                 })
         ));
+    }
+
+    /**
+     * Three permissions, each with a meaning of its own beside the two
+     * Statamic gives every addon (access to the utility page, and editing
+     * the addon's settings):
+     *
+     * - `view readability`: check a page from the publish form; see the
+     *   dashboard widget. Not the utility page, which is Statamic's own
+     *   "access utility" permission, nor the tag, which is the front end.
+     * - `manage jargon dictionary`: import and export the dictionary, and
+     *   open the settings screen, where its rows are edited.
+     * - `configure readability`: the settings screen as a whole.
+     *
+     * The settings screen is Statamic's; its controller asks its own
+     * policy whether a user may edit this addon's settings, and the policy
+     * asks for "edit bpmore/statamic-plain settings". For this addon that
+     * question is answered here instead, with the two permissions above,
+     * so a site's roles speak this addon's language. Statamic's own gate
+     * hook only handles abilities that are registered permissions, so a
+     * super user is let through here as well.
+     */
+    private function bootPermissions(): void
+    {
+        Permission::extend(function () {
+            Permission::group('plain', 'Plain', function () {
+                Permission::register('view readability')
+                    ->label('Check readability')
+                    ->description('Grade a page from the publish form, and see the Readability widget on the dashboard.');
+                Permission::register('manage jargon dictionary')
+                    ->label('Manage the dictionary')
+                    ->description('Add, change, import and export the words to avoid and what to say instead.');
+                Permission::register('configure readability')
+                    ->label('Configure readability')
+                    ->description('Change the addon\'s settings: the dictionary today, and the target and gate as they move onto the settings screen.');
+            });
+        });
+
+        Access::before(function ($user, string $ability, array $arguments) {
+            if ($ability !== 'editSettings' || ! (($arguments[0] ?? null) instanceof Addon) || $arguments[0]->id() !== 'bpmore/statamic-plain') {
+                return null;
+            }
+
+            $user = User::fromUser($user);
+
+            return $user?->isSuper()
+                || $user?->hasPermission('configure readability')
+                || $user?->hasPermission('manage jargon dictionary');
+        });
     }
 }

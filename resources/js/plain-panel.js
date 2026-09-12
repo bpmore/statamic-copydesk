@@ -211,7 +211,12 @@
                     :text="refusal.slice(1).join(' ')"
                 />
 
-                <div>
+                <ui-description
+                    v-if="meta && meta.can === false"
+                    text="Checking readability is not something your role can do."
+                />
+
+                <div v-else>
                     <ui-button
                         size="sm"
                         :text="state.checking ? 'Checking' : 'Check readability'"

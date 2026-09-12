@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Http\Controllers\CP\CpController;
 
 /**
@@ -35,6 +36,7 @@ class DictionaryController extends CpController
 
     public function export(string $site, Dictionaries $dictionaries): JsonResponse
     {
+        abort_unless(User::current()?->can('manage jargon dictionary'), 403, 'You do not have permission to manage the dictionary.');
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}], so there is no dictionary to export.");
 
         return response()
@@ -44,6 +46,7 @@ class DictionaryController extends CpController
 
     public function import(Request $request, string $site, Dictionaries $dictionaries): RedirectResponse
     {
+        abort_unless(User::current()?->can('manage jargon dictionary'), 403, 'You do not have permission to manage the dictionary.');
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}], so there is nothing to import into.");
 
         $request->validate([

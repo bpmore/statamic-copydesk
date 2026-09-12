@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bpmore\Plain\Fieldtypes;
 
+use Statamic\Facades\User;
 use Statamic\Fields\Fieldtype;
 
 /**
@@ -42,5 +43,15 @@ class ReadabilityPanel extends Fieldtype
     public function augment($value)
     {
         return null;
+    }
+
+    /**
+     * Whether this user may check, handed to the component as `meta` when
+     * the form loads, so the panel can say so instead of showing a button
+     * that would only ever answer 403.
+     */
+    public function preload()
+    {
+        return ['can' => (bool) User::current()?->can('view readability')];
     }
 }

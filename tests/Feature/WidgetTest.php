@@ -8,6 +8,7 @@ use Bpmore\Plain\Scan\Snapshot;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Site;
+use Statamic\Facades\User;
 use Statamic\Support\Str;
 use Statamic\Widgets\Loader;
 
@@ -20,6 +21,10 @@ beforeEach(function () {
         'other' => ['name' => 'Other', 'locale' => 'en_US', 'url' => '/other/'],
     ]);
     Collection::make('pages')->title('Pages')->sites(['default', 'other'])->save();
+
+    // The widget speaks only to a user who may view readability; a super
+    // user may do everything, and the permission itself is tested elsewhere.
+    $this->actingAs(User::make()->makeSuper());
 });
 
 function widgetHtml(array $config = []): string
