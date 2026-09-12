@@ -31,6 +31,7 @@ final class SiteScan
         private readonly Analyzer $analyzer,
         private readonly Settings $settings,
         private readonly Cache $cache,
+        private readonly ScanHistory $history,
     ) {}
 
     /** The scan, from the cache when there is one. */
@@ -59,6 +60,8 @@ final class SiteScan
         $locale = (string) Site::get($site)?->locale();
         $decision = $this->settings->localeGuard()->check($locale);
 
+        // Not recorded: a site that cannot be checked has no result, and a
+        // trend with a zero in it would say the site got easier.
         if (! $decision->allowed) {
             return new ScanReport($site, $target, [], 0, now()->toIso8601String(), $decision->message());
         }
@@ -76,7 +79,10 @@ final class SiteScan
             }
         }
 
-        return new ScanReport($site, $target, $results, $skipped, now()->toIso8601String());
+        $report = new ScanReport($site, $target, $results, $skipped, now()->toIso8601String());
+        $this->history->record($report);
+
+        return $report;
     }
 
     private function scan(Entry $entry, string $locale, string $site): ?EntryResult

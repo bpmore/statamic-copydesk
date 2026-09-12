@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Bpmore\Plain;
 
 use Bpmore\Plain\Http\Controllers\DictionaryController;
+use Bpmore\Plain\Scan\ScanHistory;
 use Bpmore\Plain\Scan\SiteScan;
+use Illuminate\Filesystem\Filesystem;
 use Statamic\Facades\Site;
 use Statamic\Facades\Utility;
 use Statamic\Providers\AddonServiceProvider;
@@ -26,6 +28,11 @@ class ServiceProvider extends AddonServiceProvider
         Fieldtypes\ReadabilityPanel::class,
     ];
 
+    /** The dashboard widget. Add `readability` to the widgets in `config/statamic/cp.php`. */
+    protected $widgets = [
+        Widgets\Readability::class,
+    ];
+
     /**
      * A plain script, not a Vite entry point: Statamic ships the Vue build
      * that compiles templates at runtime, so this addon needs no npm and
@@ -43,6 +50,7 @@ class ServiceProvider extends AddonServiceProvider
 
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
         $this->app->bind(Gate\GateSettings::class, static fn ($app): Gate\GateSettings => $app->make(Settings::class)->gate());
+        $this->app->singleton(ScanHistory::class, static fn ($app): ScanHistory => ScanHistory::inStorage($app->make(Filesystem::class)));
     }
 
     /**

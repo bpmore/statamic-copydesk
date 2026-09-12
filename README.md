@@ -43,6 +43,12 @@ nobody spelled out and the jargon that comes up most — the list a
 dictionary gets built from. Cached for an hour per site, with a button
 to scan again.
 
+Every scan is also kept, the last ninety per site, in
+`storage/statamic/plain/scans/`. The dashboard widget reads them — add
+`readability` to the widgets in `config/statamic/cp.php` — and shows the
+median page's band against the target, how many pages read above it, and
+which way both moved since the last scan. It never scans on its own.
+
 ## The gate
 
 Off by default. Turned on, it stops a publish — never a draft — in the

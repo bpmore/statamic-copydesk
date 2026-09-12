@@ -30,7 +30,7 @@
 - [x] Gate: opt-in per collection, **never blocks on grade alone**
 - [x] Jargon dictionary editor, per site, import/export, starter dictionary shipped
 - [x] Utility screen: distribution, worst offenders, acronym/jargon frequency
-- [ ] Dashboard widget
+- [x] Dashboard widget
 - [ ] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
 - [ ] `{{ plain:score }}` Antlers tag
 - [ ] `php please plain:check` with CSV export and CI exit code
@@ -750,3 +750,26 @@
 - **Verified in the host:** the scan over its real pages grades "Home" at Grade
   6–7, on target. Not seen in a browser (extension not connected).
 - **Tests:** root 50 (boots Statamic), engine 268.
+
+### 2026-09-12 — Phase 3, task 6: the dashboard widget
+
+- **Shipped:** `Scan\Snapshot` (computed at, graded, skipped, above/on/below,
+  median grade), `Scan\ScanHistory` (one JSON file per site under
+  `storage/statamic/plain/scans/`, last 90 scans; `record()`, `all()`, `latest()`,
+  `previous()`, `forget()`), recorded by every `SiteScan::run()` — not by a
+  locale-refused run, which has no result and would put a zero in the trend.
+  `Widgets\Readability` (handle `readability`; optional `site` config, the
+  selected site otherwise) and `plain::widgets.readability`. Registered.
+- **Reads stored results, never scans.** Before any scan it says so and links to
+  the page under Tools, where the scan happens. This is also the design the next
+  task needs: Site Weather's `reading()` "reads stored results only — never
+  recomputes" — `ScanHistory::latest($site)` is that, with `computedAt`.
+- **Trend** is latest vs. previous snapshot: whether the median page's band moved
+  (harder/easier than last scan) and the above-target count's change (n more /
+  fewer / no change). One scan shows no trend.
+- **Verified in the host:** the widget loads by handle, says "No scan has run
+  yet", then after a scan shows the median page at Grade 6–7; the history file
+  is written. Not seen on the dashboard in a browser.
+- The new Site Weather task landed in PROGRESS.md while task 5 was under way and
+  was committed with it; read, and next.
+- **Tests:** root 56 (boots Statamic), engine 268.
