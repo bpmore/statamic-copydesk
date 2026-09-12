@@ -25,7 +25,7 @@ use Statamic\Fields\Blueprint;
  * exclusion applied to the joined document would drop blocks and shift
  * every index after them.
  */
-final class Analyzer
+class Analyzer
 {
     public function __construct(
         private readonly Settings $settings,

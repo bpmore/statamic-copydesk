@@ -18,6 +18,7 @@ final class ScanReport
     /**
      * @param  list<EntryResult>  $entries  the entries that were graded
      * @param  ?string  $refusal  the locale guard's words, when the site's language could not be checked
+     * @param  list<string>  $failures  entries the check threw on, each "title: what went wrong"; one odd page must not stop a scan of a thousand
      */
     public function __construct(
         public readonly string $site,
@@ -26,6 +27,7 @@ final class ScanReport
         public readonly int $skipped,
         public readonly string $scannedAt,
         public readonly ?string $refusal = null,
+        public readonly array $failures = [],
     ) {}
 
     public function isEmpty(): bool
@@ -170,6 +172,7 @@ final class ScanReport
             'skipped' => $this->skipped,
             'scannedAt' => $this->scannedAt,
             'refusal' => $this->refusal,
+            'failures' => $this->failures,
         ];
     }
 
@@ -185,6 +188,7 @@ final class ScanReport
             $data['skipped'],
             $data['scannedAt'],
             $data['refusal'],
+            $data['failures'] ?? [],
         );
     }
 }

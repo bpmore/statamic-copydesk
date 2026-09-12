@@ -33,7 +33,7 @@
 - [x] Dashboard widget
 - [x] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
 - [x] `{{ plain:score }}` Antlers tag
-- [ ] `php please plain:check` with CSV export and CI exit code
+- [x] `php please plain:check` with CSV export and CI exit code
 - [ ] Permissions: view / manage dictionary / configure
 
 ## Phase 4 — A11y Report integration
@@ -843,3 +843,33 @@
 - Verified on the host's Home page: alone `Grade 6–7`; pair `Reading level:
   Grade 6–7 — 19 words`.
 - **Tests:** root 69 (boots Statamic), engine 268.
+
+### 2026-09-12 — Phase 3: `php please plain:check`
+
+- **Shipped:** `Commands\CheckCommand` (`plain:check {--site=*} {--collection=*}
+  {--export=} {--fail-above=} {--fail-on-errors}`), registered. A table per site
+  (hardest first) and a summary line; a locale-refused site gets the guard's
+  sentence. `--export=csv` writes a dated file under `storage/statamic/plain/`,
+  or a path; one row per page with band, consensus, comparison, counts and the
+  acronyms/jargon hit. Exit 0; 1 when `--fail-above` (a count or `10%`; default
+  from the new `check.fail_above` config key, off unless set) is crossed or
+  `--fail-on-errors` finds an error-level finding; 2 for an unknown site or
+  collection. Runs through `SiteScan`, so a nightly run keeps the widget's trend
+  and the Site Weather band current; a `--collection` scan is **not recorded**
+  (`SiteScan::run($site, $collection)`), because a sample in the trend would say
+  the site changed when the sample did.
+- **Found on the host, fixed:** a Bard field set to `save_html` stores a string
+  of markup, not a node tree; `FieldText` handed it to the Bard extractor, which
+  refused it, and the whole scan died. Bard strings that are not JSON are now
+  read as markup. And **a scan no longer dies on one page**: `SiteScan` catches
+  per entry, names it in `ScanReport::$failures` ("Odd: what went wrong"), the
+  command prints each, the utility page lists them. `Analyzer` is no longer
+  final so a test can stand in a throwing one.
+- **Laravel test gotchas, for next time:** `table()` renders past the output mock
+  `expectsOutputToContain` reads — use `expectsTable()`; `components->info()`
+  shortens an absolute path to one relative to the app; `components->warn()`
+  wraps long lines — plain `warn()` does not; and mixing `expectsTable` with
+  prose assertions is unreliable, so prose is read from `Artisan::output()`.
+- On the host: 3 pages graded (two LMS lessons with HTML-saved Bard now among
+  them), 10 with nothing to grade, French site refused, CSV written.
+- **Tests:** root 77 (boots Statamic), engine 268.

@@ -62,6 +62,9 @@
                 @endforeach
                 </tbody>
             </table>
+            @if ($scan->failures !== [])
+            <ui-description text="{!! e(count($scan->failures) === 1 ? '1 page could not be graded: ' : count($scan->failures).' pages could not be graded: ') !!}{!! e(implode('; ', $scan->failures)) !!}" />
+            @endif
             <div class="flex flex-wrap items-center gap-3">
                 <form method="post" action="{!! e(cp_route('utilities.plain.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
                 <span class="text-xs">Last scanned {!! e(\Illuminate\Support\Carbon::parse($scan->scannedAt)->diffForHumans()) !!}.</span>

@@ -117,4 +117,21 @@ return [
         'block_on' => ['very_long_sentence', 'jargon'],
     ],
 
+    /*
+    |---------------------------------------------------------------------------
+    | Checking from the command line
+    |---------------------------------------------------------------------------
+    |
+    | `php please plain:check` grades every published page and can stop a
+    | build. 'fail_above' is how many pages may read above the target before
+    | it exits non-zero: a number of pages ("10") or a share ("10%"). Null
+    | never fails on the grade; --fail-on-errors is separate and off unless
+    | asked for.
+    |
+    */
+
+    'check' => [
+        'fail_above' => null,
+    ],
+
 ];

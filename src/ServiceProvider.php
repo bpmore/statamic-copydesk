@@ -33,6 +33,10 @@ class ServiceProvider extends AddonServiceProvider
         Widgets\Readability::class,
     ];
 
+    protected $commands = [
+        Commands\CheckCommand::class,
+    ];
+
     /**
      * A plain script, not a Vite entry point: Statamic ships the Vue build
      * that compiles templates at runtime, so this addon needs no npm and

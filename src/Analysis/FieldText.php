@@ -15,10 +15,12 @@ use Statamic\Fields\Field;
 /**
  * A field's value as the engine's blocks, by what kind of field it is.
  *
- * Bard is walked as the node tree Statamic stores. Markdown is rendered
- * with the site's own parser and its own extensions, so the text scored is
- * the text published. Textarea and text are read as they are. Anything
- * else is not prose and is left alone, whatever the config lists.
+ * Bard is walked as the node tree Statamic stores; a Bard field set to
+ * save HTML instead stores a string of markup, and is read as markup.
+ * Markdown is rendered with the site's own parser and its own extensions,
+ * so the text scored is the text published. Textarea and text are read as
+ * they are. Anything else is not prose and is left alone, whatever the
+ * config lists.
  */
 final class FieldText
 {
@@ -31,9 +33,12 @@ final class FieldText
     public static function extract(Field $field, mixed $value, array $ignoredClasses = []): ?Document
     {
         return match ($field->type()) {
-            'bard' => is_array($value) || is_string($value)
-                ? (new BardExtractor(ignoredMarks: Code::INLINE_MARKS))->extract($value)
-                : Document::empty(),
+            'bard' => match (true) {
+                is_array($value) => (new BardExtractor(ignoredMarks: Code::INLINE_MARKS))->extract($value),
+                is_string($value) && is_array(json_decode($value, true)) => (new BardExtractor(ignoredMarks: Code::INLINE_MARKS))->extract($value),
+                is_string($value) && trim($value) !== '' => (new HtmlExtractor(ignoredTags: Code::INLINE_TAGS, ignoredClasses: $ignoredClasses))->extract($value),
+                default => Document::empty(),
+            },
             'markdown' => is_string($value) && trim($value) !== ''
                 ? (new HtmlExtractor(ignoredTags: Code::INLINE_TAGS, ignoredClasses: $ignoredClasses))->extract(Markdown::parse($value))
                 : Document::empty(),

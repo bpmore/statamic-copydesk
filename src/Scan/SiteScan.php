@@ -14,6 +14,7 @@ use Illuminate\Contracts\Cache\Repository as Cache;
 use Statamic\Contracts\Entries\Entry;
 use Statamic\Facades\Entry as Entries;
 use Statamic\Facades\Site;
+use Throwable;
 
 /**
  * Every published page of a site, graded. What the utility page and the
@@ -54,7 +55,10 @@ final class SiteScan
         $this->cache->forget(self::key($site));
     }
 
-    public function run(string $site): ScanReport
+    /**
+     * @param  ?string  $collection  only this collection; a partial scan is not recorded, because a trend with a sample in it would say the site changed when the sample did
+     */
+    public function run(string $site, ?string $collection = null): ScanReport
     {
         $target = $this->settings->target();
         $locale = (string) Site::get($site)?->locale();
@@ -68,9 +72,24 @@ final class SiteScan
 
         $results = [];
         $skipped = 0;
+        $failures = [];
 
-        foreach (Entries::query()->where('site', $site)->where('published', true)->get() as $entry) {
-            $result = $this->scan($entry, $locale, $site);
+        $query = Entries::query()->where('site', $site)->where('published', true);
+
+        if ($collection !== null) {
+            $query->where('collection', $collection);
+        }
+
+        foreach ($query->get() as $entry) {
+            // One page with data the check cannot read must not stop the
+            // other nine hundred. It is named, with what went wrong.
+            try {
+                $result = $this->scan($entry, $locale, $site);
+            } catch (Throwable $e) {
+                $failures[] = ((string) ($entry->get('title') ?? $entry->slug())).': '.$e->getMessage();
+
+                continue;
+            }
 
             if ($result === null) {
                 $skipped++;
@@ -79,8 +98,11 @@ final class SiteScan
             }
         }
 
-        $report = new ScanReport($site, $target, $results, $skipped, now()->toIso8601String());
-        $this->history->record($report);
+        $report = new ScanReport($site, $target, $results, $skipped, now()->toIso8601String(), null, $failures);
+
+        if ($collection === null) {
+            $this->history->record($report);
+        }
 
         return $report;
     }

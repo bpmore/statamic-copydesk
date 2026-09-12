@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+use Bpmore\Plain\Analysis\Analyzer;
+use Bpmore\Plain\Analysis\Report;
+use Bpmore\Plain\Dictionaries;
 use Bpmore\Plain\Scan\ScanReport;
 use Bpmore\Plain\Scan\SiteScan;
+use Bpmore\Plain\Settings;
 use Illuminate\Support\Facades\Cache;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Site;
 use Statamic\Facades\User;
+use Statamic\Fields\Blueprint;
 use Statamic\Support\Str;
 
 /**
@@ -165,4 +170,41 @@ it('ships a page Vue can compile, in every state', function () {
     foreach ([$scan->run('default'), $scan->run('other'), new ScanReport('default', $scan->run('default')->target, [], 0, now()->toIso8601String(), 'Not checked.')] as $report) {
         assertVueTemplateIsWellFormed(view('plain::utilities.readability', ['site' => Site::get('default'), 'scan' => $report, 'sites' => $sites, 'counts' => $counts])->render());
     }
+});
+
+it('reads a Bard field that was saved as HTML as the markup it is', function () {
+    // A Bard field set to save HTML stores a string of markup, not a node
+    // tree. It reaches the scan, the gate and the tag through the entry's
+    // data; the publish form always sends nodes.
+    Entry::make()->collection('pages')->locale('default')->slug('html')->published(true)
+        ->data(['title' => 'Saved as HTML', 'content' => '<h2>Notes for you</h2><p>We utilize forms in order to help.</p>'])->save();
+
+    $report = app(SiteScan::class)->run('default');
+
+    expect($report->entries)->toHaveCount(1);
+    expect($report->entries[0]->jargon)->toBe(['utilize', 'in order to']);
+    expect($report->failures)->toBe([]);
+});
+
+it('names a page the check threw on and grades the rest, rather than stopping', function () {
+    published('Easy', EASY);
+    published('Odd', HARD);
+
+    app()->bind(Analyzer::class, fn ($app) => new class($app->make(Settings::class), $app->make(Dictionaries::class)) extends Analyzer
+    {
+        public function analyze(Blueprint $blueprint, array $values, string $locale, ?string $site = null): Report
+        {
+            if (($values['title'] ?? null) === 'Odd') {
+                throw new RuntimeException('a field this addon could not read');
+            }
+
+            return parent::analyze($blueprint, $values, $locale, $site);
+        }
+    });
+
+    $report = app(SiteScan::class)->run('default');
+
+    expect(array_map(fn ($e) => $e->title, $report->entries))->toBe(['Easy']);
+    expect($report->failures)->toBe(['Odd: a field this addon could not read']);
+    expect(ScanReport::fromArray($report->toArray())->failures)->toBe($report->failures);
 });

@@ -55,6 +55,23 @@ the target, fair under a tenth of pages, overcast under a quarter, rain
 under half, storm from half. Not turned on, not English, or nothing
 scanned reads as unknown with the next step, never as clear.
 
+## From a terminal, and in CI
+
+```sh
+php please plain:check                          # every site, a table per site
+php please plain:check --site=default --collection=news
+php please plain:check --export=csv             # a dated CSV under storage/statamic/plain, or --export=path.csv
+php please plain:check --fail-above=10%         # exit 1 when more than a tenth of pages read above the target; or a count
+php please plain:check --fail-on-errors         # exit 1 on any very long sentence or banned term
+```
+
+A full scan of a site is recorded the same way the page under Tools
+records one, so a nightly run keeps the widget and the Site Weather band
+current; a scan narrowed to a collection is not. The threshold's default
+is `check.fail_above` in the config, off unless set. One page the check
+cannot read is named and the rest are graded. Exit codes: 0, 1 when a
+threshold is crossed, 2 for a site or collection that does not exist.
+
 ## On the page itself
 
 Some health systems want the reading level visible to patients.
