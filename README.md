@@ -34,6 +34,15 @@ file and a file goes in, merging or replacing, so a list built for one
 site can be carried to another or edited by hand and brought back. The
 file is the same shape the starter ships in.
 
+## The site, whole
+
+The same page under Tools grades every published page of the site:
+how they spread across the bands against the target, each collection's
+median page, the hardest pages with a link to each, and the acronyms
+nobody spelled out and the jargon that comes up most — the list a
+dictionary gets built from. Cached for an hour per site, with a button
+to scan again.
+
 ## The gate
 
 Off by default. Turned on, it stops a publish — never a draft — in the

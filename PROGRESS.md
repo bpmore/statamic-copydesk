@@ -29,7 +29,7 @@
 - [x] Publish-form panel: grade band vs target, per-section grades, inline highlighting
 - [x] Gate: opt-in per collection, **never blocks on grade alone**
 - [x] Jargon dictionary editor, per site, import/export, starter dictionary shipped
-- [ ] Utility screen: distribution, worst offenders, acronym/jargon frequency
+- [x] Utility screen: distribution, worst offenders, acronym/jargon frequency
 - [ ] Dashboard widget
 - [ ] **Report a Readability band to Site Weather.** One class implementing `Bpmore\SiteWeather\Contracts\WeatherContributor` (`key()` `readability`, `label()` `Readability`, `reading()`), tagged by name as `site-weather.contributors` in the provider's `register()` — Site Weather is a `suggest`, plus `require-dev` (path repository `../statamic-site-weather` until it is on Packagist). `reading()` reads stored results only — the share of checked entries above the target grade — never recomputes; asks whether the addon is set up before it reads; returns `Reading::unknown()` with a next-step headline when not set up or nothing measured; a measured state carries the latest `computed_at`; `url` is the utility screen from the task above. Thresholds are this product's call. Follow `../statamic-a11y-docs/src/Weather/DocumentsContributor.php` and its test. Then drop the fake `readability` band from `../statamic-dev/app/Providers/SiteWeatherDemoProvider.php` and confirm the real one on the dev-site tile.
 - [ ] `{{ plain:score }}` Antlers tag
@@ -722,3 +722,31 @@
   `effective()` merge. Worth doing before Phase 5.
 - **Tests:** root 41 (boots Statamic), engine 268. The Vue-template helper now
   self-closes the void `<input>` that `csrf_field()` emits.
+
+### 2026-09-12 — Phase 3, task 5: the utility screen
+
+- **Shipped:** `Scan\SiteScan` (every published entry of a site through the
+  Analyzer with the site's dictionary; entries with nothing to read counted as
+  skipped; cached an hour per site in Laravel's cache as plain arrays, with
+  `forget()`), `Scan\EntryResult`, `Scan\ScanReport` (`distribution()` — every
+  band between the lowest and highest present, at zero where empty, each against
+  the target; `againstTarget()`; `worst(n)` hardest first with collection and edit
+  link; `byCollection()` with the median page's band and the count above target;
+  `acronyms()` / `jargon()` — term → times and pages, most frequent first). The
+  "Readability" utility page now leads with these sections, the dictionary
+  import/export below; a `rescan/{site}` route clears the cache with a toast.
+- **Why cached, why a button:** a health system has thousands of pages, and the
+  place to pay for grading them all is once, on request, not on every load of a
+  page under Tools. The dashboard widget (next task) reads the same cache.
+- **Design notes:** the scan is of the site selected in the CP; a locale-refused
+  site gets the guard's words instead of tables; an empty scan says how many
+  pages were looked at and that none had text in a field the addon reads. Acronym
+  counts are once per page by construction (the rule flags first use).
+- **Test-data lessons (again):** a collection without a fixture blueprint gets
+  Statamic's default one — `news` now has a Bard fixture; `Entry::site()` is a
+  getter, the setter is `locale()`; the same text twice reads the same, so a
+  "harder" page must be different text; the Inertia page object carries the band
+  label's en dash as `\u2013`, which `utilityText()` now decodes.
+- **Verified in the host:** the scan over its real pages grades "Home" at Grade
+  6–7, on target. Not seen in a browser (extension not connected).
+- **Tests:** root 50 (boots Statamic), engine 268.

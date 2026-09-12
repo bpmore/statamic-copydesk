@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Plain;
 
 use Bpmore\Plain\Http\Controllers\DictionaryController;
+use Bpmore\Plain\Scan\SiteScan;
 use Statamic\Facades\Site;
 use Statamic\Facades\Utility;
 use Statamic\Providers\AddonServiceProvider;
@@ -45,9 +46,10 @@ class ServiceProvider extends AddonServiceProvider
     }
 
     /**
-     * A page under Tools for the dictionary's file in and file out, which
-     * the settings screen's form cannot do. The page and its two routes
-     * live under the utility, so its permission covers them.
+     * A page under Tools: the site's pages graded, hardest first, the
+     * acronyms and jargon that come up most, and the dictionary's file in
+     * and file out. Its routes live under the utility, so its permission
+     * covers them.
      */
     public function bootAddon(): void
     {
@@ -56,16 +58,20 @@ class ServiceProvider extends AddonServiceProvider
                 ->title('Readability')
                 ->navTitle('Readability')
                 ->icon('fieldtype-textarea')
-                ->description('Export a site\'s dictionary of words to avoid, or import one.')
-                ->view('plain::utilities.dictionary', function () {
+                ->description('How the site\'s pages read, which are hardest, and the words to avoid.')
+                ->view('plain::utilities.readability', function () {
                     $dictionaries = $this->app->make(Dictionaries::class);
+                    $site = Site::selected();
 
                     return [
+                        'site' => $site,
+                        'scan' => $this->app->make(SiteScan::class)->cached($site->handle()),
                         'sites' => Site::all()->values(),
-                        'counts' => Site::all()->mapWithKeys(fn ($site) => [$site->handle() => count($dictionaries->own($site->handle()))])->all(),
+                        'counts' => Site::all()->mapWithKeys(fn ($s) => [$s->handle() => count($dictionaries->own($s->handle()))])->all(),
                     ];
                 })
                 ->routes(function ($router) {
+                    $router->post('rescan/{site}', [DictionaryController::class, 'rescan'])->name('rescan');
                     $router->get('export/{site}', [DictionaryController::class, 'export'])->name('export');
                     $router->post('import/{site}', [DictionaryController::class, 'import'])->name('import');
                 })

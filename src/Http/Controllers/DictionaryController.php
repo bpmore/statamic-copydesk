@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Plain\Http\Controllers;
 
 use Bpmore\Plain\Dictionaries;
+use Bpmore\Plain\Scan\SiteScan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,6 +23,16 @@ use Statamic\Http\Controllers\CP\CpController;
  */
 class DictionaryController extends CpController
 {
+    /** Throw the cached scan of a site away, so the page grades it afresh. */
+    public function rescan(string $site, SiteScan $scan): RedirectResponse
+    {
+        abort_if(Site::get($site) === null, 404, "There is no site called [{$site}], so there is nothing to scan.");
+
+        $scan->forget($site);
+
+        return back()->with('success', 'Scanned again.');
+    }
+
     public function export(string $site, Dictionaries $dictionaries): JsonResponse
     {
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}], so there is no dictionary to export.");

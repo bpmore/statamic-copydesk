@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bpmore\Plain\Dictionaries;
+use Bpmore\Plain\Scan\SiteScan;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Statamic\Contracts\Addons\SettingsRepository;
@@ -154,11 +155,6 @@ it('finds a site\'s own term on the publish form, and flags it as banned when it
 
 // ---- the page under Tools --------------------------------------------------------
 
-function utilityText(string $html): string
-{
-    return (string) preg_replace('/\s+/', ' ', str_replace(['\\n', '\\t', '\\r', '\\/'], [' ', ' ', ' ', '/'], html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
-}
-
 it('is reachable under Tools, with an export and an import for every site', function () {
     saveRows([['term' => 'HbA1c', 'say' => ['A1C'], 'note' => '', 'sites' => ['clinic']]]);
 
@@ -203,7 +199,8 @@ it('refuses a file that is not a dictionary, in a sentence', function () {
 });
 
 it('ships a utility view Vue can compile', function () {
-    $view = view('plain::utilities.dictionary', ['sites' => Site::all()->values(), 'counts' => ['default' => 0, 'clinic' => 1]])->render();
+    $scan = app(SiteScan::class)->run('default');
+    $view = view('plain::utilities.readability', ['site' => Site::get('default'), 'scan' => $scan, 'sites' => Site::all()->values(), 'counts' => ['default' => 0, 'clinic' => 1]])->render();
 
     assertVueTemplateIsWellFormed($view);
 });

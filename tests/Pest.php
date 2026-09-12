@@ -62,3 +62,16 @@ function assertVueTemplateIsWellFormed(string $html): void
 
     expect($ok)->toBeTrue('the template is not well formed, so Vue would not compile it: '.implode('; ', $errors));
 }
+
+/**
+ * A utility page's text, flattened. The control panel is an Inertia
+ * application, so a utility's HTML arrives inside a JSON page object where
+ * every newline is a literal backslash-n and the markup is entity-encoded.
+ */
+function utilityText(string $html): string
+{
+    $html = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $html = (string) preg_replace_callback('/\\\\u([0-9a-f]{4})/i', fn ($m) => mb_chr((int) hexdec($m[1])), $html);   // the JSON page object's escapes
+
+    return (string) preg_replace('/\s+/', ' ', str_replace(['\\n', '\\t', '\\r', '\\/'], [' ', ' ', ' ', '/'], $html));
+}

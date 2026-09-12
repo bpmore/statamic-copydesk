@@ -1,0 +1,33 @@
+title: News
+tabs:
+  main:
+    sections:
+      -
+        fields:
+          -
+            handle: title
+            field:
+              type: text
+          -
+            handle: content
+            field:
+              type: bard
+              sets:
+                code:
+                  fields:
+                    -
+                      handle: code
+                      field:
+                        type: textarea
+          -
+            handle: summary
+            field:
+              type: textarea
+          -
+            handle: notes
+            field:
+              type: markdown
+          -
+            handle: hero
+            field:
+              type: assets
