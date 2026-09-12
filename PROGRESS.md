@@ -16,7 +16,7 @@
 
 ## Phase 2 — Rules
 - [x] One class per rule, individually testable
-- [ ] Long sentence / very long sentence
+- [x] Long sentence / very long sentence
 - [ ] Long paragraph
 - [ ] Passive voice — **document-level rate, not per-instance**
 - [ ] Unexpanded acronyms
@@ -386,3 +386,28 @@
   Segmenter.
 - **Tests:** 196 passing; the engine is tested with two stub rules defined in the
   test file (one located, one document-level).
+
+### 2026-09-11 — Phase 2, task 2: long sentence / very long sentence
+
+- **Shipped:** `Rule\LongSentence` (`long_sentence`, > `words` [25], warning) and
+  `Rule\VeryLongSentence` (`very_long_sentence`, > `words` [2 × long's, so 50],
+  error), both registered; `Rule\Sentences` (internal) walks a document's
+  sentences with block index and word count, shared by every rule that needs
+  sentences so none segments its own way.
+- **A sentence is never said twice.** A 60-word sentence is over both limits;
+  two findings for one sentence teach authors to ignore the panel. `LongSentence`
+  takes a `cap` and stops where very-long starts. The registry is the one place
+  that sees the whole `rules` section, so its factories wire the cap: very-long's
+  threshold, or `null` (no ceiling) when very-long is disabled. Registry factories
+  now receive `(options, allRulesConfig)`; extra args are ignored by closures that
+  do not declare them, so the stub registries in tests still work.
+- **Very-long defaults to 2 × long**, per the spec's table, not a fixed 50: a
+  site that sets `long_sentence.words = 20` gets 40 without setting both. An
+  explicit `very_long_sentence.words` wins.
+- Messages: "This sentence runs to 26 words. Break it in two; about 25 is as many
+  as a reader can follow at once." / "…far past the 50 a reader can follow. Break
+  it into three or four." Location is the sentence (block, byte offset, length).
+- Rules run on every block, headings included; a 30-word heading is a finding.
+- One thing learned writing the smoke test: synthetic sentences must start with a
+  capital, or the segmenter (correctly) reads "word. word" as one sentence.
+- **Tests:** 203 passing.
