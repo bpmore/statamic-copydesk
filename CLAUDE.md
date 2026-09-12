@@ -74,3 +74,22 @@ When compacting, preserve:
 - The most recent test output and whether it passed
 - Any decision recorded under Notes
 <!-- BPMORE-KIT:END -->
+
+<!-- Below the kit block: project-specific, hand-written, survives new-addon.sh. -->
+
+## Where things live — the engine
+
+- **`packages/readability-core/`** is `bpmore/readability-core`, the framework-agnostic engine
+  the addon and A11y Report both depend on. It lives in this repo with its own `composer.json`,
+  `vendor/`, `phpunit.xml` and Pest suite, and has **no runtime dependencies**. Consumers take it
+  through a Composer path repository; `git subtree split -P packages/readability-core` makes it
+  its own repository if that is ever wanted.
+- **Until the addon is scaffolded at the root (Phase 3), the build commands run from the engine:**
+  `cd packages/readability-core && composer install && vendor/bin/pest` (and `vendor/bin/pint`).
+  The root-level `vendor/bin/pest` in the kit block above exists only once the addon does.
+- The arch test in the kit block lives in the engine's own suite (`tests/ArchTest.php`) and, because
+  nothing from Statamic or Laravel is installed there, is enforced by a token scan rather than Pest's
+  `toUse()` — the file says why. The addon's suite will get the `toUse()` form when it exists.
+- The kit block's "Current state" paragraph is stale: task 1 in `PROGRESS.md` was the engine's
+  scaffold, which is done; the addon skeleton is Phase 3's first task. `PROGRESS.md` is the source
+  of truth for what is done.
