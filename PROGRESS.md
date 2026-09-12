@@ -25,7 +25,7 @@
 - [x] Per-section scoring by heading, not just whole-document
 
 ## Phase 3 — Statamic addon
-- [ ] Scaffold `statamic-plain`
+- [x] Scaffold `statamic-plain`
 - [ ] Publish-form panel: grade band vs target, per-section grades, inline highlighting
 - [ ] Gate: opt-in per collection, **never blocks on grade alone**
 - [ ] Jargon dictionary editor, per site, import/export, starter dictionary shipped
@@ -558,3 +558,47 @@
   `long_paragraph`, `passive_voice`, `unexpanded_acronym`, `jargon`,
   `nominalization`, `filler`) and per-section grades. 267 tests. Nothing in
   Phase 3 has been started; the addon is not scaffolded.
+
+### 2026-09-11 — Phase 3, task 1: scaffold `statamic-plain`
+
+- **Shipped at the repo root:** `composer.json` (`bpmore/statamic-plain`,
+  `type: statamic-addon`, PHP `^8.2`, `statamic/cms ^6.27` — the floor the sibling
+  addons proved with the same Testbench/Pest constraints; CLAUDE.md's `^6.0`
+  intent holds), `src/ServiceProvider.php` (empty `bootAddon()`; each surface
+  registers itself in its own task), `tests/TestCase.php` extending
+  `Statamic\Testing\AddonTestCase`, `tests/Pest.php` (feature tests boot Statamic;
+  the engine's suite stays separate), `tests/ArchTest.php`, a boot smoke test,
+  `phpunit.xml`, root `README.md`, and a second CI job for the root suite.
+  Resolved locally: Statamic **6.32.0**, Laravel 13, Testbench 11.2, Pest 4.7.8.
+- **The engine is linked by a path repository inside the repo**, pinned with the
+  repository's `versions` option (`bpmore/readability-core: 0.1.0`) so the addon
+  can require a bound `^0.1` and stay `composer validate --strict` clean. A
+  `version` field in the engine's manifest was tried first and rejected: strict
+  validation warns on it. **Phase 5:** when the engine is on Packagist, drop the
+  path repository and require a real range.
+- **The CLAUDE.md arch test is now live and bites.** In the root suite Illuminate
+  is installed, so `not->toUse(['Statamic', 'Illuminate'])` works as written:
+  verified red with a throwaway class importing `Illuminate\Support\Str`, green
+  without. The engine's own token-scan stays as the standalone enforcement.
+- **No npm, no Vite** — deliberately. A11y Gate's panel is a plain script
+  registered via `$scripts`, using the runtime Vue template compiler Statamic
+  ships, and its fieldtype is the publish-form panel. This addon follows that;
+  CLAUDE.md's `npm run build` line is generic kit text. Revisit only if a surface
+  needs a build.
+- **Host site linked** (`statamic-dev/composer.json`): two path repositories
+  (`../statamic-plain` and `../statamic-plain/packages/readability-core` with the
+  `versions` pin) and `bpmore/statamic-plain: @dev`; `composer update` symlinked
+  both. Backup of the host manifest in the session scratchpad. `vendor/composer/
+  installed.json` carries the addon's `extra.statamic` and provider, and both
+  packages autoload from the host.
+- **⚠ The host does not boot right now, and not because of this addon.** The
+  `statamic-lms` sibling has uncommitted work in progress: its modified
+  `ServiceProvider.php` imports `Bpmore\StatamicLms\Models\Enrollment\Sources\FreeSource`
+  while the untracked class lives at `Enrollment\Sources\FreeSource`. Any addon
+  linked into the shared host can break its boot. Not touched. **Re-run
+  `php please` in the host once LMS is committed** to see this addon discovered
+  there; until then the booted-Statamic suite here is the proof.
+- `tests/__fixtures__/dev-null/` exists for the harness's fake stache (only its
+  `.gitkeep` is tracked); the harness's manifest has no display name, so the
+  smoke test reads "Plain" from `composer.json` directly.
+- **Tests:** root suite 4 passing (boots Statamic); engine suite 267.

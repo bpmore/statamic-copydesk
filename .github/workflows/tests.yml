@@ -1,6 +1,7 @@
-# The readability-core suite, on every push and pull request. Shaped like
-# the workflow in Accessibility Gate, with two jobs instead of three: the core
-# has no ext-intl branch to exercise yet.
+# Two suites, on every push and pull request: the engine's, which boots
+# nothing, and the addon's, which boots Statamic through Testbench. Shaped
+# like the workflow in Accessibility Gate; neither has an ext-intl branch
+# to exercise yet.
 #
 # The second job is the oldest PHP the manifest allows, with the oldest version
 # of every dependency it allows. A floor in composer.json is a promise about a
@@ -9,7 +10,6 @@
 # nothing, a dependency raised its own floor, and that is the moment to raise
 # ours rather than the moment a customer finds out.
 #
-# The addon's own suite is added here when the addon is scaffolded (Phase 3).
 
 name: Tests
 
@@ -75,6 +75,50 @@ jobs:
       - name: Install the oldest dependencies the manifest allows
         if: matrix.dependencies == 'lowest'
         run: composer update --prefer-lowest --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      - name: Check formatting
+        run: vendor/bin/pint --test
+
+      - name: Run the suite
+        run: vendor/bin/pest
+
+  addon:
+    name: statamic-plain, PHP ${{ matrix.php }}, ${{ matrix.dependencies }} dependencies
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: '8.4'
+            dependencies: highest
+          - php: '8.2'
+            dependencies: lowest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - name: Check the manifest is well formed
+        run: composer validate --strict
+
+      # The engine comes from the path repository in this same checkout, so
+      # the addon is always tested against the engine it sits beside.
+      - name: Install dependencies
+        if: matrix.dependencies == 'highest'
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Install the oldest dependencies the manifest allows
+        if: matrix.dependencies == 'lowest'
+        run: composer update --prefer-lowest --prefer-stable --prefer-dist --no-interaction --no-progress
+
+      # Statamic must be 6; anything else is a resolution bug, per CLAUDE.md.
+      - name: Confirm Statamic 6 resolved
+        run: composer show statamic/cms | grep -E '^versions : \* v6\.'
 
       - name: Check formatting
         run: vendor/bin/pint --test
