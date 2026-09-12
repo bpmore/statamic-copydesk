@@ -19,7 +19,7 @@
 - [x] Long sentence / very long sentence
 - [x] Long paragraph
 - [x] Passive voice — **document-level rate, not per-instance**
-- [ ] Unexpanded acronyms
+- [x] Unexpanded acronyms
 - [ ] Jargon / banned phrases with suggested replacements
 - [ ] Nominalizations, hedging and filler (tips)
 - [ ] Per-section scoring by heading, not just whole-document
@@ -451,3 +451,27 @@
 - **`min_sentences`** (default 5) is an addition to the spec's config: 1 passive
   in 3 sentences is 33% and means nothing.
 - **Tests:** 231 passing (exit status checked).
+
+### 2026-09-11 — Phase 2, task 5: unexpanded acronyms
+
+- **Shipped:** `Rule\UnexpandedAcronym` (`unexpanded_acronym`; `ignore` list added
+  to a built-in `KNOWN` list; warning), registered. One finding per acronym, at
+  its first use, never per occurrence.
+- **What counts as spelled out:** the plain-language convention, either way round
+  — `Centers for Disease Control and Prevention (CDC)` or `CDC (Centers for …)` —
+  and a phrase whose initials spell the acronym with small words skipped (`World
+  Health Organization` → WHO, `emergency department` → ED; the initials check
+  matches a prefix, so `Centers for Disease Control` defines CDC even without the
+  brackets). The expansion must be at or before the first use; one that comes
+  later gets its own message ("spelled out later than this, its first use").
+- **An acronym** is two or more capitals with digits/periods/hyphens allowed
+  (`U.S.`, `COVID-19`, `H1N1`), plural or possessive folded (`MRIs`, `CDC's`,
+  `M.R.I.` → one acronym). Mixed-case terms like `HbA1c` are not acronyms here —
+  the jargon dictionary (next task) is where those belong. Headings are not
+  scanned. The `KNOWN` list is universal short forms (`TV`, `PDF`, `ER`, `HIV`,
+  `US`…); site-specific vocabulary goes in `ignore` or the dictionary.
+- **Surprise:** `CDC` is made entirely of Roman-numeral letters and the first
+  "not a numeral" check rejected it. The check is now a real numeral pattern
+  (`IV`, `XIV`, `MCMXC` are numerals; `CDC`, `DVD` are not). Found by the test for
+  possessives, which is why there is one.
+- **Tests:** 241 passing (exit status checked).
