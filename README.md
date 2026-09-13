@@ -1,23 +1,82 @@
 # Plain
 
-Readability and plain-language checking for Statamic 6: a grade band
-against the level you write for, per-section grades, and what to fix, on
-the publish form. Advisory by default; a gate is opt-in per collection and
-never blocks on a grade alone.
+Plain-language checking for Statamic 6. It grades a page's reading level
+as a band against the level you write for, section by section, and says
+what to change: the sentence that runs too long, the term your readers do
+not know and what to say instead, the acronym nobody spelled out, the
+passive voice when there is too much of it. On the publish form, as the
+author writes; across the whole site, under Tools; and in CI. Advisory by
+default. A gate is opt-in per collection and never blocks on a grade.
+
+It is for the sites that are asked to write plainly and have to show it:
+health systems writing for patients, public bodies under a plain-language
+mandate, universities writing for applicants and their families. The
+question those readers ask is not whether a page passes a standard. It is
+whether the person it was written for can read it.
 
 The engine is [`bpmore/readability-core`](packages/readability-core), in
 this repository, framework-agnostic and with no runtime dependencies. This
 addon is its Statamic surface.
 
-## Status
+## Plain language, as the standard defines it
 
-The engine is complete. On the publish form: a readability panel in the
-sidebar of every entry form that has a configured prose field, with a
-"Check readability" button that grades the page as it stands, unsaved
-changes included — the band against the site's target, each section under
-a heading on its own, and what to fix, with the flagged words marked in
-their sentence. The rest of the control-panel surface arrives task by
-task; `PROGRESS.md` is the record.
+[ISO 24495-1:2023](https://www.iso.org/standard/78907.html) is the
+international standard for plain language. It defines plain language as
+communication whose wording, structure and design are so clear that the
+intended readers can easily find what they need, understand what they find,
+and use that information, and it sets out four governing principles:
+readers get what they need (relevant), can easily find it (findable), can
+easily understand it (understandable), and can easily use it (usable).
+
+Plain checks the parts of that a machine can check, and says which:
+
+- **Understandable** is most of what it does. The grade band is four
+  readability formulas (Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau)
+  agreeing on a median, shown as a band such as *Grade 9–10* and never as a
+  decimal, because the formulas are not that precise and a decimal invites
+  arguments a band does not. Around the band are the rules that make
+  writing plainer: a sentence over 25 words, and one over 50; a paragraph
+  over 150 words or eight sentences; passive voice as a rate across the
+  page, not per instance, because some passive is correct English; an
+  acronym used before it is spelled out; a term on the dictionary, with
+  what to say instead (*utilize*, *in order to*, *prior to*, from the
+  starter list); a nominalization hiding a verb (*make a decision* for
+  *decide*); and, as tips rather than warnings, filler (*basically*, *it
+  is important to note that*) and hedging (*perhaps*, *tends to*).
+- **Findable** is the per-section view. A page is graded whole and under
+  each heading on its own, because a page can average Grade 8 while the
+  paragraph that matters reads at Grade 16, and only the section view
+  shows it.
+- **Relevant** and **usable** are judged by people who know the readers.
+  The dictionary is where that knowledge lives: the words your readers do
+  not know, decided by the people who talk to them, kept per site and
+  carried between sites.
+
+## What it is not
+
+It is not a WCAG checker, and it never says a page fails WCAG. The one
+success criterion about reading level, 3.1.5, is Level AAA, and it is not
+met by writing simply: it is met by offering a simpler version or
+supplement wherever text reads above lower secondary level once names and
+titles are set aside. A grade cannot decide that. Plain sets names and
+titles aside the way the criterion does, and reports the grade as
+evidence about the writing; [Accessibility Report](https://github.com/bpmore/statamic-a11y-report)
+is where that evidence reaches a 3.1.5 row, apart from its Level AA claim.
+
+It is English only, and says so. Every formula it uses was calibrated on
+English, and a grade for a French page is a confident number that means
+nothing, so a site whose locale is not in the configured list is refused
+with a sentence rather than scored.
+
+## What gets graded
+
+Configurable per blueprint: an allowlist of the fields that are prose
+(Bard, markdown, textarea, text), the primary content field by default.
+Before anything is counted, the parts of a page that are not the author's
+prose are set aside, each of them configurable: code and preformatted
+text, quotations, reference lists and citations, proper names and titles,
+addresses and phone numbers, tables of figures, and anything inside a
+Bard set or an HTML class you name.
 
 ## The dictionary
 
@@ -117,12 +176,14 @@ blueprint, the exclusions, each rule's options, and the gate.
 
 ## With Accessibility Report
 
-The two share this engine and do not share a surface. Plain owns the
-publish-form panel, the gate, the dictionary and the Readability page under
-Tools, and grades what an author writes, field by field, before it is
-published. Accessibility Report grades each page as served, on its own
-scheduled scan, and reports the reading level under WCAG 3.1.5 apart from its
-conformance claim. A site with both installed sees two readings of its pages,
+Plain is sold on its own; Accessibility Report includes the engine and
+grades every page it scans, so its customers have readability without
+this addon. The two share the engine and do not share a surface. Plain
+owns the publish-form panel, the gate, the dictionary and the Readability
+page under Tools, and grades what an author writes, field by field, before
+it is published. Accessibility Report grades each page as served, on its
+own scheduled scan, and reports the reading level under WCAG 3.1.5 apart
+from its conformance claim. A site with both installed sees two readings of its pages,
 one from each side of the publish button; the Readability page says so in a
 sentence when it finds Accessibility Report installed, and Accessibility
 Report says the same on its overview. Neither scans for the other, and

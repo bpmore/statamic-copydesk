@@ -43,7 +43,7 @@
 - [x] Both-installed notice explaining the division of surfaces
 
 ## Phase 5 — Ship
-- [ ] README positioned on plain language / ISO 24495-1, not WCAG
+- [x] README positioned on plain language / ISO 24495-1, not WCAG
 - [ ] PHP floor 8.2
 - [ ] Tag 1.0
 
@@ -1031,3 +1031,26 @@
   will be red at `composer install` until `bpmore/readability-core` is
   published (a repository from `git subtree split -P packages/readability-core`,
   then Packagist, then the path repository comes out of both manifests).
+
+### 2026-09-12 — Phase 5, task 1: the README, on plain language
+
+- **Rewritten:** the opening (what it does, who it is for: health systems,
+  public bodies under a mandate, universities), a section on ISO 24495-1:2023
+  with its definition and four governing principles (relevant, findable,
+  understandable, usable) and which parts a machine checks: understandable is
+  the band and the rules, findable is the per-section view, relevant and
+  usable are the people's and the dictionary is where their knowledge lives.
+  "What it is not": not a WCAG checker, never says a page fails WCAG, 3.1.5 is
+  AAA and met by a simpler version not a score, A11y Report is where the
+  evidence reaches a row; English only. "What gets graded": fields per
+  blueprint and the exclusions. The stale "Status" section is gone. The
+  packaging line ("sold on its own; Accessibility Report includes the engine")
+  is under "With Accessibility Report". `composer.json` description and
+  keywords match (`iso-24495` added).
+- **Caught while writing:** the README's first draft named *in order to* and
+  *utilize* as filler; they are dictionary terms (warnings), and the filler
+  rule holds *basically*, *it is important to note that*, with hedges like
+  *perhaps*, *tends to* (tips). Every example in the README is now checked
+  against the list it claims to be on.
+- **Tests:** unchanged (root 84, engine 275); nothing but prose and the
+  manifest's description moved.

@@ -1,11 +1,12 @@
 {
     "name": "bpmore/statamic-plain",
-    "description": "Readability and plain-language checking for Statamic: a grade band against your target, per-section grades, and what to fix, on the publish form.",
+    "description": "Plain-language checking for Statamic: a reading level as a band against the level you write for, section by section, and what to change, on the publish form, across the site, and in CI. Advisory by default; never a WCAG verdict.",
     "keywords": [
         "statamic",
-        "readability",
         "plain-language",
+        "readability",
         "health-literacy",
+        "iso-24495",
         "flesch-kincaid"
     ],
     "license": "proprietary",
