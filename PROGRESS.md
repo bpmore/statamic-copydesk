@@ -44,7 +44,7 @@
 
 ## Phase 5 — Ship
 - [x] README positioned on plain language / ISO 24495-1, not WCAG
-- [ ] PHP floor 8.2
+- [x] PHP floor 8.2
 - [ ] Tag 1.0
 
 ## Notes
@@ -1054,3 +1054,24 @@
   against the list it claims to be on.
 - **Tests:** unchanged (root 84, engine 275); nothing but prose and the
   manifest's description moved.
+
+### 2026-09-12 — Phase 5, task 2: the PHP floor is 8.2, and it is now a tested fact
+
+- **Checked, not assumed.** Both manifests already said `^8.2` and CI's lowest
+  job already ran on 8.2; nothing had run there on this machine. Herd ships
+  `php82` (8.2.32, with dom, libxml, mbstring, intl, sqlite). Every PHP file in
+  this repo and in A11y Report lints under it; a grep for 8.3+/8.4+ features
+  (`json_validate`, `#[\Override]`, typed class constants, `array_find`,
+  `mb_trim`, property hooks, asymmetric visibility) finds none. Then, in a
+  scratch export of each repo, `composer update --prefer-lowest --prefer-stable`
+  under `php82` and the suite: engine 275 passed (Pest 3.8.5); addon 77 passed,
+  7 skipped (the Site Weather tests, its path repository dropped the way CI
+  drops it; Testbench 10.11, Laravel 12.61); A11y Report's `readability-core`
+  branch 345 passed, one Chrome skip (gate 0.9.1). Phase 4 honours the floor.
+- **Found: the Statamic floor could not be installed.** `^6.27` was declared,
+  and the lowest resolve gave 6.31.0: Composer now refuses 6.27 through 6.30
+  under security advisory PKSA-rsd9-mj5m-pj4f. A floor nothing can install is
+  not a floor, so the manifest says `^6.31`. A11y Report says `^6.27` too and
+  resolves the same way; not touched here, but worth its own line there.
+- **Not changed:** `README` gains a sentence under "Working on it"; CI is as it
+  was (lowest on 8.2, highest on 8.4).
