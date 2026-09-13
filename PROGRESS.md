@@ -39,7 +39,7 @@
 ## Phase 4 — A11y Report integration
 - [x] A11y Report depends on `readability-core`
 - [x] Readability as a scan dimension
-- [ ] SC 3.1.5 as a **AAA row reported separately from the AA claim** — never a WCAG failure
+- [x] SC 3.1.5 as a **AAA row reported separately from the AA claim** — never a WCAG failure
 - [ ] Both-installed notice explaining the division of surfaces
 
 ## Phase 5 — Ship
@@ -981,3 +981,27 @@
   enumerated (A11y Report's own BrandTest has been scanning zero French pages;
   not touched, not this task).
 - **Tests:** root 82, engine 275 (+8 for the extractor); A11y Report 337.
+
+### 2026-09-12 — Phase 4, task 3: SC 3.1.5 as a AAA row apart from the claim
+
+- **Where the work is:** `../ally-report`, branch `readability-core`, commit
+  `13bdfad` (unpushed). Nothing changed in this repo but this file.
+- **Shipped there:** `Wcag::BEYOND_CLAIM` (3.1.5 Reading Level, AAA), kept out
+  of `criteria()`/`find()`/`urlFor()` and every count; `beyondClaim()`,
+  `findBeyondClaim()`, `assessable()` (table or beyond, for the worksheet's
+  save); `linkDescriptions()` covers its URL for PDF/UA.
+  `Readability\CriterionEvidence::forScan()`: pages whose band starts at Grade
+  10 (lower secondary ends at 9; a 9–10 band is not counted), up to 20 named
+  with their band, the median, and a sentence that ends "evidence toward the
+  criterion, not a determination". `AssessmentMerger::mergeBeyondClaim()` runs
+  the table's merge with the engine's rules unable to fire and swaps in that
+  sentence. The document gets `beyond_claim` (`level`, `note`, `criteria`) and a
+  section between the conformance table and the findings; the limits statement
+  says "Level AAA is not claimed"; the worksheet gets a second table under the
+  first where a person can assess it (stored with `level` AAA). README and a
+  DECISIONS entry (why no verdict even when nothing reads above the level).
+- **Verified on the dev site:** `a11y:report` on the last scan printed the
+  section with "Of the 7 pages graded, 1 reads above lower secondary level ...
+  The page above the level: /verify-certificate (Grade 10–11)." and the claim's
+  numbers unchanged (6 of 55 automated, 55 not evaluated).
+- **Tests:** A11y Report 343 (+6). Root 82, engine 275, unchanged.
