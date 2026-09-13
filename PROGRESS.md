@@ -38,7 +38,7 @@
 
 ## Phase 4 — A11y Report integration
 - [x] A11y Report depends on `readability-core`
-- [ ] Readability as a scan dimension
+- [x] Readability as a scan dimension
 - [ ] SC 3.1.5 as a **AAA row reported separately from the AA claim** — never a WCAG failure
 - [ ] Both-installed notice explaining the division of surfaces
 
@@ -938,3 +938,46 @@
   not the sentence: "Dr. Nguyen, Dr. Okonkwo and Dr. Bergström saw you." counts
   4 words, not 0, so a page of names still grades (on "and", "saw", "you").
 - **Tests:** root 82, engine 267 (unchanged here; nothing in this repo moved).
+
+### 2026-09-12 — Phase 4, task 2: readability as a scan dimension
+
+- **Where the work is:** `../ally-report`, branch `readability-core`, commit
+  `0623515` (unpushed). What landed there: a `readability` JSON column on
+  `a11y_scans` and `a11y_scan_pages` (migration; `a11y:report:install` adds
+  them); `Readability\Readability` (settings snapshot → scan row at create;
+  rebuilt from the row per page; grades a served page; rolls the scan up as a
+  median band), `PageReading` (graded / refused / nothing / failed, never
+  throws), `Sentence` (one sentence per state, shared by overview, history and
+  command); config block `readability` (`enabled`, `locales`, `target`); the
+  target grade and tolerance on the settings screen, the switch and locales
+  pinned off it; the overview's "Reading level" line, a history column, an
+  explainer paragraph, the command's summary line. Everywhere it prints it says
+  "evidence about the writing, never a WCAG result"; `ci.fail_above` has no key
+  for it and a test asserts the keys. README section and a DECISIONS entry.
+- **In the engine here:** `Extraction\PageExtractor`: a served page's `<main>`
+  (or `role="main"`), else the body with the landmarks a browser announces
+  (nav, aside, `role=navigation|banner|contentinfo|complementary`, and header
+  or footer only outside article/section/aside/nav/main) removed. Lives in the
+  engine so anything grading a served page applies one rule. And
+  `Band::label()` prints "Grade 6" for a zero-tolerance target instead of
+  "Grade 6–6".
+- **Decided:** the site's median is computed the way Plain's `Snapshot` does it
+  (mean of the two middle consensus grades on an even count) so widget and
+  overview agree to the band, even though two pages at 0.4 and 37 land on
+  "Grade 17+"; clamping was considered and left, the two products disagreeing
+  being the worse fault.
+- **Verified on the dev site:** `a11y:report:install` added the columns;
+  `a11y:scan --sync` printed "The median page reads at Grade 4–5, below the
+  target of Grade 7–9. 1 of 7 pages graded is above it. Not graded: 2 pages
+  with nothing to grade." The two ungraded pages (`/cardiology`,
+  `/cardiology/trials`) render an empty `<body>`, so that is the right answer.
+  The CP was logged out, so the overview was checked by the Vue-compile test,
+  not by eye.
+- **Gotchas, for next time:** two `expectsOutputToContain()` on the same line
+  of command output cannot both pass (Laravel's mock lets the first matching
+  expectation consume the write): one expectation per line. Multisite in tests
+  needs `statamic.system.multisite` true or `Collection::sites()` answers the
+  default site only, and an entry on the second site has no URL and is never
+  enumerated (A11y Report's own BrandTest has been scanning zero French pages;
+  not touched, not this task).
+- **Tests:** root 82, engine 275 (+8 for the extractor); A11y Report 337.
