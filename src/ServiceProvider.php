@@ -94,6 +94,7 @@ class ServiceProvider extends AddonServiceProvider
                         'sites' => Site::all()->values(),
                         'counts' => Site::all()->mapWithKeys(fn ($s) => [$s->handle() => count($dictionaries->own($s->handle()))])->all(),
                         'canManage' => (bool) User::current()?->can('manage jargon dictionary'),
+                        'companion' => Companion::notice(),
                     ];
                 })
                 ->routes(function ($router) {

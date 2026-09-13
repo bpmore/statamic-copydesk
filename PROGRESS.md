@@ -40,7 +40,7 @@
 - [x] A11y Report depends on `readability-core`
 - [x] Readability as a scan dimension
 - [x] SC 3.1.5 as a **AAA row reported separately from the AA claim** — never a WCAG failure
-- [ ] Both-installed notice explaining the division of surfaces
+- [x] Both-installed notice explaining the division of surfaces
 
 ## Phase 5 — Ship
 - [ ] README positioned on plain language / ISO 24495-1, not WCAG
@@ -1005,3 +1005,29 @@
   The page above the level: /verify-certificate (Grade 10–11)." and the claim's
   numbers unchanged (6 of 55 automated, 55 not evaluated).
 - **Tests:** A11y Report 343 (+6). Root 82, engine 275, unchanged.
+
+### 2026-09-12 — Phase 4, task 4: the both-installed notice — Phase 4 complete
+
+- **Here:** `Companion` (`a11yReportInstalled()` through Statamic's addon
+  manifest, `notice()`), one `<ui-description>` at the top of the Readability
+  page in every state, README section "With Accessibility Report",
+  `tests/Feature/CompanionTest` (off; on, once, and the page still compiles).
+  Detection by manifest rather than by class so a test installs the neighbour
+  with one array; `Addon::clearResolvedInstance()` after writing the entry,
+  because the facade memoises the list it built at boot.
+- **In A11y Report** (`../ally-report`, branch `readability-core`, `c5d27ab`,
+  unpushed): the mirror, `Support\Companion::plainInstalled()`/`notice()`, one
+  sentence in the overview's "What these numbers are" card, README line,
+  DECISIONS entry, `CompanionNoticeTest`.
+- **Verified on the dev site:** both detections answer true with both
+  installed; the pages themselves were checked by the Vue-compile tests, the
+  CP session still being logged out.
+- **Not done, on purpose:** a banner (read daily by somebody who understood it
+  once), and hiding either addon's numbers when the other is present.
+- **Tests:** root 84 (+2), engine 275, A11y Report 345 (+2).
+- **Phase 4 is complete.** All of it lives on A11y Report's unpushed
+  `readability-core` branch (four commits, `0b35c4c`..`c5d27ab`), which its
+  CLAUDE.md says goes up as a pull request when the user asks, and whose CI
+  will be red at `composer install` until `bpmore/readability-core` is
+  published (a repository from `git subtree split -P packages/readability-core`,
+  then Packagist, then the path repository comes out of both manifests).

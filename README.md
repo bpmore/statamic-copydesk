@@ -115,6 +115,19 @@ Configuration is `config/statamic-plain.php` (publish it with
 are English, the target grade and tolerance, which fields are prose by
 blueprint, the exclusions, each rule's options, and the gate.
 
+## With Accessibility Report
+
+The two share this engine and do not share a surface. Plain owns the
+publish-form panel, the gate, the dictionary and the Readability page under
+Tools, and grades what an author writes, field by field, before it is
+published. Accessibility Report grades each page as served, on its own
+scheduled scan, and reports the reading level under WCAG 3.1.5 apart from its
+conformance claim. A site with both installed sees two readings of its pages,
+one from each side of the publish button; the Readability page says so in a
+sentence when it finds Accessibility Report installed, and Accessibility
+Report says the same on its overview. Neither scans for the other, and
+neither slows the other.
+
 ## Who may do what
 
 Three permissions, under **Plain** on a role, beside the two Statamic

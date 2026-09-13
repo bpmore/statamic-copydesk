@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Bpmore\Plain\Companion;
 use Bpmore\Plain\Dictionaries;
 use Bpmore\Plain\Scan\SiteScan;
 use Illuminate\Http\UploadedFile;
@@ -203,6 +204,6 @@ it('ships a utility view Vue can compile', function () {
     $data = ['site' => Site::get('default'), 'scan' => $scan, 'sites' => Site::all()->values(), 'counts' => ['default' => 0, 'clinic' => 1]];
 
     // With the import and export forms, and with the sentence in their place.
-    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => true])->render());
-    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => false])->render());
+    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => true, 'companion' => null])->render());
+    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => false, 'companion' => Companion::notice()])->render());
 });

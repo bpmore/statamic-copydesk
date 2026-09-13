@@ -24,6 +24,10 @@
 
 <div class="space-y-6">
 
+    @if ($companion !== null)
+    <ui-description text="{!! e($companion) !!}" />
+    @endif
+
     @if ($scan->refusal !== null)
     <ui-card-panel heading="{!! e($site->name()) !!}">
         <p>{!! e($scan->refusal) !!}</p>
