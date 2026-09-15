@@ -1,3 +1,5 @@
+ALL TASKS COMPLETE
+
 # PROGRESS — Plain
 
 **Spec:** `SPEC.md` · **Packages:** `bpmore/readability-core` + `bpmore/statamic-plain` · **$39 standalone, bundled free in A11y Report**
@@ -45,7 +47,7 @@
 ## Phase 5 — Ship
 - [x] README positioned on plain language / ISO 24495-1, not WCAG
 - [x] PHP floor 8.2
-- [ ] Tag 1.0
+- [x] Tag 1.0
 
 ## Notes
 <!-- Record surprises, decisions and blockers here. If a task is wrong or blocked, write why and stop. -->
@@ -1075,3 +1077,41 @@
   resolves the same way; not touched here, but worth its own line there.
 - **Not changed:** `README` gains a sentence under "Working on it"; CI is as it
   was (lowest on 8.2, highest on 8.4).
+
+### 2026-09-15 — Phase 5, task 3: 1.0, and the engine published — ALL TASKS COMPLETE
+
+- **The engine has a repository:** `github.com/bpmore/readability-core`,
+  public, split from `packages/readability-core` with its 22 commits
+  (`git subtree split`, local branch `engine-split`), a `LICENSE.md` of its own
+  (the products' licence, with a no-verdict clause for readability), tagged
+  `v0.1.0` to match the pin every manifest carries. The user pushed both (the
+  harness declined my pushes). **Packagist is the user's:** submit
+  `https://github.com/bpmore/readability-core` at packagist.org/packages/submit.
+  The `v0.1.0` tag's LICENSE still says "Accessibility Report"; the rename to
+  "A11y Report" landed after the tag and goes out with the next engine tag.
+  Future engine changes reach the repository with
+  `git subtree push -P packages/readability-core https://github.com/bpmore/readability-core.git main`.
+- **A11y Report** had moved under the branch (PRs #60 to #63: gate 0.10, 1.1.1,
+  the rename to "A11y Report"), so `readability-core` was rebased onto the new
+  `main` (one conflict, the manifest's require block: gate `^0.10` kept, engine
+  added), then a fifth commit swaps the path repository for a `vcs` one on
+  GitHub so CI can install the engine now; the lock resolves `v0.1.0` from
+  GitHub and the suite passes there (346). Branch `readability-core` at
+  `1f4f355`, **unpushed**: the push was declined; the user runs
+  `git -C ../ally-report push -u origin readability-core`, then the PR.
+  Its checkout is left on `readability-core`.
+- **Plain 1.0.0:** `LICENSE.md` (A11y Report's licence with a no-verdict
+  clause), `CHANGELOG.md` with the 1.0.0 entry, every mention of the report by
+  its new name ("A11y Report"). A **private** GitHub repository
+  `bpmore/statamic-plain` created and added as `origin`; private because the
+  source is the product and a private repository is the reversible choice
+  (`gh repo edit bpmore/statamic-plain --visibility public` when it is listed).
+  `main` fast-forwarded to this branch, tagged `v1.0.0`. Pushing is the user's:
+  `git push -u origin main build/phase-1 && git push origin v1.0.0`.
+- **Left for the user, in order:** push this repo and the tag; push the A11y
+  Report branch and open its PR; submit the engine to Packagist; then take the
+  `repositories` block out of A11y Report's manifest (this repo keeps its path
+  repository: the engine lives here); log into the dev site's control panel and
+  look at the screens no eye has checked since the permissions task.
+- **Tests at 1.0.0:** root 84, engine 275, A11y Report 346; all three green on
+  PHP 8.2 with the lowest dependencies and on 8.4 with the highest.
