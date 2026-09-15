@@ -8,7 +8,7 @@ audited by the people they answer to. Publishing the source is not a grant of
 ownership.
 
 **This library is not sold on its own.** It is the engine inside two products
-by the same author, Plain (`bpmore/statamic-plain`) and Accessibility Report
+by the same author, Plain (`bpmore/statamic-plain`) and A11y Report
 (`bpmore/statamic-a11y-report`), each of which is licensed on the Statamic
 Marketplace. A licence for either product covers this library on the site that
 licence covers. Local development and continuous integration are free, as
@@ -60,5 +60,5 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ---
 
-*This licence follows the one Accessibility Report ships under, which was
+*This licence follows the one A11y Report ships under, which was
 drafted by reading Statamic's own. No lawyer has reviewed it.*

@@ -7,12 +7,12 @@ namespace Bpmore\Plain;
 use Statamic\Facades\Addon;
 
 /**
- * Accessibility Report, when it is installed beside this addon.
+ * A11y Report, when it is installed beside this addon.
  *
  * The two share an engine and do not share a surface. This addon owns the
  * publish-form panel, the gate, the dictionary and the site page under
  * Tools, and grades an entry's fields as its author writes them.
- * Accessibility Report owns the scheduled scan of the site as served and
+ * A11y Report owns the scheduled scan of the site as served and
  * the 3.1.5 row in its conformance document. A site with both installed
  * sees two readings of its pages, one from each side of the publish
  * button, and somebody meeting both for the first time can reasonably
@@ -33,7 +33,7 @@ final class Companion
     }
 
     /**
-     * The one line to show when Accessibility Report is installed too, or
+     * The one line to show when A11y Report is installed too, or
      * null when it is not.
      */
     public static function notice(): ?string
@@ -42,6 +42,6 @@ final class Companion
             return null;
         }
 
-        return 'Accessibility Report is installed as well. It grades every page as served on its own scheduled scan and reports the reading level under WCAG 3.1.5 in its conformance document; this page, the publish-form panel and the gate are Plain\'s, and grade what an author writes. They are two readings of the same site, not two scans of the same thing.';
+        return 'A11y Report is installed as well. It grades every page as served on its own scheduled scan and reports the reading level under WCAG 3.1.5 in its conformance document; this page, the publish-form panel and the gate are Plain\'s, and grade what an author writes. They are two readings of the same site, not two scans of the same thing.';
     }
 }

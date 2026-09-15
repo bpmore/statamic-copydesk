@@ -60,7 +60,7 @@ met by writing simply: it is met by offering a simpler version or
 supplement wherever text reads above lower secondary level once names and
 titles are set aside. A grade cannot decide that. Plain sets names and
 titles aside the way the criterion does, and reports the grade as
-evidence about the writing; [Accessibility Report](https://github.com/bpmore/statamic-a11y-report)
+evidence about the writing; [A11y Report](https://github.com/bpmore/statamic-a11y-report)
 is where that evidence reaches a 3.1.5 row, apart from its Level AA claim.
 
 It is English only, and says so. Every formula it uses was calibrated on
@@ -174,18 +174,18 @@ Configuration is `config/statamic-plain.php` (publish it with
 are English, the target grade and tolerance, which fields are prose by
 blueprint, the exclusions, each rule's options, and the gate.
 
-## With Accessibility Report
+## With A11y Report
 
-Plain is sold on its own; Accessibility Report includes the engine and
+Plain is sold on its own; A11y Report includes the engine and
 grades every page it scans, so its customers have readability without
 this addon. The two share the engine and do not share a surface. Plain
 owns the publish-form panel, the gate, the dictionary and the Readability
 page under Tools, and grades what an author writes, field by field, before
-it is published. Accessibility Report grades each page as served, on its
+it is published. A11y Report grades each page as served, on its
 own scheduled scan, and reports the reading level under WCAG 3.1.5 apart
 from its conformance claim. A site with both installed sees two readings of its pages,
 one from each side of the publish button; the Readability page says so in a
-sentence when it finds Accessibility Report installed, and Accessibility
+sentence when it finds A11y Report installed, and Accessibility
 Report says the same on its overview. Neither scans for the other, and
 neither slows the other.
 

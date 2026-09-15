@@ -10,7 +10,7 @@ use Statamic\Facades\Site;
 use Statamic\Facades\User;
 
 /**
- * The one line for a site that has Accessibility Report installed too, so
+ * The one line for a site that has A11y Report installed too, so
  * that nobody meeting both takes one of them for a mistake.
  */
 beforeEach(function () {
@@ -21,7 +21,7 @@ beforeEach(function () {
     $this->user->save();
 });
 
-/** Accessibility Report, as Statamic would list it once Composer has installed it. */
+/** A11y Report, as Statamic would list it once Composer has installed it. */
 function installA11yReport(): void
 {
     app(Manifest::class)->manifest[Companion::A11Y_REPORT] = [
@@ -37,13 +37,13 @@ function installA11yReport(): void
     Addon::clearResolvedInstance();
 }
 
-it('says nothing when Accessibility Report is not installed', function () {
+it('says nothing when A11y Report is not installed', function () {
     expect(Companion::a11yReportInstalled())->toBeFalse();
     expect(Companion::notice())->toBeNull();
 
     $page = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent());
 
-    expect($page)->not->toContain('Accessibility Report is installed');
+    expect($page)->not->toContain('A11y Report is installed');
 });
 
 it('says, once and in one line, who owns which surface when it is', function () {
@@ -53,7 +53,7 @@ it('says, once and in one line, who owns which surface when it is', function () 
 
     $page = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent());
 
-    expect(substr_count($page, 'Accessibility Report is installed as well.'))->toBe(1);
+    expect(substr_count($page, 'A11y Report is installed as well.'))->toBe(1);
     expect($page)->toContain('grades every page as served on its own scheduled scan');
     expect($page)->toContain('this page, the publish-form panel and the gate are Plain');
     expect($page)->toContain('two readings of the same site, not two scans of the same thing');
