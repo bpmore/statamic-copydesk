@@ -1,12 +1,15 @@
 # Plain
 
-Plain-language checking for Statamic 6. It grades a page's reading level
-as a band against the level you write for, section by section, and says
-what to change: the sentence that runs too long, the term your readers do
-not know and what to say instead, the acronym nobody spelled out, the
-passive voice when there is too much of it. On the publish form, as the
-author writes; across the whole site, under Tools; and in CI. Advisory by
-default. A gate is opt-in per collection and never blocks on a grade.
+Readability and plain language checking for Statamic 6. It grades the
+reading level of a page as a band against the level you write for, section
+by section, and says what to change: the sentence that runs too long, the
+term your readers do not know and what to say instead, the acronym nobody
+spelled out, the passive voice when there is too much of it. It is built
+for health literacy, where the reader is a patient and the page has to
+work the first time, and for any site under a plain-language mandate. On
+the publish form, as the author writes; across the whole site, under
+Tools; and in CI. Advisory by default. A gate is opt-in per collection and
+never blocks on a grade.
 
 It is for the sites that are asked to write plainly and have to show it:
 health systems writing for patients, public bodies under a plain-language

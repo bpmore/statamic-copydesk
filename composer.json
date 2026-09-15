@@ -1,6 +1,6 @@
 {
     "name": "bpmore/statamic-plain",
-    "description": "Plain-language checking for Statamic: a reading level as a band against the level you write for, section by section, and what to change, on the publish form, across the site, and in CI. Advisory by default; never a WCAG verdict.",
+    "description": "Readability and plain language checking for Statamic: the reading level of every page as a band against the level you write for, section by section, with what to change, on the publish form, across the site and in CI. Built for health literacy and plain-language mandates. Advisory by default; never a WCAG verdict.",
     "keywords": [
         "statamic",
         "plain-language",

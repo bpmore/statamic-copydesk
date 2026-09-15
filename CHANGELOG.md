@@ -4,6 +4,12 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## 1.0.1 - 2026-09-15
+
+The manifest's description and the README's first paragraph say what this
+is in the words a buyer searches for: readability, reading level, plain
+language, health literacy. Nothing in the code changed.
+
 ## 1.0.0 - 2026-09-15
 
 The first release.
