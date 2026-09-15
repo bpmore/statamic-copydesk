@@ -1115,3 +1115,42 @@ ALL TASKS COMPLETE
   look at the screens no eye has checked since the permissions task.
 - **Tests at 1.0.0:** root 84, engine 275, A11y Report 346; all three green on
   PHP 8.2 with the lowest dependencies and on 8.4 with the highest.
+
+### 2026-09-15 — Release state, after the pushes and the pass by eye
+
+- **Plain:** `github.com/bpmore/statamic-plain`, private, `main` = `build/phase-1`
+  = `117f146`. Tags `v1.0.0` (the release) and `v1.0.1` (the manifest
+  description and the README's first paragraph carrying readability, reading
+  level, plain language and health literacy in prose; no code change; the
+  GitHub repository description says the same). Not on Packagist or the
+  Marketplace yet; a listing reads the description from the tag, so list from
+  `v1.0.1` or later.
+- **readability-core:** `github.com/bpmore/readability-core`, public, `main`
+  and `v0.1.0`; listed on Packagist at
+  `packagist.org/packages/bpmore/readability-core`. Every consumer now takes
+  it from there; this repo keeps its path repository because the engine's
+  source lives here. The `v0.1.0` tag's LICENSE still says "Accessibility
+  Report" (renamed to "A11y Report" in the monorepo after the tag; goes out
+  with the next engine tag). Engine changes reach the repository with
+  `git subtree push -P packages/readability-core https://github.com/bpmore/readability-core.git main`,
+  then a tag there.
+- **A11y Report:** PR #64 (the engine, the scan dimension, the 3.1.5 row, the
+  both-installed notice, the engine from GitHub then from Packagist) and
+  PR #65 ("Prepare 1.2.0", plus a minimum width on the worksheet's AAA
+  criterion column) are merged; **1.2.0 is released** as a GitHub release from
+  `main` and on Packagist. Its manifest names the engine with no repository
+  block. Its local checkout is on `main`.
+- **Seen by eye, on greenhouse.test** (Plain 1.0.0, A11y Report 1.2.0 from
+  Packagist, `^1.2` in its manifest): Plain's Readability page with the A11y
+  Report notice, the dashboard widget and the Site Weather band (Overcast, 7 of
+  45 above target), the publish-form panel on a real article (22 sections,
+  three findings highlighted), the settings screen; A11y Report's overview
+  (reading level line, history column, explainer, the Plain sentence), a
+  generated document with its AAA section naming ten pages, the worksheet's
+  AAA table with the fixed column, the settings screen's target fields. No
+  console errors on any of them. Nothing was saved in either control panel.
+- **Nothing is left on the list.** Follow-ups recorded earlier still stand:
+  mirror the target, locales, fields and gate onto Plain's settings screen with
+  an `effective()` merge; in-editor Bard decoration through a Tiptap extension;
+  a health-specific starter dictionary; A11y Report's `BrandTest` scanning zero
+  French pages (multisite off in its harness).
