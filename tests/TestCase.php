@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Tests;
+namespace Bpmore\Copydesk\Tests;
 
-use Bpmore\Plain\ServiceProvider;
+use Bpmore\Copydesk\ServiceProvider;
 use Illuminate\Support\Facades\File;
 use Statamic\Facades\Blueprint;
 use Statamic\Testing\AddonTestCase;
@@ -48,7 +48,7 @@ abstract class TestCase extends AddonTestCase
         // The addon's settings are a real file in the app's resource path,
         // and a test that saves one would otherwise decide the answer for
         // every test after it. The scan history is the same kind of thing.
-        File::delete(resource_path('addons/statamic-plain.yaml'));
-        File::deleteDirectory(storage_path('statamic/plain'));
+        File::delete(resource_path('addons/copydesk.yaml'));
+        File::deleteDirectory(storage_path('statamic/copydesk'));
     }
 }

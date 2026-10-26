@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain;
+namespace Bpmore\Copydesk;
 
-use Bpmore\Plain\Gate\GateSettings;
+use Bpmore\Copydesk\Gate\GateSettings;
 use Bpmore\ReadabilityCore\Exclusion\Pipeline;
 use Bpmore\ReadabilityCore\Formula\Target;
 use Bpmore\ReadabilityCore\Locale\LocaleGuard;
@@ -20,7 +20,7 @@ use Bpmore\ReadabilityCore\Rule\RuleSet;
  */
 final class Settings
 {
-    public const CONFIG = 'statamic-plain';
+    public const CONFIG = 'copydesk';
 
     /**
      * @param  array<string, mixed>  $config  the whole config file

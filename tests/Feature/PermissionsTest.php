@@ -23,8 +23,8 @@ beforeEach(function () {
     config()->set('statamic.editions.pro', true);
 
     $this->setTestRoles([
-        'checker' => ['access cp', 'view pages entries', 'access plain utility', 'view readability'],
-        'lexicographer' => ['access cp', 'access plain utility', 'manage jargon dictionary'],
+        'checker' => ['access cp', 'view pages entries', 'access copydesk utility', 'view readability'],
+        'lexicographer' => ['access cp', 'access copydesk utility', 'manage jargon dictionary'],
         'admin' => ['access cp', 'configure readability'],
         'reader' => ['access cp', 'view pages entries'],
     ]);
@@ -52,8 +52,8 @@ it('lets only a user who may view readability check a page, and tells the panel 
     $entry->save();
     $payload = ['reference' => $entry->reference(), 'values' => ['content' => bard(PLAIN_PAGE)]];
 
-    $this->actingAs(userWithRole('checker'))->postJson(cp_route('plain.check'), $payload)->assertOk();
-    $this->actingAs(userWithRole('reader'))->postJson(cp_route('plain.check'), $payload)
+    $this->actingAs(userWithRole('checker'))->postJson(cp_route('copydesk.check'), $payload)->assertOk();
+    $this->actingAs(userWithRole('reader'))->postJson(cp_route('copydesk.check'), $payload)
         ->assertStatus(403)->assertJsonPath('message', 'You do not have permission to check readability.');
 
     $panel = Collection::findByHandle('pages')->entryBlueprint()->field('readability_panel')->fieldtype();
@@ -74,18 +74,18 @@ it('shows the widget only to a user who may view readability', function () {
 });
 
 it('lets only a user who may manage the dictionary import and export it, and offers the forms only to them', function () {
-    $this->actingAs(userWithRole('lexicographer'))->get(cp_route('utilities.plain.export', 'default'))->assertOk();
-    $this->actingAs(userWithRole('checker'))->get(cp_route('utilities.plain.export', 'default'))
+    $this->actingAs(userWithRole('lexicographer'))->get(cp_route('utilities.copydesk.export', 'default'))->assertOk();
+    $this->actingAs(userWithRole('checker'))->get(cp_route('utilities.copydesk.export', 'default'))
         ->assertStatus(403);
 
-    expect(utilityText($this->actingAs(userWithRole('lexicographer'))->get(cp_route('utilities.index').'/plain')->assertOk()->getContent()))
+    expect(utilityText($this->actingAs(userWithRole('lexicographer'))->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent()))
         ->toContain("Export this site's entries")->not->toContain('not something your role can do');
-    expect(utilityText($this->actingAs(userWithRole('checker'))->get(cp_route('utilities.index').'/plain')->assertOk()->getContent()))
+    expect(utilityText($this->actingAs(userWithRole('checker'))->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent()))
         ->toContain('Importing and exporting the dictionary is not something your role can do')->not->toContain("Export this site's entries");
 });
 
 it('opens the settings screen to whoever may configure readability or manage the dictionary, in this addon\'s own words', function () {
-    $addon = Addon::get('bpmore/statamic-plain');
+    $addon = Addon::get('bpmore/statamic-copydesk');
 
     $this->actingAs(userWithRole('admin'));
     expect(Gate::allows('editSettings', $addon))->toBeTrue();

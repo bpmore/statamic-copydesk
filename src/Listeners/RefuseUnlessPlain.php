@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Listeners;
+namespace Bpmore\Copydesk\Listeners;
 
-use Bpmore\Plain\Gate\GateResult;
-use Bpmore\Plain\Gate\PublishGate;
+use Bpmore\Copydesk\Gate\GateResult;
+use Bpmore\Copydesk\Gate\PublishGate;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LoggerInterface;
 use Statamic\Events\EntrySaving;
@@ -18,7 +18,7 @@ use Statamic\Events\EntrySaving;
  * found the hard way: returning false stops the save without saying why,
  * and the author is told the editor is broken. A ValidationException comes
  * back as a 422 the control panel already handles: `errors` go onto the
- * publish container, keyed as sent, and the panel draws `errors.plain` in
+ * publish container, keyed as sent, and the panel draws `errors.copydesk` in
  * full. The toast says "The given data was invalid." whatever we write
  * here (`Statamic\Exceptions\ValidationException::summarize()` overrides
  * Laravel's), so the lines are written to be read as a list in the panel.
@@ -42,7 +42,7 @@ final class RefuseUnlessPlain
 
         if ($result->couldNotBeChecked()) {
             $this->log->error(
-                'Plain could not check this entry before it was saved, so it was saved unchecked: '.$result->reason,
+                'Copydesk could not check this entry before it was saved, so it was saved unchecked: '.$result->reason,
                 ['entry' => $event->entry->id()],
             );
 
@@ -53,7 +53,7 @@ final class RefuseUnlessPlain
             return;
         }
 
-        throw ValidationException::withMessages(['plain' => $this->lines($result)])->status(422);
+        throw ValidationException::withMessages(['copydesk' => $this->lines($result)])->status(422);
     }
 
     /**

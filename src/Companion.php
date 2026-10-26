@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain;
+namespace Bpmore\Copydesk;
 
 use Statamic\Facades\Addon;
 
@@ -42,6 +42,6 @@ final class Companion
             return null;
         }
 
-        return 'A11y Report is installed as well. It grades every page as served on its own scheduled scan and reports the reading level under WCAG 3.1.5 in its conformance document; this page, the publish-form panel and the gate are Plain\'s, and grade what an author writes. They are two readings of the same site, not two scans of the same thing.';
+        return 'A11y Report is installed as well. It grades every page as served on its own scheduled scan and reports the reading level under WCAG 3.1.5 in its conformance document; this page, the publish-form panel and the gate are Copydesk\'s, and grade what an author writes. They are two readings of the same site, not two scans of the same thing.';
     }
 }

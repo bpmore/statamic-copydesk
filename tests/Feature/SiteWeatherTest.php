@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Scan\EntryResult;
-use Bpmore\Plain\Scan\ScanHistory;
-use Bpmore\Plain\Scan\ScanReport;
-use Bpmore\Plain\Scan\SiteScan;
-use Bpmore\Plain\Settings;
-use Bpmore\Plain\Weather\ReadabilityContributor;
+use Bpmore\Copydesk\Scan\EntryResult;
+use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Scan\ScanReport;
+use Bpmore\Copydesk\Scan\SiteScan;
+use Bpmore\Copydesk\Settings;
+use Bpmore\Copydesk\Weather\ReadabilityContributor;
 use Bpmore\ReadabilityCore\Formula\Target;
 use Bpmore\SiteWeather\Contracts\WeatherContributor;
 use Bpmore\SiteWeather\Contributors;
@@ -65,19 +65,19 @@ it('reads unknown with the next step before any scan, and points at the page und
 
     expect($reading->state)->toBe(State::Unknown)
         ->and($reading->headline)->toBe('No pages graded yet: open Readability under Tools')
-        ->and($reading->url)->toBe('http://localhost/cp/utilities/plain')
+        ->and($reading->url)->toBe('http://localhost/cp/utilities/copydesk')
         ->and($reading->computedAt)->toBeNull();
 });
 
 it('reads unknown when the addon is turned off, or the site is not in English', function () {
     seedScan(0, 4);
 
-    config()->set('statamic-plain.enabled', false);
+    config()->set('copydesk.enabled', false);
     app()->forgetInstance(Settings::class);
     expect(readabilityBand()->state)->toBe(State::Unknown)
         ->and(readabilityBand()->headline)->toBe('Turned off in the addon\'s configuration');
 
-    config()->set('statamic-plain.enabled', true);
+    config()->set('copydesk.enabled', true);
     app()->forgetInstance(Settings::class);
     Site::setSites(['default' => ['name' => 'French', 'locale' => 'fr_FR', 'url' => '/']]);
     expect(readabilityBand()->state)->toBe(State::Unknown)

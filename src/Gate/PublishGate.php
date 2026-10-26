@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Gate;
+namespace Bpmore\Copydesk\Gate;
 
-use Bpmore\Plain\Analysis\Analyzer;
-use Bpmore\Plain\Analysis\Report;
+use Bpmore\Copydesk\Analysis\Analyzer;
+use Bpmore\Copydesk\Analysis\Report;
 use Bpmore\ReadabilityCore\Rule\Finding;
 use Bpmore\ReadabilityCore\Rule\Jargon;
 use Statamic\Contracts\Entries\Entry;

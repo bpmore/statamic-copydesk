@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Weather;
+namespace Bpmore\Copydesk\Weather;
 
-use Bpmore\Plain\Scan\ScanHistory;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Settings;
 use Bpmore\SiteWeather\Contracts\WeatherContributor;
 use Bpmore\SiteWeather\Reading;
 use Bpmore\SiteWeather\State;
@@ -64,7 +64,7 @@ final class ReadabilityContributor implements WeatherContributor
 
     public function reading(): Reading
     {
-        $url = Utility::find('plain')?->url();
+        $url = Utility::find('copydesk')?->url();
         $site = Site::selected();
 
         if (! $this->settings->enabled()) {

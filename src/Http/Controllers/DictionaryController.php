@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Http\Controllers;
+namespace Bpmore\Copydesk\Http\Controllers;
 
-use Bpmore\Plain\Dictionaries;
-use Bpmore\Plain\Scan\SiteScan;
+use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -41,7 +41,7 @@ class DictionaryController extends CpController
 
         return response()
             ->json($dictionaries->export($site), 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-            ->header('Content-Disposition', 'attachment; filename="plain-dictionary-'.$site.'.json"');
+            ->header('Content-Disposition', 'attachment; filename="copydesk-dictionary-'.$site.'.json"');
     }
 
     public function import(Request $request, string $site, Dictionaries $dictionaries): RedirectResponse

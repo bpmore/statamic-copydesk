@@ -36,7 +36,7 @@
     <ui-card-panel heading="{!! e($site->name()) !!}">
         <div class="space-y-3">
             <p>No page on this site has anything to grade yet{!! $scan->skipped > 0 ? ': '.e($scan->skipped === 1 ? '1 published page was' : $scan->skipped.' published pages were').' looked at, and none had text in a field this addon reads' : '' !!}. The fields it reads are set in the addon\'s configuration.</p>
-            <form method="post" action="{!! e(cp_route('utilities.plain.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
+            <form method="post" action="{!! e(cp_route('utilities.copydesk.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
         </div>
     </ui-card-panel>
     @else
@@ -70,7 +70,7 @@
             <ui-description text="{!! e(count($scan->failures) === 1 ? '1 page could not be graded: ' : count($scan->failures).' pages could not be graded: ') !!}{!! e(implode('; ', $scan->failures)) !!}" />
             @endif
             <div class="flex flex-wrap items-center gap-3">
-                <form method="post" action="{!! e(cp_route('utilities.plain.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
+                <form method="post" action="{!! e(cp_route('utilities.copydesk.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
                 <span class="text-xs">Last scanned {!! e(\Illuminate\Support\Carbon::parse($scan->scannedAt)->diffForHumans()) !!}.</span>
             </div>
         </div>
@@ -130,7 +130,7 @@
         <div class="space-y-3">
             <p>
                 The words and phrases your readers do not know, with what to say instead,
-                are edited under Addons, Plain, Settings. A starter list of plain-language
+                are edited under Addons, Copydesk, Settings. A starter list of plain-language
                 substitutions is built in; what you add goes on top of it.
             </p>
             <p>
@@ -146,18 +146,18 @@
     <ui-card-panel heading="{!! e($site->name()) !!}">
         <div class="space-y-4">
             <div class="flex flex-wrap items-center gap-3">
-                @if ($canManage)<ui-button size="sm" href="{!! e(cp_route('utilities.plain.export', $site->handle())) !!}" text="Export this site's entries" />@endif
+                @if ($canManage)<ui-button size="sm" href="{!! e(cp_route('utilities.copydesk.export', $site->handle())) !!}" text="Export this site's entries" />@endif
                 <span class="text-sm">{!! e($counts[$site->handle()] === 1 ? '1 entry of its own' : $counts[$site->handle()].' entries of its own') !!}, on top of the starter.</span>
             </div>
 
             @if (! $canManage)
             <p class="text-sm">Importing and exporting the dictionary is not something your role can do.</p>
             @else
-            <form method="post" action="{!! e(cp_route('utilities.plain.import', $site->handle())) !!}" enctype="multipart/form-data" class="space-y-3">
+            <form method="post" action="{!! e(cp_route('utilities.copydesk.import', $site->handle())) !!}" enctype="multipart/form-data" class="space-y-3">
                 {!! csrf_field() !!}
                 <div class="space-y-1">
-                    <label class="block text-sm font-medium" for="plain-file-{!! e($site->handle()) !!}">A dictionary file to bring in</label>
-                    <input id="plain-file-{!! e($site->handle()) !!}" type="file" name="file" accept="application/json,.json" required="required" class="text-sm" />
+                    <label class="block text-sm font-medium" for="copydesk-file-{!! e($site->handle()) !!}">A dictionary file to bring in</label>
+                    <input id="copydesk-file-{!! e($site->handle()) !!}" type="file" name="file" accept="application/json,.json" required="required" class="text-sm" />
                 </div>
                 <div class="space-y-1 text-sm">
                     <label class="flex items-center gap-2"><input type="radio" name="mode" value="merge" checked="checked" /> Add to what is here; the file wins where both have a term</label>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Gate;
+namespace Bpmore\Copydesk\Gate;
 
 /**
  * The gate's settings, read once from config and passed around as a value.

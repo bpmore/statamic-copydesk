@@ -12,5 +12,5 @@ arch('core stays framework-agnostic')
     ->not->toUse(['Statamic', 'Illuminate']);
 
 arch('the addon declares strict types')
-    ->expect('Bpmore\Plain')
+    ->expect('Bpmore\Copydesk')
     ->toUseStrictTypes();

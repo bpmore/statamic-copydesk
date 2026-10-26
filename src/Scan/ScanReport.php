@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Scan;
+namespace Bpmore\Copydesk\Scan;
 
 use Bpmore\ReadabilityCore\Formula\Band;
 use Bpmore\ReadabilityCore\Formula\Target;

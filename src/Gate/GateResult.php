@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Gate;
+namespace Bpmore\Copydesk\Gate;
 
-use Bpmore\Plain\Analysis\Report;
+use Bpmore\Copydesk\Analysis\Report;
 use Bpmore\ReadabilityCore\Rule\Finding;
 
 /**

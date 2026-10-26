@@ -4,6 +4,24 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## Unreleased
+
+**Plain is now Copydesk.** Same code, new name, ahead of the house-style
+rules that are on the way. Nothing was ever sold or installed under the old
+name, so there is nothing to migrate. What changed:
+
+- Package `bpmore/statamic-copydesk`, namespace `Bpmore\Copydesk`.
+- Config `config/copydesk.php`, published with `--tag=copydesk-config`.
+  The switch is `COPYDESK_ENABLED`.
+- Command `php please copydesk:scan`, with the same options.
+- Tag `{{ copydesk:score }}`.
+- Settings saved to `resources/addons/copydesk.yaml`; scans kept in
+  `storage/statamic/copydesk/`.
+- The Readability page is at `/cp/utilities/copydesk`, and its
+  permission is `access copydesk utility`.
+
+The entries below are from before the rename, when this was Plain.
+
 ## 1.0.1 - 2026-09-15
 
 The manifest's description and the README's first paragraph say what this

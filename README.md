@@ -1,4 +1,4 @@
-# Plain
+# Copydesk
 
 Readability and plain language checking for Statamic 6. It grades the
 reading level of a page as a band against the level you write for, section
@@ -31,7 +31,7 @@ and use that information, and it sets out four governing principles:
 readers get what they need (relevant), can easily find it (findable), can
 easily understand it (understandable), and can easily use it (usable).
 
-Plain checks the parts of that a machine can check, and says which:
+Copydesk checks the parts of that a machine can check, and says which:
 
 - **Understandable** is most of what it does. The grade band is four
   readability formulas (Flesch-Kincaid, Gunning Fog, SMOG, Coleman-Liau)
@@ -61,7 +61,7 @@ It is not a WCAG checker, and it never says a page fails WCAG. The one
 success criterion about reading level, 3.1.5, is Level AAA, and it is not
 met by writing simply: it is met by offering a simpler version or
 supplement wherever text reads above lower secondary level once names and
-titles are set aside. A grade cannot decide that. Plain sets names and
+titles are set aside. A grade cannot decide that. Copydesk sets names and
 titles aside the way the criterion does, and reports the grade as
 evidence about the writing; [A11y Report](https://github.com/bpmore/statamic-a11y-report)
 is where that evidence reaches a 3.1.5 row, apart from its Level AA claim.
@@ -85,10 +85,10 @@ Bard set or an HTML class you name.
 
 The sticky feature: the words and phrases your readers do not know, with
 what to say instead. A starter of plainlanguage.gov's substitutions is
-built in. What a site adds goes on top, edited under **Addons, Plain,
-Settings** — a term, what to say instead (empty to ban it), a note, and
-the sites it is for (none for every site) — and is kept in
-`resources/addons/statamic-plain.yaml`, in version control with the rest
+built in. What a site adds goes on top, edited under **Addons, Copydesk,
+Settings**: a term, what to say instead (empty to ban it), a note, and
+the sites it is for (none for every site). It is kept in
+`resources/addons/copydesk.yaml`, in version control with the rest
 of the site.
 
 Under **Tools, Readability**, a site's own entries come out as a JSON
@@ -101,13 +101,13 @@ file is the same shape the starter ships in.
 The same page under Tools grades every published page of the site:
 how they spread across the bands against the target, each collection's
 median page, the hardest pages with a link to each, and the acronyms
-nobody spelled out and the jargon that comes up most — the list a
+nobody spelled out and the jargon that comes up most, which is the list a
 dictionary gets built from. Cached for an hour per site, with a button
 to scan again.
 
 Every scan is also kept, the last ninety per site, in
-`storage/statamic/plain/scans/`. The dashboard widget reads them — add
-`readability` to the widgets in `config/statamic/cp.php` — and shows the
+`storage/statamic/copydesk/scans/`. The dashboard widget reads them. Add
+`readability` to the widgets in `config/statamic/cp.php`, and it shows the
 median page's band against the target, how many pages read above it, and
 which way both moved since the last scan. It never scans on its own.
 
@@ -120,11 +120,11 @@ scanned reads as unknown with the next step, never as clear.
 ## From a terminal, and in CI
 
 ```sh
-php please plain:check                          # every site, a table per site
-php please plain:check --site=default --collection=news
-php please plain:check --export=csv             # a dated CSV under storage/statamic/plain, or --export=path.csv
-php please plain:check --fail-above=10%         # exit 1 when more than a tenth of pages read above the target; or a count
-php please plain:check --fail-on-errors         # exit 1 on any very long sentence or banned term
+php please copydesk:scan                       # every site, a table per site
+php please copydesk:scan --site=default --collection=news
+php please copydesk:scan --export=csv          # a dated CSV under storage/statamic/copydesk, or --export=path.csv
+php please copydesk:scan --fail-above=10%      # exit 1 when more than a tenth of pages read above the target; or a count
+php please copydesk:scan --fail-on-errors      # exit 1 on any very long sentence or banned term
 ```
 
 A full scan of a site is recorded the same way the page under Tools
@@ -139,13 +139,13 @@ threshold is crossed, 2 for a site or collection that does not exist.
 Some health systems want the reading level visible to patients.
 
 ```antlers
-{{ plain:score }}                                   {{# Grade 6–7 #}}
+{{ copydesk:score }}                                {{# Grade 6–7 #}}
 
-{{ plain:score }}
+{{ copydesk:score }}
     {{ if graded }}
         Reading level: {{ band }}{{ if !on_target }} (we aim for {{ target }}){{ /if }}
     {{ /if }}
-{{ /plain:score }}
+{{ /copydesk:score }}
 ```
 
 Alone, the tag prints the band and nothing else; a page that cannot be
@@ -157,7 +157,7 @@ entry and its last change.
 
 ## The gate
 
-Off by default. Turned on, it stops a publish — never a draft — in the
+Off by default. Turned on, it stops a publish (never a draft) in the
 collections you name (or all of them, if you name none), and only for the
 findings of the rules in `block_on`: a very long sentence, and a banned
 term from the dictionary, one you gave nothing to say instead of. A term
@@ -172,16 +172,16 @@ When the check itself cannot run, the save goes through and the log says
 so: a readability check that fails is this addon's problem, and this
 addon must never be the reason a site cannot publish.
 
-Configuration is `config/statamic-plain.php` (publish it with
-`php please vendor:publish --tag=statamic-plain-config`): the locales that
+Configuration is `config/copydesk.php` (publish it with
+`php please vendor:publish --tag=copydesk-config`): the locales that
 are English, the target grade and tolerance, which fields are prose by
 blueprint, the exclusions, each rule's options, and the gate.
 
 ## With A11y Report
 
-Plain is sold on its own; A11y Report includes the engine and
+Copydesk is sold on its own; A11y Report includes the engine and
 grades every page it scans, so its customers have readability without
-this addon. The two share the engine and do not share a surface. Plain
+this addon. The two share the engine and do not share a surface. Copydesk
 owns the publish-form panel, the gate, the dictionary and the Readability
 page under Tools, and grades what an author writes, field by field, before
 it is published. A11y Report grades each page as served, on its
@@ -194,17 +194,17 @@ neither slows the other.
 
 ## Who may do what
 
-Three permissions, under **Plain** on a role, beside the two Statamic
-gives every addon (`access plain utility` for the Readability page, and
+Three permissions, under **Copydesk** on a role, beside the two Statamic
+gives every addon (`access copydesk utility` for the Readability page, and
 the settings one, which this addon answers itself):
 
-- **Check readability** — grade a page from the publish form, and see the
+- **Check readability**: grade a page from the publish form, and see the
   dashboard widget. Without it the panel says so instead of offering the
   button, and the widget says so instead of the median. Checking an entry
   also needs whatever Statamic needs to open it.
-- **Manage the dictionary** — import and export the words to avoid, and
+- **Manage the dictionary**: import and export the words to avoid, and
   open the settings screen where they are edited.
-- **Configure readability** — open the settings screen. Today that is the
+- **Configure readability**: open the settings screen. Today that is the
   dictionary; the target and gate land there as they move off the config
   file.
 
@@ -230,14 +230,14 @@ The engine's own suite runs from its directory:
 `cd packages/readability-core && composer install && vendor/bin/pest`.
 
 To see the addon in a real site, point the site's `composer.json` at both
-packages by path — Composer does not read the repositories a dependency
-declares — and require the addon:
+packages by path (Composer does not read the repositories a dependency
+declares), and require the addon:
 
 ```json
 "repositories": [
-    { "type": "path", "url": "../statamic-plain", "options": { "symlink": true } },
-    { "type": "path", "url": "../statamic-plain/packages/readability-core",
+    { "type": "path", "url": "../statamic-copydesk", "options": { "symlink": true } },
+    { "type": "path", "url": "../statamic-copydesk/packages/readability-core",
       "options": { "symlink": true, "versions": { "bpmore/readability-core": "0.1.0" } } }
 ],
-"require": { "bpmore/statamic-plain": "@dev" }
+"require": { "bpmore/statamic-copydesk": "@dev" }
 ```

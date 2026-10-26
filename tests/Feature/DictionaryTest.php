@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Companion;
-use Bpmore\Plain\Dictionaries;
-use Bpmore\Plain\Scan\SiteScan;
+use Bpmore\Copydesk\Companion;
+use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
 use Statamic\Contracts\Addons\SettingsRepository;
@@ -21,7 +21,7 @@ use Statamic\Facades\User;
 beforeEach(function () {
     // A saved settings file is shared state; every test starts from nobody
     // having opened the settings screen.
-    File::delete(resource_path('addons/statamic-plain.yaml'));
+    File::delete(resource_path('addons/copydesk.yaml'));
 
     Site::setSites([
         'default' => ['name' => 'Main', 'locale' => 'en_US', 'url' => '/'],
@@ -35,7 +35,7 @@ beforeEach(function () {
 /** Rows as the settings screen saves them. */
 function saveRows(array $rows): void
 {
-    $settings = Addon::get('bpmore/statamic-plain')->settings();
+    $settings = Addon::get('bpmore/statamic-copydesk')->settings();
     $settings->set('dictionary', $rows);
     app(SettingsRepository::class)->save($settings);
 }
@@ -43,7 +43,7 @@ function saveRows(array $rows): void
 // ---- the settings screen ------------------------------------------------------
 
 it('offers a settings screen with the dictionary on it', function () {
-    $addon = Addon::get('bpmore/statamic-plain');
+    $addon = Addon::get('bpmore/statamic-copydesk');
 
     expect($addon->hasSettingsBlueprint())->toBeTrue();
     expect($addon->settingsUrl())->toContain('addons');
@@ -54,7 +54,7 @@ it('offers a settings screen with the dictionary on it', function () {
 });
 
 it('asks in plain words, with no handles or file paths', function () {
-    $blueprint = Addon::get('bpmore/statamic-plain')->settingsBlueprint();
+    $blueprint = Addon::get('bpmore/statamic-copydesk')->settingsBlueprint();
     $text = collect($blueprint->fields()->all())->flatMap(fn ($f) => [$f->display(), $f->instructions()])->filter()->implode(' ');
     $text .= ' '.collect($blueprint->tabs()->all())->flatMap(fn ($t) => $t->sections()->all())->map(fn ($s) => $s->instructions())->filter()->implode(' ');
 
@@ -143,7 +143,7 @@ it('finds a site\'s own term on the publish form, and flags it as banned when it
     $entry = Entry::make()->collection('pages')->slug('p')->data(['title' => 'P', 'content' => bard('Fine.')]);
     $entry->save();
 
-    $response = $this->actingAs($this->user)->postJson(cp_route('plain.check'), [
+    $response = $this->actingAs($this->user)->postJson(cp_route('copydesk.check'), [
         'reference' => $entry->reference(),
         'values' => ['content' => bard('Ask about your HbA1c.')],
     ]);
@@ -159,30 +159,30 @@ it('finds a site\'s own term on the publish form, and flags it as banned when it
 it('is reachable under Tools, with an export and an import for every site', function () {
     saveRows([['term' => 'HbA1c', 'say' => ['A1C'], 'note' => '', 'sites' => ['clinic']]]);
 
-    $response = $this->actingAs($this->user)->get(cp_route('utilities.index').'/plain');
+    $response = $this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk');
 
     $response->assertOk();
     $text = utilityText($response->getContent());
     expect($text)->toContain('Main')->toContain('Clinic');
-    expect($text)->toContain('/cp/utilities/plain/export/default')->toContain('/cp/utilities/plain/import/clinic');
+    expect($text)->toContain('/cp/utilities/copydesk/export/default')->toContain('/cp/utilities/copydesk/import/clinic');
     expect($text)->toContain('0 entries of its own')->toContain('1 entry of its own');
 });
 
 it('exports a site\'s entries as a JSON file', function () {
     saveRows([['term' => 'HbA1c', 'say' => ['A1C'], 'note' => '', 'sites' => ['clinic']]]);
 
-    $response = $this->actingAs($this->user)->get(cp_route('utilities.plain.export', 'clinic'));
+    $response = $this->actingAs($this->user)->get(cp_route('utilities.copydesk.export', 'clinic'));
 
-    $response->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="plain-dictionary-clinic.json"');
+    $response->assertOk()->assertHeader('Content-Disposition', 'attachment; filename="copydesk-dictionary-clinic.json"');
     expect($response->json())->toBe(['HbA1c' => ['A1C']]);
 
-    $this->actingAs($this->user)->get(cp_route('utilities.plain.export', 'nope'))->assertStatus(404);
+    $this->actingAs($this->user)->get(cp_route('utilities.copydesk.export', 'nope'))->assertStatus(404);
 });
 
 it('imports a JSON file into a site and says how many entries it has now', function () {
     $file = UploadedFile::fake()->createWithContent('words.json', json_encode(['utilize' => 'use', 'ASAP' => []]));
 
-    $response = $this->actingAs($this->user)->post(cp_route('utilities.plain.import', 'clinic'), ['file' => $file, 'mode' => 'merge']);
+    $response = $this->actingAs($this->user)->post(cp_route('utilities.copydesk.import', 'clinic'), ['file' => $file, 'mode' => 'merge']);
 
     $response->assertSessionHas('success', 'The dictionary now has 2 entries of its own.');
     expect(app(Dictionaries::class)->export('clinic'))->toBe(['utilize' => ['use'], 'ASAP' => []]);
@@ -192,8 +192,8 @@ it('refuses a file that is not a dictionary, in a sentence', function () {
     $file = UploadedFile::fake()->createWithContent('words.json', '["just", "a", "list"]');
 
     $this->actingAs($this->user)
-        ->from(cp_route('utilities.index').'/plain')
-        ->post(cp_route('utilities.plain.import', 'clinic'), ['file' => $file, 'mode' => 'merge'])
+        ->from(cp_route('utilities.index').'/copydesk')
+        ->post(cp_route('utilities.copydesk.import', 'clinic'), ['file' => $file, 'mode' => 'merge'])
         ->assertSessionHasErrors(['file' => 'That file is not a dictionary. It should be JSON with a term on the left and what to say instead on the right, the way an exported one is.']);
 
     expect(app(Dictionaries::class)->export('clinic'))->toBe([]);
@@ -204,6 +204,6 @@ it('ships a utility view Vue can compile', function () {
     $data = ['site' => Site::get('default'), 'scan' => $scan, 'sites' => Site::all()->values(), 'counts' => ['default' => 0, 'clinic' => 1]];
 
     // With the import and export forms, and with the sentence in their place.
-    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => true, 'companion' => null])->render());
-    assertVueTemplateIsWellFormed(view('plain::utilities.readability', $data + ['canManage' => false, 'companion' => Companion::notice()])->render());
+    assertVueTemplateIsWellFormed(view('copydesk::utilities.readability', $data + ['canManage' => true, 'companion' => null])->render());
+    assertVueTemplateIsWellFormed(view('copydesk::utilities.readability', $data + ['canManage' => false, 'companion' => Companion::notice()])->render());
 });

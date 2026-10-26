@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Scan;
+namespace Bpmore\Copydesk\Scan;
 
-use Bpmore\Plain\Analysis\Analyzer;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Analysis\Analyzer;
+use Bpmore\Copydesk\Settings;
 use Bpmore\ReadabilityCore\Rule\Finding;
 use Bpmore\ReadabilityCore\Rule\Jargon;
 use Bpmore\ReadabilityCore\Rule\Severity;
@@ -137,6 +137,6 @@ final class SiteScan
 
     private static function key(string $site): string
     {
-        return 'statamic-plain.scan.'.$site;
+        return 'copydesk.scan.'.$site;
     }
 }

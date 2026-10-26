@@ -1,6 +1,6 @@
 # The addon's settings, as a form in the control panel. Statamic gives this
 # screen for free: this file is the whole implementation, and it appears at
-# Addons, Plain, Settings.
+# Addons, Copydesk, Settings.
 #
 # Written for the person who was handed the site, not the developer who
 # installed the addon. No handles, no file paths, no words like "blueprint"

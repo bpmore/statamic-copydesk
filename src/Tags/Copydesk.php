@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Tags;
+namespace Bpmore\Copydesk\Tags;
 
-use Bpmore\Plain\Analysis\Analyzer;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Analysis\Analyzer;
+use Bpmore\Copydesk\Settings;
 use Illuminate\Support\Facades\Cache;
 use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Facades\Entry;
@@ -15,13 +15,13 @@ use Statamic\Tags\Tags;
  * The reading level on the page itself, for the sites that want their
  * readers to see it: some health systems do.
  *
- *     {{ plain:score }}                       Grade 6–7
+ *     {{ copydesk:score }}                       Grade 6–7
  *
- *     {{ plain:score }}
+ *     {{ copydesk:score }}
  *         {{ if graded }}
  *             Reading level: {{ band }}{{ if !on_target }} (we aim for {{ target }}){{ /if }}
  *         {{ /if }}
- *     {{ /plain:score }}
+ *     {{ /copydesk:score }}
  *
  * Alone, the tag prints the band and nothing else: a page that cannot be
  * graded, because the site is not in English or there is nothing to read,
@@ -32,9 +32,9 @@ use Statamic\Tags\Tags;
  * entry and its last change, because a template renders on every visit
  * and a grade does not change until the page does.
  */
-class Plain extends Tags
+class Copydesk extends Tags
 {
-    protected static $handle = 'plain';
+    protected static $handle = 'copydesk';
 
     public function score(): string|array
     {
@@ -51,7 +51,7 @@ class Plain extends Tags
     {
         // The site's language is in the key: a site that changes it must not
         // keep grades from when it was English.
-        $key = 'statamic-plain.score.'.$entry->id().'.'.($entry->lastModified()?->getTimestamp() ?? 0).'.'.$entry->site()->locale();
+        $key = 'copydesk.score.'.$entry->id().'.'.($entry->lastModified()?->getTimestamp() ?? 0).'.'.$entry->site()->locale();
 
         return Cache::remember($key, 86400, function () use ($entry): array {
             $settings = app(Settings::class);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Fieldtypes;
+namespace Bpmore\Copydesk\Fieldtypes;
 
 use Statamic\Facades\User;
 use Statamic\Fields\Fieldtype;

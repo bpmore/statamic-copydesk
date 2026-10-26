@@ -83,7 +83,7 @@ jobs:
         run: vendor/bin/pest
 
   addon:
-    name: statamic-plain, PHP ${{ matrix.php }}, ${{ matrix.dependencies }} dependencies
+    name: statamic-copydesk, PHP ${{ matrix.php }}, ${{ matrix.dependencies }} dependencies
     runs-on: ubuntu-latest
 
     strategy:

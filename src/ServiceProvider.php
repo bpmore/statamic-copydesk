@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain;
+namespace Bpmore\Copydesk;
 
-use Bpmore\Plain\Gate\GateSettings;
-use Bpmore\Plain\Http\Controllers\DictionaryController;
-use Bpmore\Plain\Scan\ScanHistory;
-use Bpmore\Plain\Scan\SiteScan;
+use Bpmore\Copydesk\Gate\GateSettings;
+use Bpmore\Copydesk\Http\Controllers\DictionaryController;
+use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Gate as Access;
 use Statamic\Addons\Addon;
@@ -18,7 +18,7 @@ use Statamic\Facades\Utility;
 use Statamic\Providers\AddonServiceProvider;
 
 /**
- * Plain: readability and plain-language checking for Statamic.
+ * Copydesk: readability and plain-language checking for Statamic.
  *
  * The engine is bpmore/readability-core and knows nothing about Statamic;
  * this addon is its surface. The listener that places the panel is not
@@ -48,10 +48,10 @@ class ServiceProvider extends AddonServiceProvider
      * no build step. See the panel's own file.
      */
     protected $scripts = [
-        __DIR__.'/../resources/js/plain-panel.js',
+        __DIR__.'/../resources/js/copydesk-panel.js',
     ];
 
-    protected $viewNamespace = 'plain';
+    protected $viewNamespace = 'copydesk';
 
     public function register(): void
     {
@@ -79,12 +79,12 @@ class ServiceProvider extends AddonServiceProvider
         $this->bootPermissions();
 
         Utility::extend(fn () => Utility::register(
-            Utility::make('plain')
+            Utility::make('copydesk')
                 ->title('Readability')
                 ->navTitle('Readability')
                 ->icon('fieldtype-textarea')
                 ->description('How the site\'s pages read, which are hardest, and the words to avoid.')
-                ->view('plain::utilities.readability', function () {
+                ->view('copydesk::utilities.readability', function () {
                     $dictionaries = $this->app->make(Dictionaries::class);
                     $site = Site::selected();
 
@@ -119,7 +119,7 @@ class ServiceProvider extends AddonServiceProvider
      *
      * The settings screen is Statamic's; its controller asks its own
      * policy whether a user may edit this addon's settings, and the policy
-     * asks for "edit bpmore/statamic-plain settings". For this addon that
+     * asks for "edit bpmore/statamic-copydesk settings". For this addon that
      * question is answered here instead, with the two permissions above,
      * so a site's roles speak this addon's language. Statamic's own gate
      * hook only handles abilities that are registered permissions, so a
@@ -128,7 +128,7 @@ class ServiceProvider extends AddonServiceProvider
     private function bootPermissions(): void
     {
         Permission::extend(function () {
-            Permission::group('plain', 'Plain', function () {
+            Permission::group('copydesk', 'Copydesk', function () {
                 Permission::register('view readability')
                     ->label('Check readability')
                     ->description('Grade a page from the publish form, and see the Readability widget on the dashboard.');
@@ -142,7 +142,7 @@ class ServiceProvider extends AddonServiceProvider
         });
 
         Access::before(function ($user, string $ability, array $arguments) {
-            if ($ability !== 'editSettings' || ! (($arguments[0] ?? null) instanceof Addon) || $arguments[0]->id() !== 'bpmore/statamic-plain') {
+            if ($ability !== 'editSettings' || ! (($arguments[0] ?? null) instanceof Addon) || $arguments[0]->id() !== 'bpmore/statamic-copydesk') {
                 return null;
             }
 
