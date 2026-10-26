@@ -19,6 +19,9 @@ name, so there is nothing to migrate. What changed:
   `storage/statamic/copydesk/`.
 - The Readability page is at `/cp/utilities/copydesk`, and its
   permission is `access copydesk utility`.
+- **Statamic 6.34 or newer.** The slug (`copydesk`) now differs from the
+  package name, and Statamic before 6.34 saves addon settings under one
+  and reads them under the other, so the dictionary would never load.
 
 The entries below are from before the rename, when this was Plain.
 
