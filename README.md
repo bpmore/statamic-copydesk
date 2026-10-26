@@ -214,11 +214,12 @@ saving, because a page is either publishable or it is not.
 
 ## Working on it
 
-PHP 8.2 or newer, Statamic 6.31 or newer. The floor is a tested fact: a job
+PHP 8.2 or newer, Statamic 6.34 or newer. The floor is a tested fact: a job
 in CI installs the oldest version of everything the manifest allows, on
-8.2, and runs both suites there. Statamic below 6.31 is refused by Composer
-itself, under a security advisory, so the manifest says 6.31 rather than a
-number nothing can install.
+8.2, and runs both suites there. Below 6.34, Statamic saves an addon's
+settings under its slug (`copydesk`) but looks for them under its package
+name (`statamic-copydesk`), so the dictionary a site edits is never read
+back. 6.34.0 is the first release with the fix (statamic/cms#15495).
 
 ```sh
 composer install        # the addon, with the engine from packages/readability-core
