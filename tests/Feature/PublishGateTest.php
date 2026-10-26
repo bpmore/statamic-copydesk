@@ -89,10 +89,14 @@ it('leaves a collection the site did not name alone', function () {
     expect(refusal(fn () => page(sixtyWords(), collection: 'notes')->save()))->toBeNull();
 });
 
-it('gates every collection when enabled with none named, and none at all when off, which is the default', function () {
+// Two tests, not one: the settings are read once, on the first save, so a
+// config change after a save in the same test is never seen.
+it('gates every collection when enabled with none named', function () {
     config()->set('copydesk.gate.collections', []);
     expect(refusal(fn () => page(sixtyWords(), collection: 'notes')->save()))->not->toBeNull();
+});
 
+it('gates nothing when off, which is the default', function () {
     config()->set('copydesk.gate.enabled', false);
     expect(refusal(fn () => page(bard(sixtyWords()))->save()))->toBeNull();
 

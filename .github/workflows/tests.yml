@@ -129,7 +129,8 @@ jobs:
 
       # Statamic must be 6; anything else is a resolution bug, per CLAUDE.md.
       - name: Confirm Statamic 6 resolved
-        run: composer show statamic/cms | grep -E '^versions : \* v6\.'
+        run: |
+          composer show statamic/cms | grep -E '^versions : \* v6\.'
 
       - name: Check formatting
         run: vendor/bin/pint --test
