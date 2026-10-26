@@ -22,13 +22,13 @@ it('puts the panel in the sidebar of a form that has something to read, stamped 
 });
 
 it('leaves a form alone when none of the configured fields is on it', function () {
-    config()->set('statamic-plain.fields', ['*' => ['body']]);
+    config()->set('copydesk.fields', ['*' => ['body']]);
 
     expect(Collection::findByHandle('pages')->entryBlueprint()->field('readability_panel'))->toBeNull();
 });
 
 it('leaves every form alone when the addon is off', function () {
-    config()->set('statamic-plain.enabled', false);
+    config()->set('copydesk.enabled', false);
 
     expect(Collection::findByHandle('pages')->entryBlueprint()->field('readability_panel'))->toBeNull();
 });

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Listeners;
+namespace Bpmore\Copydesk\Listeners;
 
-use Bpmore\Plain\Analysis\FieldText;
-use Bpmore\Plain\Fieldtypes\ReadabilityPanel;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Analysis\FieldText;
+use Bpmore\Copydesk\Fieldtypes\ReadabilityPanel;
+use Bpmore\Copydesk\Settings;
 use Statamic\Events\EntryBlueprintFound;
 
 /**

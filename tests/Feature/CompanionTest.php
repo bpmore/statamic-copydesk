@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Companion;
+use Bpmore\Copydesk\Companion;
 use Statamic\Addons\Manifest;
 use Statamic\Facades\Addon;
 use Statamic\Facades\Collection;
@@ -41,7 +41,7 @@ it('says nothing when A11y Report is not installed', function () {
     expect(Companion::a11yReportInstalled())->toBeFalse();
     expect(Companion::notice())->toBeNull();
 
-    $page = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent());
+    $page = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent());
 
     expect($page)->not->toContain('A11y Report is installed');
 });
@@ -51,11 +51,11 @@ it('says, once and in one line, who owns which surface when it is', function () 
 
     expect(Companion::a11yReportInstalled())->toBeTrue();
 
-    $page = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent());
+    $page = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent());
 
     expect(substr_count($page, 'A11y Report is installed as well.'))->toBe(1);
     expect($page)->toContain('grades every page as served on its own scheduled scan');
-    expect($page)->toContain('this page, the publish-form panel and the gate are Plain');
+    expect($page)->toContain('this page, the publish-form panel and the gate are Copydesk');
     expect($page)->toContain('two readings of the same site, not two scans of the same thing');
 
     // And the notice compiles where the page does, in each of its states.
@@ -65,7 +65,7 @@ it('says, once and in one line, who owns which surface when it is', function () 
 /** The utility's own markup, as Vue will receive it: unpacked from Inertia's page object. */
 function utilityHtml($user): string
 {
-    $response = test()->actingAs($user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent();
+    $response = test()->actingAs($user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent();
 
     preg_match('/data-page="([^"]+)"/', $response, $m);
     $page = json_decode(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'), true);

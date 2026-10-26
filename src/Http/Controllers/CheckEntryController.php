@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Http\Controllers;
+namespace Bpmore\Copydesk\Http\Controllers;
 
-use Bpmore\Plain\Analysis\Analyzer;
+use Bpmore\Copydesk\Analysis\Analyzer;
 use Illuminate\Http\Request;
 use Statamic\Contracts\Entries\Entry as EntryContract;
 use Statamic\Facades\Collection;

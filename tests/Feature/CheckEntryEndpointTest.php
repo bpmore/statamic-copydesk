@@ -33,7 +33,7 @@ function savedPage(array $content): Statamic\Contracts\Entries\Entry
 
 function check(array $payload): TestResponse
 {
-    return test()->actingAs(test()->user)->postJson(cp_route('plain.check'), $payload);
+    return test()->actingAs(test()->user)->postJson(cp_route('copydesk.check'), $payload);
 }
 
 it('grades the values in the form, not the ones on disk', function () {
@@ -66,7 +66,7 @@ it('reports a plain page as on or below target, with nothing to fix', function (
 });
 
 it('sends every finding with its field, its sentence, and where in the sentence the flagged words are', function () {
-    config()->set('statamic-plain.fields', ['*' => ['content', 'summary']]);
+    config()->set('copydesk.fields', ['*' => ['content', 'summary']]);
     $entry = savedPage(bard(PLAIN_TEXT));
     $long = 'Word '.implode(' ', array_fill(0, 30, 'word')).'.';
 
@@ -111,7 +111,7 @@ it('grades each section under a heading on its own', function () {
 });
 
 it('reads only the fields the site configured, and only the kinds that are prose', function () {
-    config()->set('statamic-plain.fields', ['*' => ['content'], 'pages' => ['summary', 'notes', 'hero', 'missing']]);
+    config()->set('copydesk.fields', ['*' => ['content'], 'pages' => ['summary', 'notes', 'hero', 'missing']]);
     $entry = savedPage(bard(PLAIN_TEXT));
 
     $response = check(['reference' => $entry->reference(), 'values' => [
@@ -166,7 +166,7 @@ it('says so, in a sentence, when it cannot check', function () {
 });
 
 it('says when none of the fields it reads is on the form', function () {
-    config()->set('statamic-plain.fields', ['*' => ['body']]);
+    config()->set('copydesk.fields', ['*' => ['body']]);
     $entry = savedPage(bard(PLAIN_TEXT));
 
     $response = check(['reference' => $entry->reference(), 'values' => ['content' => bard(PLAIN_TEXT)]]);
@@ -182,6 +182,6 @@ it('requires the same permission as opening the entry', function () {
     $nobody->save();
 
     $this->actingAs($nobody)
-        ->postJson(cp_route('plain.check'), ['reference' => $entry->reference(), 'values' => []])
+        ->postJson(cp_route('copydesk.check'), ['reference' => $entry->reference(), 'values' => []])
         ->assertStatus(403);
 });

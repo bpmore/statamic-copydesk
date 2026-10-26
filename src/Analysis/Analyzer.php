@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Analysis;
+namespace Bpmore\Copydesk\Analysis;
 
-use Bpmore\Plain\Dictionaries;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Settings;
 use Bpmore\ReadabilityCore\Exclusion\ProperNames;
 use Bpmore\ReadabilityCore\Formula\Grades;
 use Bpmore\ReadabilityCore\Formula\Sections;

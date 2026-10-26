@@ -10,7 +10,7 @@ return [
     |---------------------------------------------------------------------------
     */
 
-    'enabled' => env('PLAIN_ENABLED', true),
+    'enabled' => env('COPYDESK_ENABLED', true),
 
     /*
     |---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ return [
     | Checking from the command line
     |---------------------------------------------------------------------------
     |
-    | `php please plain:check` grades every published page and can stop a
+    | `php please copydesk:scan` grades every published page and can stop a
     | build. 'fail_above' is how many pages may read above the target before
     | it exits non-zero: a number of pages ("10") or a share ("10%"). Null
     | never fails on the grade; --fail-on-errors is separate and off unless

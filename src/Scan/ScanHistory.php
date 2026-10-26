@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Scan;
+namespace Bpmore\Copydesk\Scan;
 
 use Illuminate\Filesystem\Filesystem;
 
@@ -20,7 +20,7 @@ final class ScanHistory
 
     public static function inStorage(Filesystem $files): self
     {
-        return new self($files, storage_path('statamic/plain/scans'));
+        return new self($files, storage_path('statamic/copydesk/scans'));
     }
 
     public function record(ScanReport $report): Snapshot

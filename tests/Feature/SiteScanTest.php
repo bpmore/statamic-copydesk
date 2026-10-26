@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Analysis\Analyzer;
-use Bpmore\Plain\Analysis\Report;
-use Bpmore\Plain\Dictionaries;
-use Bpmore\Plain\Scan\ScanReport;
-use Bpmore\Plain\Scan\SiteScan;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Analysis\Analyzer;
+use Bpmore\Copydesk\Analysis\Report;
+use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Scan\ScanReport;
+use Bpmore\Copydesk\Scan\SiteScan;
+use Bpmore\Copydesk\Settings;
 use Illuminate\Support\Facades\Cache;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
@@ -124,7 +124,7 @@ it('caches a scan for an hour, survives the round trip, and forgets on request',
     published('Hard', HARD);
 
     expect($scan->cached('default')->entries)->toHaveCount(1);   // still the cached one
-    expect(Cache::get('statamic-plain.scan.default'))->toBeArray();
+    expect(Cache::get('copydesk.scan.default'))->toBeArray();
     expect(ScanReport::fromArray($first->toArray())->distribution())->toBe($first->distribution());
 
     $scan->forget('default');
@@ -136,25 +136,25 @@ it('draws the scan on the page under Tools, and scans again on request', functio
     published('Hard', HARD);
     published('Jargon', 'We utilize the NHS.', 'news');
 
-    $text = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent());
+    $text = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent());
 
     expect($text)->toContain('3 published pages graded')->toContain('against a target of Grade 7–9');
     expect($text)->toContain('Hardest pages')->toContain('Grade 17+');
     expect($text)->toContain('NHS')->toContain('utilize');
     expect($text)->toContain('Scan again');
 
-    $this->actingAs($this->user)->from(cp_route('utilities.index').'/plain')
-        ->post(cp_route('utilities.plain.rescan', 'default'))
+    $this->actingAs($this->user)->from(cp_route('utilities.index').'/copydesk')
+        ->post(cp_route('utilities.copydesk.rescan', 'default'))
         ->assertRedirect()->assertSessionHas('success', 'Scanned again.');
-    expect(Cache::get('statamic-plain.scan.default'))->toBeNull();
+    expect(Cache::get('copydesk.scan.default'))->toBeNull();
 
-    $this->actingAs($this->user)->post(cp_route('utilities.plain.rescan', 'nope'))->assertStatus(404);
+    $this->actingAs($this->user)->post(cp_route('utilities.copydesk.rescan', 'nope'))->assertStatus(404);
 });
 
 it('says so when there is nothing to grade, without a table of nothing', function () {
     Entry::make()->collection('news')->locale('default')->slug('empty')->published(true)->data(['title' => 'Empty'])->save();
 
-    $text = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/plain')->assertOk()->getContent());
+    $text = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent());
 
     expect($text)->toContain('No page on this site has anything to grade yet')->toContain('1 published page was looked at');
     expect($text)->not->toContain('Hardest pages');
@@ -168,7 +168,7 @@ it('ships a page Vue can compile, in every state', function () {
     $counts = ['default' => 0, 'other' => 0];
 
     foreach ([$scan->run('default'), $scan->run('other'), new ScanReport('default', $scan->run('default')->target, [], 0, now()->toIso8601String(), 'Not checked.')] as $report) {
-        assertVueTemplateIsWellFormed(view('plain::utilities.readability', ['site' => Site::get('default'), 'scan' => $report, 'sites' => $sites, 'counts' => $counts, 'canManage' => true, 'companion' => null])->render());
+        assertVueTemplateIsWellFormed(view('copydesk::utilities.readability', ['site' => Site::get('default'), 'scan' => $report, 'sites' => $sites, 'counts' => $counts, 'canManage' => true, 'companion' => null])->render());
     }
 });
 

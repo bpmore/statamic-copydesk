@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain;
+namespace Bpmore\Copydesk;
 
 use Bpmore\ReadabilityCore\Rule\Dictionary;
 use Bpmore\ReadabilityCore\Rule\DictionaryEntry;
@@ -26,7 +26,7 @@ use Statamic\Facades\Addon;
  */
 final class Dictionaries
 {
-    public const PACKAGE = 'bpmore/statamic-plain';
+    public const PACKAGE = 'bpmore/statamic-copydesk';
 
     public const SETTING = 'dictionary';
 

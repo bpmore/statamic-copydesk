@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Tests\TestCase;
+use Bpmore\Copydesk\Tests\TestCase;
 
 // Only the feature tests boot Statamic. The engine takes text and returns
 // findings, and its suite, in packages/readability-core, boots nothing.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Gate\GateSettings;
+use Bpmore\Copydesk\Gate\GateSettings;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Collection;
@@ -15,7 +15,7 @@ use Statamic\Facades\Site;
 beforeEach(function () {
     Collection::make('pages')->save();
     Collection::make('notes')->save();
-    config()->set('statamic-plain.gate', ['enabled' => true, 'collections' => ['pages'], 'block_on' => ['very_long_sentence', 'jargon']]);
+    config()->set('copydesk.gate', ['enabled' => true, 'collections' => ['pages'], 'block_on' => ['very_long_sentence', 'jargon']]);
 });
 
 /** A sentence of sixty words: over twice the long limit, so the very-long rule speaks. */
@@ -36,7 +36,7 @@ function refusal(callable $save): ?array
     try {
         $save();
     } catch (ValidationException $e) {
-        return $e->errors()['plain'] ?? null;
+        return $e->errors()['copydesk'] ?? null;
     }
 
     return null;
@@ -71,7 +71,7 @@ it('lets a page through when the only findings are warnings and tips', function 
 });
 
 it('blocks on a banned term, and not on a term the dictionary gives a replacement for', function () {
-    config()->set('statamic-plain.rules.jargon.dictionary', ['utilize' => 'use', 'please be advised that' => []]);
+    config()->set('copydesk.rules.jargon.dictionary', ['utilize' => 'use', 'please be advised that' => []]);
 
     expect(refusal(fn () => page(bard('We utilize forms.'))->save()))->toBeNull();
 
@@ -90,10 +90,10 @@ it('leaves a collection the site did not name alone', function () {
 });
 
 it('gates every collection when enabled with none named, and none at all when off, which is the default', function () {
-    config()->set('statamic-plain.gate.collections', []);
+    config()->set('copydesk.gate.collections', []);
     expect(refusal(fn () => page(sixtyWords(), collection: 'notes')->save()))->not->toBeNull();
 
-    config()->set('statamic-plain.gate.enabled', false);
+    config()->set('copydesk.gate.enabled', false);
     expect(refusal(fn () => page(bard(sixtyWords()))->save()))->toBeNull();
 
     expect(GateSettings::fromConfig([])->enabled)->toBeFalse();
@@ -120,7 +120,7 @@ it('lets the save through and says so in the log when the check itself cannot ru
     // A rule handle nobody has heard of makes the rule set refuse to build.
     // A broken config is this addon's problem, and it must never be the
     // reason a site cannot publish.
-    config()->set('statamic-plain.rules', ['no_such_rule' => []]);
+    config()->set('copydesk.rules', ['no_such_rule' => []]);
     Log::shouldReceive('error')->once()->withArgs(fn (string $message) => str_contains($message, 'saved unchecked') && str_contains($message, 'no_such_rule'));
 
     $entry = page(bard(sixtyWords()));
@@ -130,7 +130,7 @@ it('lets the save through and says so in the log when the check itself cannot ru
 });
 
 it('draws its refusal in the panel under its own key', function () {
-    $script = (string) file_get_contents(__DIR__.'/../../resources/js/plain-panel.js');
+    $script = (string) file_get_contents(__DIR__.'/../../resources/js/copydesk-panel.js');
 
-    expect($script)->toContain('.plain')->toContain('showRefusal');
+    expect($script)->toContain('.copydesk')->toContain('showRefusal');
 });

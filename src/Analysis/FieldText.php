@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Analysis;
+namespace Bpmore\Copydesk\Analysis;
 
 use Bpmore\ReadabilityCore\Exclusion\Code;
 use Bpmore\ReadabilityCore\Extraction\BardExtractor;

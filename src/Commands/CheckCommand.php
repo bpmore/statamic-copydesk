@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Commands;
+namespace Bpmore\Copydesk\Commands;
 
-use Bpmore\Plain\Scan\EntryResult;
-use Bpmore\Plain\Scan\ScanReport;
-use Bpmore\Plain\Scan\SiteScan;
+use Bpmore\Copydesk\Scan\EntryResult;
+use Bpmore\Copydesk\Scan\ScanReport;
+use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Console\Command;
 use Statamic\Console\RunsInPlease;
 use Statamic\Facades\Collection;
@@ -28,7 +28,7 @@ class CheckCommand extends Command
 {
     use RunsInPlease;
 
-    protected $signature = 'plain:check
+    protected $signature = 'copydesk:scan
         {--site=* : Only these sites. Default is all of them.}
         {--collection=* : Only these collections. Not recorded in the trend.}
         {--export= : Write a CSV: "csv" for one under storage, or a path.}
@@ -138,7 +138,7 @@ class CheckCommand extends Command
             $errors += array_sum(array_map(fn (EntryResult $e): int => $e->errors, $report->entries));
         }
 
-        $limit = (string) ($this->option('fail-above') ?? config('statamic-plain.check.fail_above') ?? '');
+        $limit = (string) ($this->option('fail-above') ?? config('copydesk.check.fail_above') ?? '');
 
         if ($limit !== '' && $graded > 0) {
             $allowed = str_ends_with($limit, '%')
@@ -169,7 +169,7 @@ class CheckCommand extends Command
 
         return match (true) {
             $export === '' => null,
-            strtolower($export) === 'csv' => storage_path('statamic/plain/plain-check-'.now()->format('Y-m-d-His').'.csv'),
+            strtolower($export) === 'csv' => storage_path('statamic/copydesk/copydesk-scan-'.now()->format('Y-m-d-His').'.csv'),
             default => $export,
         };
     }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Widgets;
+namespace Bpmore\Copydesk\Widgets;
 
-use Bpmore\Plain\Scan\ScanHistory;
-use Bpmore\Plain\Settings;
+use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Settings;
 use Statamic\Facades\Site;
 use Statamic\Facades\User;
 use Statamic\Facades\Utility;
@@ -30,13 +30,13 @@ class Readability extends Widget
         $latest = $history->latest($site);
         $previous = $history->previous($site);
 
-        return view('plain::widgets.readability', [
+        return view('copydesk::widgets.readability', [
             'can' => (bool) User::current()?->can('view readability'),
             'site' => Site::get($site),
             'latest' => $latest,
             'previous' => $previous,
             'target' => app(Settings::class)->target(),
-            'url' => Utility::find('plain')?->url(),
+            'url' => Utility::find('copydesk')?->url(),
             'medianMoved' => $latest?->medianBand() !== null && $previous?->medianBand() !== null
                 ? $latest->medianBand()->low <=> $previous->medianBand()->low
                 : 0,

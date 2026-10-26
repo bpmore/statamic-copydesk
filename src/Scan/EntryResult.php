@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Bpmore\Plain\Scan;
+namespace Bpmore\Copydesk\Scan;
 
 /**
  * One entry, scanned: what a row on the utility page needs, and what the

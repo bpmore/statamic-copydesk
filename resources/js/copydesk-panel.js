@@ -99,7 +99,7 @@
                 const axios = Statamic.$app.config.globalProperties.$axios;
 
                 try {
-                    const { data } = await axios.post(cp_url('plain/check'), {
+                    const { data } = await axios.post(cp_url('copydesk/check'), {
                         reference: container.reference?.value,
                         values: container.values.value,
                         site: container.site?.value,
@@ -131,7 +131,7 @@
             // a new errors object on every failed save, so a second refusal
             // clears a check pressed in between.
             const refusal = Vue.computed(() => {
-                const lines = (container.errors?.value ?? {}).plain;
+                const lines = (container.errors?.value ?? {}).copydesk;
 
                 return Array.isArray(lines) ? lines : [];
             });

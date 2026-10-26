@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use Bpmore\Plain\Scan\ScanHistory;
-use Bpmore\Plain\Scan\SiteScan;
-use Bpmore\Plain\Scan\Snapshot;
+use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Scan\SiteScan;
+use Bpmore\Copydesk\Scan\Snapshot;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Site;
