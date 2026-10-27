@@ -84,8 +84,8 @@ for compatibility.
   rename. **`docs/a11y-gate-plan.md`** is the plan for one publish check with A11y Gate.
 - **`docs/history/`** holds Plain's own spec and progress log, for the reasons behind the
   code as it stands. They are history, not instructions.
-- Copydesk's `PROGRESS.md` is written when Phase 1 is planned. Until then there is no task
-  list to follow.
+- **`PROGRESS.md`** is Copydesk's task list, starting with Phase 1. It is the source of truth
+  for what is done and what is next.
 
 ## Where things live: the engine
 
