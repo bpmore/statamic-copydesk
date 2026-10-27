@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Bpmore\Copydesk\Analysis\Analyzer;
 use Bpmore\Copydesk\Analysis\Fingerprint;
+use Bpmore\Copydesk\Gate\PublishGate;
 use Bpmore\Copydesk\Settings;
 use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Collection;
@@ -81,10 +82,12 @@ it('puts a hidden field for the ignores on every form that has the panel', funct
 });
 
 it('takes an ignored finding out of the gate too', function () {
-    config()->set('copydesk.gate', ['enabled' => true, 'collections' => ['pages'], 'block_on' => ['very_long_sentence']]);
+    pro();
+    config()->set('copydesk.gate', ['enabled' => true, 'collections' => ['pages']]);
     // Read from config once per request; the entry saved before this test
     // already read it, with the gate off.
     app()->forgetInstance(Settings::class);
+    app()->forgetInstance(PublishGate::class);
     $long = 'Word '.implode(' ', array_fill(0, 59, 'word')).'.';
     $print = collect(panelReport(['content' => bard($long)])['findings'])->firstWhere('rule', 'very_long_sentence')['fingerprint'];
 

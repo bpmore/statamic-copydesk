@@ -58,9 +58,9 @@ it('lets only a user who may view readability check a page, and tells the panel 
 
     $panel = Collection::findByHandle('pages')->entryBlueprint()->field('readability_panel')->fieldtype();
     $this->actingAs(userWithRole('checker'));
-    expect($panel->preload())->toBe(['can' => true]);
+    expect($panel->preload())->toBe(['can' => true, 'canOverride' => false]);
     $this->actingAs(userWithRole('reader'));
-    expect($panel->preload())->toBe(['can' => false]);
+    expect($panel->preload())->toBe(['can' => false, 'canOverride' => false]);
 });
 
 it('shows the widget only to a user who may view readability', function () {

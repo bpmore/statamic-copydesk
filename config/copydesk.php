@@ -157,16 +157,20 @@ return [
     | Gate
     |---------------------------------------------------------------------------
     |
-    | Off by default, and even on it blocks only on the hard rules named in
-    | 'block_on', never on a grade. A grade band is a heuristic; a press
+    | Copydesk Pro. Off by default. When on, publishing a page in one of these
+    | collections (all of them, if none is named) is refused while it has a
+    | finding whose severity is 'error': a very long sentence, a word on the
+    | site's list with nothing to say instead, or any rule a pack marks as an
+    | error. Never on a grade: a grade band is a heuristic, and a press
     | release stopped for scoring 11 is how a checker gets uninstalled.
+    | Drafts always save. Someone with "override copydesk gate" can publish
+    | anyway, once, giving a reason that is kept in the site report.
     |
     */
 
     'gate' => [
         'enabled' => false,
         'collections' => [],
-        'block_on' => ['very_long_sentence', 'jargon'],
     ],
 
     /*

@@ -155,14 +155,19 @@ pair it hands the site `graded`, `band`, `low`, `high`, `target`,
 `reason` when not graded. `entry="<id>"` grades another entry. Cached per
 entry and its last change.
 
-## The gate
+## The gate (Pro)
 
 Off by default. Turned on, it stops a publish (never a draft) in the
-collections you name (or all of them, if you name none), and only for the
-findings of the rules in `block_on`: a very long sentence, and a banned
-term from the dictionary, one you gave nothing to say instead of. A term
-with a suggested replacement is a warning to fix, not a reason to stop a
-publish.
+collections you name (or all of them, if you name none), and only for
+findings whose severity is `error`: a very long sentence, a word on the
+site's list with nothing to say instead, and any rule a pack marks as an
+error. Warnings and tips never stop a publish.
+
+Someone with the **Publish past the gate** permission (`override copydesk
+gate`) sees "Publish anyway" in the panel when the gate refuses. They give
+a reason, and their next publish of that page, within ten minutes, goes
+through. The reason, the person and the rules are kept and shown in the
+site report.
 
 **It never blocks on a grade, and it cannot be configured to.** A grade
 band is a heuristic. A press release stopped for scoring 11 is how a

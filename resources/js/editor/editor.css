@@ -172,3 +172,21 @@
     outline: 2px solid #2563eb;
     outline-offset: 2px;
 }
+
+.copydesk-reason {
+    width: 100%;
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #d4d4d8;
+    border-radius: 0.375rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.875rem;
+}
+
+.copydesk-reason:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 1px;
+}
+
+.dark .copydesk-reason { border-color: #3f3f46; }

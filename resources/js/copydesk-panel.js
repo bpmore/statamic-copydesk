@@ -153,6 +153,36 @@ import { clearIgnores, ignoresOf } from './editor/target.js';
 
             const showRefusal = Vue.computed(() => refusal.value.length > 0 && ! state.result && ! state.failed && ! state.checking);
 
+            // "Publish anyway", for someone allowed to: a reason, then a pass
+            // for their next publish of this page.
+            const override = Vue.reactive({ open: false, reason: '', sending: false, done: null, failed: null });
+
+            async function askToOverride() {
+                override.sending = true;
+                override.failed = null;
+
+                try {
+                    const { data } = await Statamic.$app.config.globalProperties.$axios.post(cp_url('copydesk/override'), {
+                        reference: container.reference?.value,
+                        collection: props.config?.collection,
+                        reason: override.reason,
+                    });
+
+                    override.done = data.message;
+                    override.open = false;
+                } catch (e) {
+                    override.failed = e.response?.data?.message || 'The pass could not be given.';
+                } finally {
+                    override.sending = false;
+                }
+            }
+
+            // A new refusal starts the form again.
+            Vue.watch(refusal, () => {
+                override.done = null;
+                override.failed = null;
+            });
+
             const verdict = Vue.computed(() => {
                 const r = state.result;
 
@@ -223,7 +253,7 @@ import { clearIgnores, ignoresOf } from './editor/target.js';
                 return 'Show ' + (item.issue.excerpt ? '\u201C' + item.issue.excerpt + '\u201D' : 'it') + ' in ' + item.label;
             }
 
-            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, ignoredCount, ignoredWords, stopIgnoring, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
+            return { override, askToOverride, state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, ignoredCount, ignoredWords, stopIgnoring, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
         },
 
         // No panel or header of its own: a field is already drawn inside the
@@ -268,6 +298,30 @@ import { clearIgnores, ignoresOf } from './editor/target.js';
                     :heading="refusal[0]"
                     :text="refusal.slice(1).join(' ')"
                 />
+
+                <div v-if="showRefusal && meta && meta.canOverride" class="space-y-2">
+                    <ui-description v-if="override.done" :text="override.done" />
+                    <div v-else-if="!override.open">
+                        <ui-button size="sm" text="Publish anyway" @click="override.open = true" />
+                    </div>
+                    <form v-else class="space-y-2" @submit.prevent="askToOverride">
+                        <label class="block text-sm" for="copydesk-override-reason">Why should this page publish as it is?</label>
+                        <textarea
+                            id="copydesk-override-reason"
+                            v-model="override.reason"
+                            class="copydesk-reason"
+                            rows="3"
+                            required
+                            aria-describedby="copydesk-override-help"
+                        ></textarea>
+                        <p id="copydesk-override-help" class="text-xs">A few words. They are kept with the page in the site report.</p>
+                        <ui-alert v-if="override.failed" variant="error" :text="override.failed" />
+                        <div class="flex gap-2">
+                            <div><ui-button size="sm" type="submit" variant="primary" :disabled="override.sending" :text="override.sending ? 'Sending' : 'Allow one publish'" /></div>
+                            <div><ui-button size="sm" text="Cancel" @click="override.open = false" /></div>
+                        </div>
+                    </form>
+                </div>
 
                 <ui-description
                     v-if="meta && meta.can === false"

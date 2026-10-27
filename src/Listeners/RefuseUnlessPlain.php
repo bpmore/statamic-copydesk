@@ -9,6 +9,7 @@ use Bpmore\Copydesk\Gate\PublishGate;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LoggerInterface;
 use Statamic\Events\EntrySaving;
+use Statamic\Facades\User;
 
 /**
  * The gate. Statamic binds this to `EntrySaving` from the type hint on
@@ -38,7 +39,7 @@ final class RefuseUnlessPlain
 
     public function handle(EntrySaving $event): void
     {
-        $result = $this->gate->inspect($event->entry);
+        $result = $this->gate->inspect($event->entry, User::current());
 
         if ($result->couldNotBeChecked()) {
             $this->log->error(
@@ -75,7 +76,7 @@ final class RefuseUnlessPlain
             $lines[] = $finding->message.($field === null ? '' : " (in {$field})");
         }
 
-        $lines[] = 'The grade never stops a publish, and neither do the other findings; they are in the Readability panel.';
+        $lines[] = 'The grade never stops a publish, and neither do warnings or tips; they are in the Readability panel.';
 
         return $lines;
     }

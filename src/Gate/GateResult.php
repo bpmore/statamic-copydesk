@@ -26,6 +26,8 @@ final class GateResult
         public readonly string $reason,
         public readonly ?Report $report,
         public readonly array $blocking,
+        /** Why someone allowed this publish despite the findings; null when nobody did. */
+        public readonly ?string $override = null,
     ) {}
 
     /**
@@ -46,9 +48,15 @@ final class GateResult
         return new self(self::COULD_NOT_CHECK, $reason, null, []);
     }
 
+    /** The same result, let through on someone's say-so. */
+    public function overriddenBecause(string $reason): self
+    {
+        return new self($this->outcome, $this->reason, $this->report, $this->blocking, $reason);
+    }
+
     public function shouldRefuse(): bool
     {
-        return $this->blocking !== [];
+        return $this->blocking !== [] && $this->override === null;
     }
 
     public function couldNotBeChecked(): bool

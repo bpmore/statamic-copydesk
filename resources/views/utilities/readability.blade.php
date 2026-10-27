@@ -126,6 +126,27 @@
     </ui-card-panel>
     @endif
 
+    @if (($overrides ?? []) !== [])
+    <ui-card-panel heading="Published past the gate">
+        <div class="space-y-3">
+            <p class="text-sm">Every page someone published while the gate would have stopped it, newest first, with the reason they gave.</p>
+            <table class="w-full text-sm">
+                <thead><tr class="text-left"><th class="py-1 pr-4">Page</th><th class="py-1 pr-4">Rules</th><th class="py-1 pr-4">Who and when</th><th class="py-1">Reason</th></tr></thead>
+                <tbody>
+                @foreach ($overrides as $row)
+                    <tr>
+                        <td class="py-1 pr-4">{!! e($row['title'] ?? '') !!} <span class="text-xs">({!! e($row['collection'] ?? '') !!})</span></td>
+                        <td class="py-1 pr-4">{!! e(implode(', ', (array) ($row['rules'] ?? []))) !!}</td>
+                        <td class="py-1 pr-4">{!! e($row['user_name'] ?? '') !!}, {!! e(\Illuminate\Support\Carbon::parse($row['at'] ?? 'now')->toDayDateTimeString()) !!}</td>
+                        <td class="py-1">{!! e($row['reason'] ?? '') !!}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </ui-card-panel>
+    @endif
+
     <ui-card-panel heading="Your dictionary">
         <div class="space-y-3">
             <p>

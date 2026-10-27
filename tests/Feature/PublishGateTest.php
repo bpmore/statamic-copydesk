@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Bpmore\Copydesk\Edition;
 use Bpmore\Copydesk\Gate\GateSettings;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Statamic\Facades\Collection;
@@ -10,12 +12,14 @@ use Statamic\Facades\Entry;
 use Statamic\Facades\Site;
 
 /**
- * The gate: opt-in, per collection, and never on a grade.
+ * The gate: Pro, opt-in, per collection, on `error` findings only, and
+ * never on a grade.
  */
 beforeEach(function () {
+    pro();
     Collection::make('pages')->save();
     Collection::make('notes')->save();
-    config()->set('copydesk.gate', ['enabled' => true, 'collections' => ['pages'], 'block_on' => ['very_long_sentence', 'jargon']]);
+    config()->set('copydesk.gate', ['enabled' => true, 'collections' => ['pages']]);
 });
 
 /** A sentence of sixty words: over twice the long limit, so the very-long rule speaks. */
@@ -48,7 +52,7 @@ it('refuses to publish a page with a very long sentence, and says what to fix an
     expect($lines)->not->toBeNull();
     expect($lines[0])->toBe('This page was not published. One thing has to be fixed first.');
     expect($lines[1])->toStartWith('This sentence runs to 60 words')->toEndWith('(in content)');
-    expect($lines[2])->toBe('The grade never stops a publish, and neither do the other findings; they are in the Readability panel.');
+    expect($lines[2])->toBe('The grade never stops a publish, and neither do warnings or tips; they are in the Readability panel.');
 });
 
 it('never blocks on the grade, however hard the page reads', function () {
@@ -61,7 +65,7 @@ it('never blocks on the grade, however hard the page reads', function () {
     expect(Entry::find($entry->id()))->not->toBeNull();
 
     // And there is no setting that could make it otherwise.
-    expect(array_keys(get_object_vars(GateSettings::fromConfig([]))))->toBe(['enabled', 'collections', 'blockOn']);
+    expect(array_keys(get_object_vars(GateSettings::fromConfig([]))))->toBe(['enabled', 'collections']);
 });
 
 it('lets a page through when the only findings are warnings and tips', function () {
@@ -101,7 +105,6 @@ it('gates nothing when off, which is the default', function () {
     expect(refusal(fn () => page(bard(sixtyWords()))->save()))->toBeNull();
 
     expect(GateSettings::fromConfig([])->enabled)->toBeFalse();
-    expect(GateSettings::fromConfig([])->blockOn)->toBe(['very_long_sentence', 'jargon']);
     expect(GateSettings::fromConfig(['enabled' => true])->gates('anything'))->toBeTrue();
 });
 
@@ -137,4 +140,27 @@ it('draws its refusal in the panel under its own key', function () {
     $script = (string) file_get_contents(__DIR__.'/../../resources/js/copydesk-panel.js');
 
     expect($script)->toContain('.copydesk')->toContain('showRefusal');
+});
+
+it('blocks on any rule a pack marks as an error, and only those', function () {
+    File::ensureDirectoryExists(resource_path('copydesk'));
+    File::put(resource_path('copydesk/house.yaml'), "extends: [core-punctuation]\nrules:\n  - id: house-names\n    type: term\n    terms: [eiSEO]\n    message: Spell our name our way.\n    severity: error\n");
+    config()->set('copydesk.packs', ['house']);
+
+    try {
+        // The em dash is a warning in core-punctuation: no block.
+        expect(refusal(fn () => page(bard('Plain words — short ones.'))->save()))->toBeNull();
+
+        $lines = refusal(fn () => page(bard('Try Eiseo today.'))->save());
+        expect($lines)->not->toBeNull()
+            ->and($lines[1])->toContain('Spell our name our way.');
+    } finally {
+        File::delete(resource_path('copydesk/house.yaml'));
+    }
+});
+
+it('is part of Pro: a Free site is never gated', function () {
+    config()->set('statamic.editions.addons.'.Edition::PACKAGE, 'free');
+
+    expect(refusal(fn () => page(bard(sixtyWords()))->save()))->toBeNull();
 });

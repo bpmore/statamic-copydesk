@@ -83,8 +83,8 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.7: The gate (Pro)
 
-- [ ] Blocks a publish on any finding whose severity is `error`. Never on a grade. Drafts always save. Fails open when the check itself breaks, as now. The message names each failing rule (acceptance 3).
-- [ ] `override copydesk gate`: "Publish anyway" with a required reason, through the one-time pass in `docs/a11y-gate-plan.md`. The reason is logged and shown in the report (acceptance 4).
+- [x] Blocks a publish on any finding whose severity is `error`. Never on a grade. Drafts always save. Fails open when the check itself breaks, as now. The message names each failing rule (acceptance 3).
+- [x] `override copydesk gate`: "Publish anyway" with a required reason, through the one-time pass in `docs/a11y-gate-plan.md`. The reason is logged and shown in the report (acceptance 4).
 - [ ] A11y Gate: the contributor contract in A11y Gate (its own repo and PR), then Copydesk signing up to it and standing down its own listener when the contract is there. As planned in `docs/a11y-gate-plan.md`.
 
 ## Phase 1.8: Site report and command
@@ -425,4 +425,24 @@ Guesses from the size of the Plain code and the spec, not measured.
   sentence changes, and never hides a different rule in the same sentence (tests for each).
 - **For Phase 1.8:** the site report should show `ignored` per page; the count is on the report
   already.
+
+### 2026-10-26: Phase 1.7: the gate, tasks 1 and 2
+- **Blocks on `error`**, nothing else (`PublishGate::blocking`). Plain 1.0's `block_on` is gone
+  and no longer read; its two rules were already errors (very long sentence, a site word with
+  nothing to say instead), so a site with the gate on blocks on what it did before, plus any rule
+  its packs mark `error`. Pro only: on Free the gate never runs (test). README and config say so.
+- **Publish anyway:** `POST /cp/copydesk/override` with a reason (three words at least) gives a
+  pass in the cache for that person and that entry (or their next new page in the collection),
+  ten minutes. The gate only *looks* at the pass; `SettleOverrides` (on `EntrySaved`) uses it up
+  and writes the override to `storage/statamic/copydesk/overrides.jsonl` with the page, person,
+  rules and reason. **Changed from the plan:** the plan had the pass spent by whichever gate ran
+  and A11y Gate calling `recordOverride` on its contributors. Spending it on `EntrySaved` instead
+  means a publish another gate refuses never wastes it, and A11y Gate needs no override hook
+  from Copydesk at all: each add-on owns the pass for its own problems.
+- The panel shows "Publish anyway" under the refusal to people with the permission, with a
+  labelled reason box. The Readability utility lists "Published past the gate", newest first,
+  with the reason (acceptance 4, tested through the utility page).
+- **Checked in a browser** on the greenhouse copy: a 60-word sentence refused the publish with
+  the rule named; "Publish anyway" with a reason; the next save went through and the override
+  was logged.
 

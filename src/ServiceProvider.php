@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk;
 
 use Bpmore\Copydesk\Gate\GateSettings;
+use Bpmore\Copydesk\Gate\OverrideLog;
+use Bpmore\Copydesk\Gate\OverridePasses;
+use Bpmore\Copydesk\Gate\PublishGate;
 use Bpmore\Copydesk\Http\Controllers\DictionaryController;
 use Bpmore\Copydesk\Packs\PackLibrary;
 use Bpmore\Copydesk\Scan\ScanHistory;
@@ -61,6 +64,11 @@ class ServiceProvider extends AddonServiceProvider
 
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
         $this->app->bind(GateSettings::class, static fn ($app): GateSettings => $app->make(Settings::class)->gate());
+        // One gate per request: it holds an override between the save it let
+        // through and that save finishing (SettleOverrides).
+        $this->app->singleton(PublishGate::class);
+        $this->app->singleton(OverridePasses::class, static fn ($app): OverridePasses => new OverridePasses($app->make('cache')->store()));
+        $this->app->singleton(OverrideLog::class, static fn ($app): OverrideLog => OverrideLog::inStorage($app->make(Filesystem::class)));
         $this->app->singleton(ScanHistory::class, static fn ($app): ScanHistory => ScanHistory::inStorage($app->make(Filesystem::class)));
 
         // The house rule packs: the bundled ones, then the site's own in
@@ -105,6 +113,7 @@ class ServiceProvider extends AddonServiceProvider
                         'counts' => Site::all()->mapWithKeys(fn ($s) => [$s->handle() => count($dictionaries->own($s->handle()))])->all(),
                         'canManage' => (bool) User::current()?->can('manage jargon dictionary'),
                         'companion' => Companion::notice(),
+                        'overrides' => array_slice($this->app->make(OverrideLog::class)->all(), 0, 50),
                     ];
                 })
                 ->routes(function ($router) {
@@ -145,6 +154,9 @@ class ServiceProvider extends AddonServiceProvider
                 Permission::register('manage jargon dictionary')
                     ->label('Manage the dictionary')
                     ->description('Add, change, import and export the words to avoid and what to say instead.');
+                Permission::register(PublishGate::OVERRIDE)
+                    ->label('Publish past the gate')
+                    ->description('Publish a page the Copydesk gate stopped, once, giving a reason that is kept in the site report.');
                 Permission::register('configure readability')
                     ->label('Configure readability')
                     ->description('Change the addon\'s settings: the dictionary today, and the target and gate as they move onto the settings screen.');
