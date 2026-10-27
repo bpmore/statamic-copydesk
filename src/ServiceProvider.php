@@ -128,6 +128,8 @@ class ServiceProvider extends AddonServiceProvider
                 })
                 ->routes(function ($router) {
                     $router->post('rescan/{site}', [DictionaryController::class, 'rescan'])->name('rescan');
+                    $router->get('progress/{site}', [DictionaryController::class, 'progress'])->name('progress');
+                    $router->get('issues/{site}', [DictionaryController::class, 'issues'])->name('issues');
                     $router->get('export/{site}', [DictionaryController::class, 'export'])->name('export');
                     $router->post('import/{site}', [DictionaryController::class, 'import'])->name('import');
                 })

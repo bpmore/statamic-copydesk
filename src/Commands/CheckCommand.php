@@ -33,12 +33,28 @@ class CheckCommand extends Command
         {--collection=* : Only these collections. Not recorded in the trend.}
         {--export= : Write a CSV: "csv" for one under storage, or a path.}
         {--fail-above= : Exit 1 when more pages than this read above the target: a count ("10") or a share ("10%"). Default from config.}
-        {--fail-on-errors : Exit 1 on any error-level finding: a very long sentence, a banned term.}';
+        {--fail-on= : Exit 1 when any published page has a finding at or above this severity: error, warning or tip.}
+        {--fail-on-errors : The same as --fail-on=error.}';
 
     protected $description = 'Grade every published page against the target reading level, with a CSV and an exit code for CI.';
 
+    /** Each severity and the ones at or above it. */
+    private const AT_OR_ABOVE = [
+        'error' => ['error'],
+        'warning' => ['error', 'warning'],
+        'tip' => ['error', 'warning', 'tip'],
+    ];
+
     public function handle(SiteScan $scan): int
     {
+        $failOn = $this->failOn();
+
+        if ($failOn === false) {
+            $this->components->error('--fail-on takes error, warning or tip.');
+
+            return 2;
+        }
+
         $sites = $this->option('site') ?: Site::all()->map(fn ($s) => $s->handle())->values()->all();
         $collections = $this->option('collection');
 
@@ -73,7 +89,26 @@ class CheckCommand extends Command
             $this->components->info("Written to {$path}");
         }
 
-        return $this->verdict($reports);
+        return $this->verdict($reports, $failOn);
+    }
+
+    /**
+     * The severity to fail on: null for none, false for one that does not
+     * exist.
+     */
+    private function failOn(): string|false|null
+    {
+        $option = strtolower(trim((string) $this->option('fail-on')));
+
+        if ($option === '' && $this->option('fail-on-errors')) {
+            return 'error';
+        }
+
+        if ($option === '') {
+            return null;
+        }
+
+        return array_key_exists($option, self::AT_OR_ABOVE) ? $option : false;
     }
 
     private function write(ScanReport $report): void
@@ -126,16 +161,22 @@ class CheckCommand extends Command
     /**
      * @param  array<string, ScanReport>  $reports
      */
-    private function verdict(array $reports): int
+    private function verdict(array $reports, ?string $failOn): int
     {
         $graded = 0;
         $above = 0;
-        $errors = 0;
+        $found = ['error' => 0, 'warning' => 0, 'tip' => 0];
 
         foreach ($reports as $report) {
             $graded += count($report->entries);
             $above += $report->againstTarget()['above'];
-            $errors += array_sum(array_map(fn (EntryResult $e): int => $e->errors, $report->entries));
+
+            // Every published page with something to say, short ones too.
+            foreach ($report->pages() as $page) {
+                $found['error'] += $page->errors;
+                $found['warning'] += $page->warnings;
+                $found['tip'] += $page->tips;
+            }
         }
 
         $limit = (string) ($this->option('fail-above') ?? config('copydesk.check.fail_above') ?? '');
@@ -152,10 +193,14 @@ class CheckCommand extends Command
             }
         }
 
-        if ($this->option('fail-on-errors') && $errors > 0) {
-            $this->components->error(sprintf('%d error-level finding(s): very long sentences or banned terms.', $errors));
+        if ($failOn !== null) {
+            $count = array_sum(array_map(fn (string $severity): int => $found[$severity], self::AT_OR_ABOVE[$failOn]));
 
-            return 1;
+            if ($count > 0) {
+                $this->components->error(sprintf('%d finding(s) at or above %s on published pages.', $count, $failOn));
+
+                return 1;
+            }
         }
 
         $this->components->info(sprintf('%d page(s) graded, %d above the target.', $graded, $above));
@@ -187,10 +232,10 @@ class CheckCommand extends Command
         fputcsv($out, ['site', 'collection', 'id', 'title', 'edit_url', 'band', 'band_low', 'band_high', 'consensus', 'comparison', 'errors', 'warnings', 'tips', 'acronyms', 'jargon']);
 
         foreach ($reports as $report) {
-            foreach ($report->worst(PHP_INT_MAX) as $e) {
+            foreach ([...$report->worst(PHP_INT_MAX), ...$report->ungraded] as $e) {
                 fputcsv($out, [
                     $report->site, $e->collection, $e->id, $e->title, $e->editUrl,
-                    $e->band['label'], $e->band['low'], $e->band['high'] ?? '', $e->consensus, $e->comparison,
+                    $e->band['label'] ?? '', $e->band['low'] ?? '', $e->band['high'] ?? '', $e->consensus ?? '', $e->comparison ?? '',
                     $e->errors, $e->warnings, $e->tips,
                     implode('|', array_unique($e->acronyms)), implode('|', array_unique($e->jargon)),
                 ]);
@@ -217,6 +262,8 @@ class CheckCommand extends Command
             array_sum(array_map(fn (ScanReport $r): int => $r->skipped, $reports)),
             $first->scannedAt,
             $first->refusal,
+            array_merge(...array_map(fn (ScanReport $r): array => $r->failures, $reports)),
+            array_merge(...array_map(fn (ScanReport $r): array => $r->ungraded, $reports)),
         );
     }
 }

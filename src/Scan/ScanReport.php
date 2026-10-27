@@ -19,6 +19,7 @@ final class ScanReport
      * @param  list<EntryResult>  $entries  the entries that were graded
      * @param  ?string  $refusal  the locale guard's words, when the site's language could not be checked
      * @param  list<string>  $failures  entries the check threw on, each "title: what went wrong"; one odd page must not stop a scan of a thousand
+     * @param  list<EntryResult>  $ungraded  pages too short to grade that still have issues: a short page can still break house style
      */
     public function __construct(
         public readonly string $site,
@@ -28,7 +29,84 @@ final class ScanReport
         public readonly string $scannedAt,
         public readonly ?string $refusal = null,
         public readonly array $failures = [],
+        public readonly array $ungraded = [],
     ) {}
+
+    /**
+     * Every page with something to report: the graded ones, and the
+     * ungraded ones with issues.
+     *
+     * @return list<EntryResult>
+     */
+    public function pages(): array
+    {
+        return [...$this->entries, ...$this->ungraded];
+    }
+
+    /**
+     * Pages with issues, most to fix first, then most to look at.
+     *
+     * @return list<EntryResult>
+     */
+    public function pagesWithIssues(): array
+    {
+        $pages = array_values(array_filter($this->pages(), static fn (EntryResult $e): bool => $e->issues() > 0));
+        usort($pages, static fn (EntryResult $a, EntryResult $b): int => [$b->errors, $b->warnings, $b->tips, $a->title] <=> [$a->errors, $a->warnings, $a->tips, $b->title]);
+
+        return $pages;
+    }
+
+    /**
+     * Issues by rule across the site: errors first, then the most common.
+     *
+     * @return list<array{rule: string, severity: string, count: int, pages: int}>
+     */
+    public function byRule(): array
+    {
+        $rows = [];
+
+        foreach ($this->pages() as $entry) {
+            foreach ($entry->rules as $rule => $found) {
+                $rows[$rule] ??= ['rule' => (string) $rule, 'severity' => $found['severity'], 'count' => 0, 'pages' => 0];
+                $rows[$rule]['count'] += $found['count'];
+                $rows[$rule]['pages']++;
+            }
+        }
+
+        $order = ['error' => 0, 'warning' => 1, 'tip' => 2];
+        usort($rows, static fn (array $a, array $b): int => [$order[$a['severity']] ?? 3, $b['count'], $a['rule']] <=> [$order[$b['severity']] ?? 3, $a['count'], $b['rule']]);
+
+        return array_values($rows);
+    }
+
+    /**
+     * Issues by collection: pages with issues, and how many of each kind.
+     *
+     * @return list<array{collection: string, title: string, pages: int, errors: int, warnings: int, tips: int, ignored: int}>
+     */
+    public function issuesByCollection(): array
+    {
+        $rows = [];
+
+        foreach ($this->pages() as $entry) {
+            $rows[$entry->collection] ??= ['collection' => $entry->collection, 'title' => $entry->collectionTitle, 'pages' => 0, 'errors' => 0, 'warnings' => 0, 'tips' => 0, 'ignored' => 0];
+            $rows[$entry->collection]['pages'] += $entry->issues() > 0 ? 1 : 0;
+            $rows[$entry->collection]['errors'] += $entry->errors;
+            $rows[$entry->collection]['warnings'] += $entry->warnings;
+            $rows[$entry->collection]['tips'] += $entry->tips;
+            $rows[$entry->collection]['ignored'] += $entry->ignored;
+        }
+
+        ksort($rows);
+
+        return array_values($rows);
+    }
+
+    /** Findings left out across the site because someone chose "Ignore here". */
+    public function ignored(): int
+    {
+        return array_sum(array_map(static fn (EntryResult $e): int => $e->ignored, $this->pages()));
+    }
 
     public function isEmpty(): bool
     {
@@ -173,6 +251,7 @@ final class ScanReport
             'scannedAt' => $this->scannedAt,
             'refusal' => $this->refusal,
             'failures' => $this->failures,
+            'ungraded' => array_map(static fn (EntryResult $e): array => $e->toArray(), $this->ungraded),
         ];
     }
 
@@ -189,6 +268,7 @@ final class ScanReport
             $data['scannedAt'],
             $data['refusal'],
             $data['failures'] ?? [],
+            array_map(static fn (array $e): EntryResult => EntryResult::fromArray($e), $data['ungraded'] ?? []),
         );
     }
 }

@@ -89,9 +89,9 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.8: Site report and command
 
-- [ ] The site scan runs as queued jobs of 50 entries, with progress on the report page, instead of inside the web request.
-- [ ] The report: issues by collection, by rule and by page; ignored counts; overrides with their reasons; CSV export.
-- [ ] `copydesk:scan {--site=} {--collection=} {--fail-on=error}`: exit 1 when any published entry has a finding at or above that severity, 0 otherwise (acceptance 6). The existing `--fail-above` and `--export` stay.
+- [x] The site scan runs as queued jobs of 50 entries, with progress on the report page, instead of inside the web request.
+- [x] The report: issues by collection, by rule and by page; ignored counts; overrides with their reasons; CSV export.
+- [x] `copydesk:scan {--site=} {--collection=} {--fail-on=error}`: exit 1 when any published entry has a finding at or above that severity, 0 otherwise (acceptance 6). The existing `--fail-above` and `--export` stay.
 
 ## Phase 1.9: Rule editor (Pro)
 
@@ -467,4 +467,24 @@ Guesses from the size of the Plain code and the spec, not measured.
   accessibility error to show.
 - **Found in the browser:** the panel's jump button showed the whole 60-word sentence; the
   excerpt is now cut at about 30 characters.
+
+### 2026-10-26: Phase 1.8: site report and command
+- **Queued scan:** the page under Tools starts a scan as `ScanChunk` jobs of 50 pages. Each job's
+  part is kept in the cache; the last one in puts the report together once (`Cache::add` guards
+  two finishing at the same moment), caches it, and records it in the trend. A scan started again
+  makes older jobs stand down. With the sync queue (most sites) it all happens before the page
+  draws. The command still scans in one go.
+- **Progress:** `copydesk-scan-progress` asks every two seconds ("Scanning: 50 of 88 pages
+  done.", in a polite live region) and reloads into the report when done. **Checked on the
+  greenhouse copy with a database queue:** 88 pages in 2 jobs, progress shown, the page switched
+  to the report by itself (61 graded, 27 with nothing to grade).
+- **The report:** issues by rule (errors first), by collection, and the pages with the most to
+  fix, each with ignored counts; overrides with reasons (from 1.7); "Download every issue (CSV)",
+  a row per page and rule. Short pages with issues are now in the report too: before, a page too
+  short to grade was dropped even when it broke house style.
+- **Command:** `--fail-on=error|warning|tip` exits 1 when a published page has a finding at or
+  above it, 0 otherwise (acceptance 6), and 2 for a severity it does not know. `--fail-on-errors`
+  stays, as `--fail-on=error`. `--fail-above` and `--export` stay; the CSV export includes short
+  pages with issues.
+- A scan cached by the previous version still reads: new fields have defaults.
 

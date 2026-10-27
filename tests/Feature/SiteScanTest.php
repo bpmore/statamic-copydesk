@@ -5,10 +5,13 @@ declare(strict_types=1);
 use Bpmore\Copydesk\Analysis\Analyzer;
 use Bpmore\Copydesk\Analysis\HouseRules;
 use Bpmore\Copydesk\Analysis\Report;
+use Bpmore\Copydesk\Scan\ScanChunk;
+use Bpmore\Copydesk\Scan\ScanHistory;
 use Bpmore\Copydesk\Scan\ScanReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Bpmore\Copydesk\Settings;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Queue;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Entry;
 use Statamic\Facades\Site;
@@ -145,8 +148,9 @@ it('draws the scan on the page under Tools, and scans again on request', functio
 
     $this->actingAs($this->user)->from(cp_route('utilities.index').'/copydesk')
         ->post(cp_route('utilities.copydesk.rescan', 'default'))
-        ->assertRedirect()->assertSessionHas('success', 'Scanned again.');
-    expect(Cache::get('copydesk.scan.default'))->toBeNull();
+        ->assertRedirect()->assertSessionHas('success', 'Scanning again.');
+    // The sync queue: the new scan is done before the redirect.
+    expect(Cache::get('copydesk.scan.default'))->toBeArray();
 
     $this->actingAs($this->user)->post(cp_route('utilities.copydesk.rescan', 'nope'))->assertStatus(404);
 });
@@ -207,4 +211,73 @@ it('names a page the check threw on and grades the rest, rather than stopping', 
     expect(array_map(fn ($e) => $e->title, $report->entries))->toBe(['Easy']);
     expect($report->failures)->toBe(['Odd: a field this addon could not read']);
     expect(ScanReport::fromArray($report->toArray())->failures)->toBe($report->failures);
+});
+
+it('scans in queued jobs of fifty, says how far it has got, and puts one report together at the end', function () {
+    foreach (range(1, 120) as $i) {
+        published("Page {$i}", EASY);
+    }
+
+    Queue::fake();
+    $scan = app(SiteScan::class);
+
+    expect($scan->cached('default'))->toBeNull()
+        ->and($scan->progress('default'))->toBe(['done' => 0, 'total' => 120]);
+
+    $jobs = Queue::pushed(ScanChunk::class);
+    expect($jobs)->toHaveCount(3)
+        ->and(array_map(fn (ScanChunk $job) => count($job->ids), $jobs->all()))->toBe([50, 50, 20]);
+
+    $jobs->each(fn (ScanChunk $job) => $job->handle($scan));
+
+    expect($scan->progress('default'))->toBeNull()
+        ->and(count($scan->cached('default')->entries))->toBe(120)
+        ->and(app(ScanHistory::class)->all('default'))->toHaveCount(1);
+});
+
+it('shows the progress on the page under Tools while a scan runs', function () {
+    published('Easy', EASY);
+    Queue::fake();
+
+    $text = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent());
+
+    expect($text)->toContain('copydesk-scan-progress');
+    $this->actingAs($this->user)->get(cp_route('utilities.copydesk.progress', 'default'))->assertOk()->assertExactJson(['done' => 0, 'total' => 1]);
+});
+
+it('reports issues by rule, by collection and by page, with short pages and ignored counts', function () {
+    published('Long', 'Word '.implode(' ', array_fill(0, 59, 'word')).'.');
+    published('Short', 'Plain words — short.', 'news');
+    Entry::make()->collection('pages')->locale('default')->slug('ignored')->published(true)
+        ->data(['title' => 'Ignored', 'content' => bard('Plain words — short.'), 'copydesk_ignores' => ['placeholder']])->save();
+
+    $report = app(SiteScan::class)->run('default');
+
+    expect(collect($report->byRule())->firstWhere('rule', 'very_long_sentence'))->toMatchArray(['severity' => 'error', 'count' => 1, 'pages' => 1])
+        ->and(collect($report->byRule())->firstWhere('rule', 'no-em-dash'))->toMatchArray(['severity' => 'warning', 'pages' => 2])
+        ->and($report->byRule()[0]['severity'])->toBe('error')
+        ->and(array_map(fn ($p) => $p->title, $report->pagesWithIssues()))->toBe(['Long', 'Ignored', 'Short'])
+        ->and(collect($report->issuesByCollection())->firstWhere('collection', 'news'))->toMatchArray(['pages' => 1, 'warnings' => 1]);
+});
+
+it('counts what authors ignored', function () {
+    $content = bard('Plain words — short ones.');
+    $print = collect(app(Analyzer::class)->analyze(Collection::findByHandle('pages')->entryBlueprint(), ['content' => $content], 'en', 'default')->toArray()['findings'])->firstWhere('rule', 'no-em-dash')['fingerprint'];
+    Entry::make()->collection('pages')->locale('default')->slug('ignored')->published(true)
+        ->data(['title' => 'Ignored', 'content' => $content, 'copydesk_ignores' => [$print]])->save();
+
+    $report = app(SiteScan::class)->run('default');
+
+    expect($report->ignored())->toBe(1)
+        ->and(collect($report->byRule())->firstWhere('rule', 'no-em-dash'))->toBeNull();
+});
+
+it('downloads every issue as a CSV, a row per page and rule', function () {
+    published('Long', 'Word '.implode(' ', array_fill(0, 59, 'word')).'.');
+
+    $csv = $this->actingAs($this->user)->get(cp_route('utilities.copydesk.issues', 'default'))->assertOk()->streamedContent();
+    $rows = array_map(str_getcsv(...), array_filter(explode("\n", $csv)));
+
+    expect($rows[0])->toBe(['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page'])
+        ->and(collect($rows)->first(fn ($r) => $r[4] === 'very_long_sentence'))->toMatchArray([0 => 'default', 2 => 'Long', 5 => 'error', 6 => '1']);
 });
