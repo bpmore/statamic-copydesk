@@ -37,7 +37,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [x] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
 - [x] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
 - [x] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
-- [ ] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
+- [x] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
 
 ## Phase 1.2b: Original text and positions (D5)
 
@@ -287,4 +287,16 @@ Guesses from the size of the Plain code and the spec, not measured.
   time, gets the old rules (checked). Hashing a few small files costs far less than parsing them.
 - Acceptance 7 is a test: change a pack, and the next read has the change with no cache cleared.
 - A file that is not readable YAML is refused with its path and the parser's reason.
+
+### 2026-10-26: Phase 1.2, task 11: the 150 ms budget
+- `tests/Feature/LintBenchmarkTest.php` times everything one check does: extract, exclude,
+  tally and grade, every readability rule, every bundled pack, and a heavy stand-in pack with
+  all six types and plainlanguage.gov's 177 entries as a word list. Bundled packs join as Phase
+  1.3 adds them. The entry is generated (3,264 words, headings, rule hits) from a fixed seed.
+- Here: median of five, **98 ms** for 420 findings (PHP 8.4, Apple M-series). About a third of the
+  budget is left. Phase 1.2b adds position mapping to every block, which costs something;
+  this test will say how much.
+- On CI (`CI` set) the time is printed, not held to; locally, over 150 ms fails.
+
+**Phase 1.2 is done except `quotes` and `double_space` (task 5), which wait on Phase 1.2b.**
 
