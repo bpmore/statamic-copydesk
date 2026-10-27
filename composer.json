@@ -20,7 +20,7 @@
     ],
     "require": {
         "php": "^8.2",
-        "bpmore/readability-core": "^0.1",
+        "bpmore/readability-core": "^0.2",
         "statamic/cms": "^6.34"
     },
     "require-dev": {

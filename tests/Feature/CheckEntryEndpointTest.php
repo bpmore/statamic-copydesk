@@ -185,3 +185,20 @@ it('requires the same permission as opening the entry', function () {
         ->postJson(cp_route('copydesk.check'), ['reference' => $entry->reference(), 'values' => []])
         ->assertStatus(403);
 });
+
+it('says where each finding is in the field as the author wrote it', function () {
+    // Curly quotes, a double space and a no-break space before the word:
+    // the engine cleans all three away, so the cleaned offset of "utilize"
+    // is not its place in the editor. The written one is.
+    $written = "Staff \u{201C}really\u{201D}  should\u{00A0}utilize the forms.";
+    $entry = savedPage(bard($written));
+
+    $findings = collect(check(['reference' => $entry->reference(), 'values' => ['content' => bard($written)]])->assertOk()->json('findings'));
+    $jargon = $findings->firstWhere('rule', 'jargon');
+
+    expect($jargon['excerpt'])->toBe('utilize')
+        ->and($jargon['offset'])->not->toBe(mb_strpos($written, 'utilize'))
+        ->and($jargon['written']['offset'])->toBe(mb_strpos($written, 'utilize'))
+        ->and($jargon['written']['length'])->toBe(7)
+        ->and($jargon['written']['path'])->not->toBeNull();
+});

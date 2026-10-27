@@ -31,7 +31,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [x] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
 - [x] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
 - [x] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
-- [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
+- [x] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
 - [x] `casing`: sentence case or title case for headings and title fields.
 - [x] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
 - [x] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
@@ -44,8 +44,8 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 In `bpmore/readability-core`, released as 0.2.0, then taken here.
 
 - [ ] Each block keeps the text as written beside the cleaned text, with a map from every cleaned position back to the written one, through normalising (collapsed spaces, straightened quotes, `…`, invisible characters) and through the exclusions that cut text out of a block (`Addresses`, `References`, `ProperNames`). Additive: nothing that reads `text` today changes. Released as 0.2.0.
-- [ ] Copydesk requires `^0.2`. Every finding (readability and house) is given its position in the written text; the panel and the coming lint endpoint use those.
-- [ ] `punctuation` reads the written text for `quotes` and `double_space`, and their skipped tests run and pass (task 5 ticked).
+- [x] Copydesk requires `^0.2`. Every finding (readability and house) is given its position in the written text; the panel and the coming lint endpoint use those.
+- [x] `punctuation` reads the written text for `quotes` and `double_space`, and their skipped tests run and pass (task 5 ticked).
 
 ## Phase 1.3: Bundled packs
 
@@ -299,4 +299,28 @@ Guesses from the size of the Plain code and the spec, not measured.
 - On CI (`CI` set) the time is printed, not held to; locally, over 150 ms fails.
 
 **Phase 1.2 is done except `quotes` and `double_space` (task 5), which wait on Phase 1.2b.**
+
+### 2026-10-26: Phase 1.2b: original text and positions (D5)
+- **In readability-core** (branch `written-positions`, for 0.2.0): every block an extractor makes
+  keeps `written` (for Bard, inline code included, so it matches the editor's paragraph) and a
+  map from each cleaned byte back into it (`Text\Tracked`). `Normalizer::track()` and
+  `Tidy::track()` mirror the old functions; `Addresses` and `References` cut and tidy keeping
+  track. `Block::writtenSpan()` reads the map; `Block::isRead()` says whether a stretch of the
+  written text is read at all. The cleaned text is unchanged: tests hold it to copies of the old
+  code on 6,000 generated strings, and every old test passes as it was. The engine also gets its
+  own GitHub workflow (it had none once Copydesk stopped testing its copy) and a CHANGELOG.
+  The first task stays open until 0.2.0 is tagged and on Packagist.
+- **Found while doing it:** `References` tidies every block, not only ones with a citation, so in
+  a real check a space before a comma and a doubled comma were gone before any house rule could
+  see them. So `punctuation` reads the written text for all its checks, not only `quotes` and
+  `double_space`, skipping what the engine skips (inline code, cut addresses). Its findings are
+  positions in the written text; `StyleRule::readsWritten()` says so, and the report uses it.
+- **In Copydesk:** every finding in the panel's data has `written`: the block's Bard path and the
+  offset and length in characters of the field as written. A test posts a paragraph with curly
+  quotes, a double space and a no-break space before "utilize" and gets its true place back.
+- **Cost:** the benchmark went from 98 ms to about 112 ms. Still under 150.
+- **Waiting on:** readability-core 0.2.0 being released. Copydesk now requires `^0.2`, so this
+  branch cannot be installed, or merged, until the engine is tagged and on Packagist.
+- **For Phase 1.4:** the analyzer passes the ids of rules that read written text as the report's
+  `writtenRules`; nothing does yet, because house rules are not wired into the analyzer.
 

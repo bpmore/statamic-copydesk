@@ -22,6 +22,9 @@ name, so there is nothing to migrate. What changed:
 - **Free and Pro editions.** Listed in `composer.json`; a site runs Free
   until it sets `'bpmore/statamic-copydesk' => 'pro'` in
   `config/statamic/editions.php`. Nothing differs between them yet.
+- **Positions in the text as written.** Every finding in the panel's data
+  now says where it is in the field as the author wrote it, through
+  readability-core 0.2's map, which the coming editor underlines need.
 - **The engine comes from Packagist.** `bpmore/readability-core` is no
   longer kept inside this repository; it installs like any other package,
   so Copydesk and A11y Report always share one copy of it.
