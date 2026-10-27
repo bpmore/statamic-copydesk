@@ -14,6 +14,7 @@ use Bpmore\ReadabilityCore\Extraction\PlainTextExtractor;
 use Bpmore\ReadabilityCore\Rule\Finding;
 use Bpmore\ReadabilityCore\Text\Block;
 use Bpmore\ReadabilityCore\Text\Document;
+use Bpmore\ReadabilityCore\Text\Origin;
 use Statamic\Facades\Markdown;
 
 /**
@@ -78,6 +79,7 @@ final class Linter
 
             $block = $document->blocks[$finding->location->block];
             $position = $kind === 'markdown' ? null : self::position($block, $finding, in_array($finding->rule, $written, true));
+            $plain = $kind === 'text' || $kind === 'textarea';
 
             $issues[] = [
                 'rule' => $finding->rule,
@@ -85,8 +87,10 @@ final class Linter
                 'message' => $finding->message,
                 'excerpt' => $finding->excerpt,
                 'suggestions' => self::suggestions($finding, $byId[$finding->rule] ?? null),
-                'path' => $position === null ? null : $block->origin->path,
-                'offset' => $position[0] ?? null,
+                'path' => $position === null || $plain ? null : $block->origin->path,
+                // In a text or textarea field, from the start of the whole
+                // value, which the extract put in the block's path.
+                'offset' => $position === null ? null : $position[0] + ($plain ? (int) $block->origin->path : 0),
                 'length' => $position[1] ?? null,
             ];
         }
@@ -103,8 +107,31 @@ final class Linter
             'markdown' => is_string($value) && trim($value) !== ''
                 ? (new HtmlExtractor(ignoredTags: Code::INLINE_TAGS, ignoredClasses: $this->settings->ignoredClasses()))->extract(Markdown::parse($value))
                 : Document::empty(),
-            default => is_string($value) ? (new PlainTextExtractor)->extract($value) : Document::empty(),
+            default => is_string($value) ? self::plain($value) : Document::empty(),
         };
+    }
+
+    /**
+     * A text or textarea value as blocks, one per paragraph, each carrying
+     * where its paragraph starts in the whole value (UTF-16, line endings
+     * as the browser has them: \n) in its path, so a finding can be placed
+     * in the string the author is typing. Read paragraph by paragraph so
+     * an empty one, which makes no block, cannot shift the rest.
+     */
+    private static function plain(string $value): Document
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $value);
+        $blocks = [];
+
+        foreach (preg_split('/\n[ \t]*\n/', $text, -1, PREG_SPLIT_OFFSET_CAPTURE) ?: [] as [$paragraph, $start]) {
+            $origin = new Origin('p', path: (string) self::utf16(substr($text, 0, $start)));
+
+            foreach ((new PlainTextExtractor)->extract($paragraph)->blocks as $block) {
+                $blocks[] = new Block($block->kind, $block->text, $origin, $block->level, $block->written, $block->positions);
+            }
+        }
+
+        return new Document($blocks);
     }
 
     /**

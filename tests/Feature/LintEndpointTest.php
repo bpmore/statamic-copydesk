@@ -66,9 +66,14 @@ it('counts inline code in the offsets but never flags it', function () {
     expect($issues)->toHaveCount(1)->and($issues[0]['offset'])->toBe(12);
 });
 
-it('checks a textarea with positions, and markdown without', function () {
-    expect(collect(lint('textarea', "First line.\n\nWe utilize it.", 'summary')->json('issues'))->firstWhere('rule', 'plain-words'))
-        ->toMatchArray(['path' => null, 'offset' => 3, 'length' => 7])
+it('checks a textarea with positions from the start of the value, and markdown without', function () {
+    // "Café" is one character to JavaScript and five bytes here; the blank
+    // paragraph in the middle makes no block, and must not shift the next.
+    $value = "Café line.\r\n\r\n  \n\nWe utilize it.";
+    $issue = collect(lint('textarea', $value, 'summary')->json('issues'))->firstWhere('rule', 'plain-words');
+
+    expect($issue)->toMatchArray(['path' => null, 'length' => 7])
+        ->and(mb_substr(str_replace("\r\n", "\n", $value), $issue['offset'], 7))->toBe('utilize')
         ->and(collect(lint('markdown', 'We **utilize** it.', 'notes')->json('issues'))->firstWhere('rule', 'plain-words'))
         ->toMatchArray(['path' => null, 'offset' => null, 'excerpt' => 'utilize']);
 });

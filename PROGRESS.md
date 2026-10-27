@@ -68,13 +68,13 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.5: In the editor
 
-- [ ] **Spike first.** Prove a Bard extension added through `Statamic.$bard.addExtension` can draw ProseMirror decorations using the editor's own ProseMirror, not a second bundled copy (a second copy breaks decorations silently). Write down what was found. If it cannot, stop and say so here before the next task.
-- [ ] `POST /cp/copydesk/lint`: one field's text in, issues with character offsets out. Needs the same permission and entry access as the panel's check.
-- [ ] Bard underlines, debounced 600 ms per field: dotted for info, wavy for warning, double for error, never colour alone. Acceptance 1: an em dash typed in Bard is underlined within a second.
-- [ ] The popover: message, suggestion buttons that replace the text, "Ignore here". Keyboard reachable, announced to screen readers, focus returned to the text after.
-- [ ] Markdown, textarea and text fields (D4): the field's issues as a list under it, debounced the same way, with the same suggestions and "Ignore here".
-- [ ] Bard nested in a Replicator set inside Grid (acceptance 8), with a fixture for it.
-- [ ] The sidebar panel: grade against target, issue counts by severity, a link that jumps to each issue.
+- [x] **Spike first.** Prove a Bard extension added through `Statamic.$bard.addExtension` can draw ProseMirror decorations using the editor's own ProseMirror, not a second bundled copy (a second copy breaks decorations silently). Write down what was found. If it cannot, stop and say so here before the next task.
+- [x] `POST /cp/copydesk/lint`: one field's text in, issues with character offsets out. Needs the same permission and entry access as the panel's check.
+- [x] Bard underlines, debounced 600 ms per field: dotted for info, wavy for warning, double for error, never colour alone. Acceptance 1: an em dash typed in Bard is underlined within a second.
+- [x] The popover: message, suggestion buttons that replace the text, "Ignore here". Keyboard reachable, announced to screen readers, focus returned to the text after.
+- [x] Markdown, textarea and text fields (D4): the field's issues as a list under it, debounced the same way, with the same suggestions and "Ignore here".
+- [x] Bard nested in a Replicator set inside Grid (acceptance 8), with a fixture for it.
+- [x] The sidebar panel: grade against target, issue counts by severity, a link that jumps to each issue.
 
 ## Phase 1.6: Ignores
 
@@ -369,4 +369,45 @@ Guesses from the size of the Plain code and the spec, not measured.
 - `writtenRules` reaches the report from the house rules, so punctuation findings report their
   place in the text as written (tested with a double space after curly quotes).
 - Free and Pro are not split yet (Phase 1.10).
+
+### 2026-10-26: Phase 1.5: in the editor
+- **Spike:** Bard hands an extension `tiptap` with `core`, `vue3` and `pm.{state,model,view}`:
+  the editor's own ProseMirror. The extension (`resources/js/editor/bard.js`) builds its plugin,
+  `Decoration` and `DecorationSet` from those, so there is no second copy to break decorations.
+- **The endpoint** (`POST /cp/copydesk/lint`) answers Bard issues by node path and UTF-16
+  offset in the block as written. **Found:** a textarea's offsets were counted from its
+  paragraph, not the value, so a suggestion would have landed in the wrong place; they now count
+  from the start of the value (test with an accent and an empty paragraph).
+- **Which fields:** the ones in `fields` config. The listener stamps the list into the panel's
+  config (`prose_fields`), and the editor reads it from the blueprint in the publish container.
+  A Bard, markdown or textarea field nested in one of them (a Grid, a Replicator, a Bard set) is
+  checked too; a nested text field (a caption) is not, as the full check does not read it.
+- **Bard:** underlines 600 ms after typing stops, placed in the document as it was when asked
+  and carried through anything typed since. Dotted, wavy, double. A click or Option/Alt+Enter
+  opens the box; the caret entering an underline is announced in a polite live region. Escape
+  and every choice put focus back in the text. A suggestion widens over spaces so ", " for a
+  spaced em dash reads "words, more", not "words ,  more".
+- **Markdown, textarea, text:** Statamic's own fieldtypes, wrapped in `Statamic.configuring`,
+  with the list after them. The wrapper hands the fieldtype's own properties through, so field
+  actions (the markdown expand button) still show. Markdown has no positions, so its list says
+  "Try: use" instead of a button.
+- **Sidebar:** "As you type" in the readability panel: counts by severity, and every issue as a
+  button that puts the caret on its words (and opens the box, in Bard).
+- **Checked in a browser** on a greenhouse copy with this branch linked (fixture and steps in
+  `docs/editor.md`): an em dash typed in Bard is underlined about 0.8 s after typing starts
+  (acceptance 1); the Bard inside a Replicator inside a Grid is underlined and its issue jumps
+  from the panel (acceptance 8); a suggestion replaces the text in Bard and in a textarea; no
+  console errors on the test page, an article and the globals screen.
+- **Found in the browser:** the box closed itself whenever the page scrolled, and Bard scrolls
+  the caret into view after a click, so it never stayed open: it now follows its words. An old
+  box's listener could close a new box: each now closes only its own. Statamic's textarea sets
+  its `focus` prop as a DOM property, so `textarea.focus` is undefined: focused through the
+  prototype.
+- **For Phase 1.6:** "Ignore here" hides the issue for as long as the form is open (rule plus
+  words, in that field). 1.6 makes it stick, on the entry.
+- **Not done here:** the full check (panel grade, gate, scan) still reads only top-level Bard,
+  markdown, textarea and text fields, so a Bard in a Grid is underlined as you type but not
+  counted by the gate. Worth deciding before 1.7.
+- JS tests run with Node's own runner (`npm test`, in CI before the build): the path-to-position
+  arithmetic and the spacing rule.
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Statamic\Events\EntryBlueprintFound;
 use Statamic\Facades\Blueprint;
 use Statamic\Facades\Collection;
 
@@ -19,6 +20,19 @@ it('puts the panel in the sidebar of a form that has something to read, stamped 
     expect($field->get('collection'))->toBe('pages');
     expect($field->get('blueprint'))->toBe('pages');
     expect($blueprint->tabs()->get('sidebar')?->fields()->has('readability_panel'))->toBeTrue();
+});
+
+it('tells the editor which of the configured fields are on the form', function () {
+    config()->set('copydesk.fields', ['*' => ['content', 'sections', 'missing']]);
+    // Not saved: a saved blueprint would carry into the other tests.
+    $blueprint = Blueprint::make('article')->setNamespace('collections.pages')->setContents(['fields' => [
+        ['handle' => 'content', 'field' => ['type' => 'bard']],
+        ['handle' => 'sections', 'field' => ['type' => 'grid', 'fields' => []]],
+    ]]);
+
+    EntryBlueprintFound::dispatch($blueprint);
+
+    expect($blueprint->field('readability_panel')->get('prose_fields'))->toBe(['content', 'sections']);
 });
 
 it('leaves a form alone when none of the configured fields is on it', function () {

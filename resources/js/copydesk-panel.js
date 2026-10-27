@@ -1,16 +1,23 @@
 /**
  * The readability panel, as a fieldtype a site places in a blueprint.
  *
- * A plain script rather than a built bundle. Statamic puts Vue on
- * `window.Vue` with the runtime template compiler, so a `template` string
- * works, and that removes npm, vite and a build step from an addon whose
- * product is one endpoint and the words it sends back. The pattern, and
- * every control-panel API used here, come from Accessibility Gate, where
- * they were read out of the control panel's own unminified build.
+ * Statamic puts Vue on `window.Vue` with the runtime template compiler, so
+ * a `template` string works, and the panel needs no single-file component.
+ * The pattern, and every control-panel API used here, come from
+ * Accessibility Gate, where they were read out of the control panel's own
+ * unminified build.
+ *
+ * It shows two things. What the fields found as the author typed, counted
+ * by severity, each issue a button that jumps to it; that is live, and
+ * comes from the editor (./editor). And the grade, on demand, from the
+ * full check, which reads the whole page.
  *
  * Everything visible is Statamic's own component library, so a defect in a
  * control is Statamic's to fix rather than ours to have shipped.
  */
+import { live } from './editor/live.js';
+import { SEVERITY, severityOf } from './editor/severity.js';
+
 (function () {
     // Provided by the publish container: `values` is the form as it stands
     // right now, `reference` is "entry::<id>" on an edit screen and nothing
@@ -183,7 +190,27 @@
                 return spans.slice(0, 5);
             }
 
-            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal };
+            // Every field's issues from as the author typed, worst first,
+            // in the order of the form within each severity.
+            const liveItems = Vue.computed(() => Object.values(live.fields)
+                .flatMap((field) => field.issues.map((item) => ({ ...item, label: field.label })))
+                .sort((a, b) => SEVERITY[severityOf(a.issue)].order - SEVERITY[severityOf(b.issue)].order));
+
+            const liveCounts = Vue.computed(() => SEVERITIES
+                .map((s) => {
+                    const n = liveItems.value.filter((item) => severityOf(item.issue) === s.key || (s.key === 'tip' && item.issue.severity === 'info')).length;
+
+                    return { key: s.key, color: s.color, n, badge: n === 1 ? s.one : s.many(n) };
+                })
+                .filter((c) => c.n > 0));
+
+            const LIVE_SHOWN = 20;
+
+            function jumpLabel(item) {
+                return 'Show ' + (item.issue.excerpt ? '\u201C' + item.issue.excerpt + '\u201D' : 'it') + ' in ' + item.label;
+            }
+
+            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
         },
 
         // No panel or header of its own: a field is already drawn inside the
@@ -204,6 +231,20 @@
         // who wants them; the decimals are never the headline.
         template: `
             <div class="space-y-3">
+                <div v-if="liveItems.length" class="space-y-2">
+                    <ui-heading size="sm" text="As you type" />
+                    <div class="flex flex-wrap gap-2">
+                        <div v-for="c in liveCounts" :key="c.key"><ui-badge :color="c.color" :text="c.badge" /></div>
+                    </div>
+                    <ul class="space-y-1">
+                        <li v-for="(item, i) in liveItems.slice(0, LIVE_SHOWN)" :key="'l' + i" class="text-xs">
+                            <button type="button" class="copydesk-jump" @click="item.reveal()">{{ jumpLabel(item) }}</button>
+                            <span>{{ ': ' + severityWord(item.issue) + '. ' + item.issue.message }}</span>
+                        </li>
+                    </ul>
+                    <p v-if="liveItems.length > LIVE_SHOWN" class="text-xs">{{ 'And ' + (liveItems.length - LIVE_SHOWN) + ' more.' }}</p>
+                </div>
+
                 <ui-alert
                     v-if="showRefusal"
                     variant="error"
