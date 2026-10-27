@@ -260,6 +260,10 @@ it('reports issues by rule, by collection and by page, with short pages and igno
         ->and($report->byRule()[0]['severity'])->toBe('error')
         ->and(array_map(fn ($p) => $p->title, $report->pagesWithIssues()))->toBe(['Long', 'Ignored', 'Short'])
         ->and(collect($report->issuesByCollection())->firstWhere('collection', 'news'))->toMatchArray(['pages' => 1, 'warnings' => 1]);
+
+    // On the page, each rule by its plain name, with the id that `disable` takes.
+    $text = utilityText($this->actingAs($this->user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent());
+    expect($text)->toContain('Very long sentence')->toContain('very_long_sentence')->toContain('Em dash');
 });
 
 it('counts what authors ignored', function () {
@@ -280,6 +284,6 @@ it('downloads every issue as a CSV, a row per page and rule', function () {
     $csv = $this->actingAs($this->user)->get(cp_route('utilities.copydesk.issues', 'default'))->assertOk()->streamedContent();
     $rows = array_map(str_getcsv(...), array_filter(explode("\n", $csv)));
 
-    expect($rows[0])->toBe(['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page'])
-        ->and(collect($rows)->first(fn ($r) => $r[4] === 'very_long_sentence'))->toMatchArray([0 => 'default', 2 => 'Long', 5 => 'error', 6 => '1']);
+    expect($rows[0])->toBe(['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page', 'rule_name'])
+        ->and(collect($rows)->first(fn ($r) => $r[4] === 'very_long_sentence'))->toMatchArray([0 => 'default', 2 => 'Long', 5 => 'error', 6 => '1', 8 => 'Very long sentence']);
 });

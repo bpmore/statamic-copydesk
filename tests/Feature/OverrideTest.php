@@ -85,7 +85,7 @@ it('lets someone allowed publish once, with a reason, and keeps the reason (acce
         ->assertOk()
         ->assertSee('Published past the gate')
         ->assertSee('Legal wrote this sentence word for word.')
-        ->assertSee('very_long_sentence');
+        ->assertSee('Very long sentence');
 });
 
 it('does not spend the pass on a publish that never saved', function () {

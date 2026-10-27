@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bpmore\Copydesk\Http\Controllers;
 
+use Bpmore\Copydesk\Analysis\RuleName;
 use Bpmore\Copydesk\Dictionaries;
 use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
@@ -49,7 +50,8 @@ class DictionaryController extends CpController
 
     /**
      * The issues as a spreadsheet: one row per page and rule, with how many
-     * and how bad, and the page's ignored count.
+     * and how bad, and the page's ignored count. The rule's plain name is
+     * the last column, so a sheet built on the columns before it still works.
      */
     public function issues(string $site, SiteScan $scan): StreamedResponse
     {
@@ -61,11 +63,11 @@ class DictionaryController extends CpController
 
         return response()->streamDownload(function () use ($report) {
             $out = fopen('php://output', 'w');
-            fputcsv($out, ['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page']);
+            fputcsv($out, ['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page', 'rule_name']);
 
             foreach ($report->pagesWithIssues() as $page) {
                 foreach ($page->rules as $rule => $found) {
-                    fputcsv($out, [$report->site, $page->collection, $page->title, $page->editUrl, $rule, $found['severity'], $found['count'], $page->ignored]);
+                    fputcsv($out, [$report->site, $page->collection, $page->title, $page->editUrl, $rule, $found['severity'], $found['count'], $page->ignored, RuleName::of((string) $rule)]);
                 }
             }
 
