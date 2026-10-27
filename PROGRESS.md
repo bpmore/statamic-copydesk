@@ -18,7 +18,7 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 ## Phase 1.1: Housekeeping
 
 - [x] One engine copy (D1): require `bpmore/readability-core` from Packagist, path repository to `../readability-core` in development, remove `packages/readability-core/` and the CI job that tests it there (the engine's own repo tests it).
-- [ ] A Vite build, set up the way `bpmore/statamic-lifecycle` has it (Vite config, `$vite` in the service provider, built bundle committed under `resources/dist`, a CI check that the committed build is current). The panel script moves into it unchanged; its tests still pass.
+- [x] A Vite build, set up the way `bpmore/statamic-lifecycle` has it (Vite config, `$vite` in the service provider, built bundle committed under `resources/dist`, a CI check that the committed build is current). The panel script moves into it unchanged; its tests still pass.
 - [ ] Editions: `free` and `pro` in `composer.json` `extra.statamic.editions`, one helper that answers "is this Pro", and a test for each edition. Nothing is gated yet; later tasks use the helper.
 
 ## Phase 1.2: The style rule engine (plain PHP, no Statamic)
@@ -122,4 +122,24 @@ Guesses from the size of the Plain code and the spec, not measured.
   link a local checkout instead, for when the engine and the addon change together.
 - The engine's CI job is gone from `tests.yml`; its own repository runs its suite.
 - 85 passed locally; both CI jobs replayed on fresh clones (see the commit).
+
+### 2026-10-26: Phase 1.1, task 2: a Vite build
+- Copied from Lifecycle: `vite.config.js` (Statamic's Vite plugin, so Vue and the UI kit stay
+  the control panel's own; manifest at `resources/dist/build/manifest.json`, where Laravel
+  looks), `package.json` (vite `^6.4.5`, past the five advisories Lifecycle just closed), `$vite`
+  in the service provider in place of `$scripts`. `resources/js/cp.js` imports the panel script,
+  which is unchanged. The built bundle is committed; a rebuild from `npm ci` is byte-identical.
+- CI gains Lifecycle's "Control panel assets" job: build, then fail if `resources/dist` changed.
+  Copydesk commits no `composer.lock`, so the runner builds against whatever Statamic resolves.
+  The bundle has no imports from `@statamic/cms`, so that should not change its output; if the
+  job ever goes red on an unchanged commit, that is the first thing to check.
+- A test checks the manifest exists, names `resources/js/cp.js`, and every file it lists is there.
+  Tests cannot see the control panel's script tags (Testbench renders none), so the panel was
+  also checked on a throwaway copy of greenhouse running this branch: the edit screen loads
+  `vendor/statamic-copydesk/build/assets/cp-*.js`, "Check readability" posts to
+  `/cp/copydesk/check` (200) and the panel draws the band, the finding and the numbers. No
+  console errors.
+- **For greenhouse, when it next updates Copydesk:** run `vendor:publish --tag=copydesk`, and
+  delete `public/vendor/statamic-copydesk/js/`, the old panel script nothing loads any more.
+- 86 passed.
 

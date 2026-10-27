@@ -225,6 +225,7 @@ back. 6.34.0 is the first release with the fix (statamic/cms#15495).
 composer install        # the addon, with the engine from Packagist
 vendor/bin/pest         # boots Statamic through Testbench
 vendor/bin/pint --test
+npm ci && npm run build # after any change in resources/js; the build is committed
 ```
 
 The engine has its own repository and suite. To work on both at once,

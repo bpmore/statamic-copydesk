@@ -43,12 +43,13 @@ class ServiceProvider extends AddonServiceProvider
     ];
 
     /**
-     * A plain script, not a Vite entry point: Statamic ships the Vue build
-     * that compiles templates at runtime, so this addon needs no npm and
-     * no build step. See the panel's own file.
+     * Built with Vite, as Lifecycle is: the Bard underlines need a bundle,
+     * and the built files are committed under resources/dist so a site never
+     * runs a build. `npm run build` after changing anything in resources/js.
      */
-    protected $scripts = [
-        __DIR__.'/../resources/js/copydesk-panel.js',
+    protected $vite = [
+        'input' => ['resources/js/cp.js'],
+        'publicDirectory' => 'resources/dist',
     ];
 
     protected $viewNamespace = 'copydesk';

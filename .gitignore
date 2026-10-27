@@ -4,6 +4,9 @@ build-log.jsonl
 # The addon's own install, once it is scaffolded at the root (Phase 3).
 /vendor
 /node_modules
+
+# Browser checks write snapshots and screenshots here.
+.playwright-mcp/
 composer.lock
 
 .phpunit.result.cache
