@@ -170,13 +170,40 @@ final class RuleDefinition
      */
     public static function compiles(string $regex): bool
     {
-        set_error_handler(static fn (): bool => true);
+        return self::compileError($regex) === null;
+    }
+
+    /**
+     * Why a regular expression does not compile, in PCRE's words, or null
+     * when it does.
+     */
+    public static function compileError(string $regex): ?string
+    {
+        $error = null;
+
+        set_error_handler(static function (int $level, string $message) use (&$error): bool {
+            $error = (string) preg_replace('/^preg_match\(\): (?:Compilation failed: )?/', '', $message);
+
+            return true;
+        });
 
         try {
-            return preg_match($regex, '') !== false;
+            return preg_match($regex, '') === false ? ($error ?? 'it does not compile') : null;
         } finally {
             restore_error_handler();
         }
+    }
+
+    /**
+     * A pack's pattern, written without delimiters, as one PHP can run:
+     * between slashes (any slash in it escaped), Unicode on, and the pack's
+     * flags.
+     */
+    public static function delimit(string $pattern, string $flags = ''): string
+    {
+        $escaped = (string) preg_replace('~(?<!\\\\)((?:\\\\\\\\)*)/~', '$1\\/', $pattern);
+
+        return '/'.$escaped.'/u'.$flags;
     }
 
     /**
@@ -261,6 +288,12 @@ final class RuleDefinition
 
         if (! is_string($flags) || preg_match('/^[imsxU]*$/', $flags) !== 1) {
             throw InvalidRule::in($source, $name, '"flags" may use i, m, s, x and U; got '.self::describe($flags).'.');
+        }
+
+        $error = self::compileError(self::delimit($raw['pattern'], $flags));
+
+        if ($error !== null) {
+            throw InvalidRule::in($source, $name, "\"pattern\" does not compile: {$error}.");
         }
 
         return ['pattern' => $raw['pattern'], 'flags' => $flags];
