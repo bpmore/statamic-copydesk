@@ -27,7 +27,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 
 - [x] The rule schema from the spec (`id`, `type`, `message`, `suggestions`, `severity`, `scope`, `exceptions`, plus each type's own keys), validated with errors that name the pack file and the rule id. `info` maps to the engine's `tip`.
 - [x] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
-- [ ] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
+- [x] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
 - [ ] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
 - [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
 - [ ] `casing`: sentence case or title case for headings and title fields.
@@ -186,4 +186,13 @@ Guesses from the size of the Plain code and the spec, not measured.
 - `Style\Matcher` carries the engine's matching rules over, because the engine's `Phrases` is
   internal. A test runs the engine's `Jargon` and `WordList` on the same text and dictionary and
   requires the same places, so Plain's dictionary finds the same words as a pack (Phase 1.4).
+
+### 2026-10-26: Phase 1.2, task 3: `term`
+- `Style\Rules\Term`: the name in any other capitals is flagged, and a many-word name run
+  together or hyphenated ("UAMSHealth", "UAMS-Health"). The exact spelling never is, nor a line
+  break between its words. Whole words only; the longer name wins where two overlap.
+- **Read narrowly:** "near misses" is taken as case and spacing, not typos. A dropped letter is a
+  spell checker's job, which the spec leaves to the browser, and edit-distance matching on names
+  would flag ordinary words that happen to be close.
+- Acceptance 2 is a test: "eiSEO" passes, "EiSEO" and "eiseo" are flagged.
 
