@@ -4,6 +4,17 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## 2.0.1 - 2026-10-27
+
+Two fixes to how the Readability panel lays out what it says. Nothing to do
+on upgrade.
+
+- **The publish refusal lists each problem on its own line.** It ran them,
+  and the closing note, into one paragraph.
+- **A long "Show ..." link in the As you type list wraps cleanly.** It
+  wrapped as a centered box with its message pushed under it; each link now
+  has its own line, with its message below.
+
 ## 2.0.0 - 2026-10-27
 
 The first release as Copydesk: Plain's readability check, renamed, with
