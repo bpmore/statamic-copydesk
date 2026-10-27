@@ -1,0 +1,19 @@
+# Left out of the archive Composer downloads: only the shipped addon goes to a site.
+# docs/packs.md and docs/editor.md ship, because the README links to them.
+/.claude                export-ignore
+/.github                export-ignore
+/.gitattributes         export-ignore
+/.gitignore             export-ignore
+/bin                    export-ignore
+/tests                  export-ignore
+/CLAUDE.md              export-ignore
+/PROGRESS.md            export-ignore
+/phpunit.xml            export-ignore
+/run-build.sh           export-ignore
+/docs/CONVENTIONS.md    export-ignore
+/docs/SPEC.md           export-ignore
+/docs/a11y-gate-plan.md export-ignore
+/docs/decision.md       export-ignore
+/docs/history           export-ignore
+/docs/marketplace.md    export-ignore
+/docs/pack-review.md    export-ignore
