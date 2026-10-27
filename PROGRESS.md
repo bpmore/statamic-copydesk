@@ -1,3 +1,5 @@
+ALL TASKS COMPLETE
+
 # PROGRESS: Copydesk
 
 **Spec:** `docs/SPEC.md` · **Conventions:** `docs/CONVENTIONS.md` · **Decisions:** `docs/decision.md`, `docs/a11y-gate-plan.md`
