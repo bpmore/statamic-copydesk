@@ -1,0 +1,43 @@
+description: >-
+  A few conventions most newsrooms share, for numbers, times and dates,
+  described in Copydesk's own words. A starting point, not any stylebook:
+  a house that follows a licensed stylebook writes its rules in its own
+  pack, and can turn any of these off.
+
+rules:
+  - id: news-no-numeral-start
+    type: sentence
+    check: starts_with_numeral
+    message: Spell the number out, or reword so the sentence starts with a word.
+    severity: info
+
+  - id: news-percent-word
+    type: pattern
+    pattern: '\d(?:[.,]\d+)?\s?%'
+    message: In running text, write the word "percent" after the number, as in 5 percent.
+    severity: info
+
+  - id: news-no-on-the-hour
+    type: pattern
+    pattern: '\b(?:1[0-2]|[1-9]):00\s?(?:a\.m\.|p\.m\.|[aApP]\.?[mM]\.?)(?![\p{L}])'
+    message: On the hour, the minutes add nothing. Write 9 a.m., not 9:00 a.m.
+    severity: info
+
+  - id: news-am-pm
+    type: pattern
+    pattern: '\b(?:1[0-2]|[1-9])(?::[0-5]\d)?\s?(?:AM|PM|am|pm|A\.M\.|P\.M\.)(?![\p{L}])'
+    message: Write a.m. and p.m., lowercase with periods.
+    severity: info
+
+  - id: news-noon-midnight
+    type: pattern
+    pattern: '\b12(?::00)?\s?(?:p\.m\.|a\.m\.|[aApP]\.?[mM]\.?)(?![\p{L}])'
+    message: Say noon or midnight; 12 a.m. and 12 p.m. are easy to confuse.
+    suggestions: [noon, midnight]
+    severity: info
+
+  - id: news-no-date-ordinal
+    type: pattern
+    pattern: '\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sept?(?:ember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+\d{1,2}(?:st|nd|rd|th)\b'
+    message: In a date, the number needs no "st", "nd", "rd" or "th". Write March 3, not March 3rd.
+    severity: info

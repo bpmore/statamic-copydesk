@@ -1,0 +1,31 @@
+description: >-
+  Punctuation most house styles agree on. Each check is its own rule, so a
+  site can turn any one off with `disable`. Quotes are left out on purpose:
+  whether a house uses curly or straight quotes is its own choice, and its
+  own pack can add a `quotes` check either way.
+
+rules:
+  - id: no-em-dash
+    type: punctuation
+    checks: [em_dash]
+    message: A colon, a comma, parentheses or two sentences usually reads more clearly.
+    suggestions: [', ', ': ']
+    severity: warning
+
+  - id: no-double-space
+    type: punctuation
+    checks: [double_space]
+    message: One space between words is enough.
+    severity: warning
+
+  - id: no-space-before-punctuation
+    type: punctuation
+    checks: [space_before_punctuation]
+    message: Punctuation sits right after the word before it.
+    severity: warning
+
+  - id: no-repeated-punctuation
+    type: punctuation
+    checks: [repeated_punctuation]
+    message: One mark says it; more looks like shouting or a typo.
+    severity: warning

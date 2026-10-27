@@ -1,0 +1,163 @@
+description: >-
+  Words that leave people out or describe them by a condition, with words
+  that name the role or the person instead. Each entry says why, so a writer
+  learns the reason and not only the swap. Written for Copydesk. Entries
+  that depend on context are tips, not warnings: a person reading the page
+  decides.
+
+rules:
+  - id: inclusive-roles
+    type: word_list
+    message: Name the role, not a gender.
+    severity: warning
+    words:
+      chairman:
+        replace: [chair, chairperson]
+        reason: The role is the same whoever holds it.
+      chairwoman:
+        replace: [chair, chairperson]
+        reason: The role is the same whoever holds it.
+      businessman:
+        replace: [businessperson, executive, owner]
+        reason: The job does not depend on gender.
+      businessmen:
+        replace: [businesspeople, executives]
+        reason: The job does not depend on gender.
+      policeman:
+        replace: [police officer]
+        reason: The job does not depend on gender.
+      policemen:
+        replace: [police officers]
+        reason: The job does not depend on gender.
+      fireman:
+        replace: [firefighter]
+        reason: The job does not depend on gender.
+      firemen:
+        replace: [firefighters]
+        reason: The job does not depend on gender.
+      mailman:
+        replace: [mail carrier]
+        reason: The job does not depend on gender.
+      stewardess:
+        replace: [flight attendant]
+        reason: The job does not depend on gender.
+      salesman:
+        replace: [salesperson, sales representative]
+        reason: The job does not depend on gender.
+      spokesman:
+        replace: [spokesperson, representative]
+        reason: The job does not depend on gender.
+      congressman:
+        replace: [member of Congress, representative]
+        reason: The office does not depend on gender.
+      mankind:
+        replace: [humanity, people]
+        reason: It means everyone, so a word for everyone fits.
+      manpower:
+        replace: [staff, workforce, people]
+        reason: The work is done by people of every gender.
+      man-hours:
+        replace: [hours, person-hours]
+        reason: The work is done by people of every gender.
+      manned:
+        replace: [staffed, crewed]
+        reason: The work is done by people of every gender.
+      man-made:
+        replace: [artificial, synthetic, human-made]
+        reason: The word means made by people, so say that.
+      he or she:
+        replace: [they]
+        reason: '"They" is shorter and includes everyone.'
+      his or her:
+        replace: [their]
+        reason: '"Their" is shorter and includes everyone.'
+
+  - id: inclusive-people
+    type: word_list
+    message: Describe the person first, not a condition or a label.
+    severity: warning
+    words:
+      handicapped:
+        replace: [disabled, with a disability]
+        reason: Most disabled people prefer plain words that do not suggest a disadvantage.
+      wheelchair-bound:
+        replace: [uses a wheelchair, wheelchair user]
+        reason: A wheelchair gives freedom of movement; it does not hold anyone down.
+      confined to a wheelchair:
+        replace: [uses a wheelchair]
+        reason: A wheelchair gives freedom of movement; it does not hold anyone down.
+      suffers from:
+        replace: [has, lives with]
+        reason: Say what a person has without deciding how they feel about it.
+      suffering from:
+        replace: [has, living with]
+        reason: Say what a person has without deciding how they feel about it.
+      afflicted with:
+        replace: [has, lives with]
+        reason: Say what a person has without deciding how they feel about it.
+      victim of:
+        replace: [person who had, survivor of]
+        reason: '"Victim" defines a person by what happened to them; check what they would choose.'
+      the elderly:
+        replace: [older adults, older people]
+        reason: A group label can read as if age were all there is to a person.
+      senile:
+        replace: [has dementia]
+        reason: Name the condition instead of using an old, dismissive label.
+      the mentally ill:
+        replace: [people with mental illness]
+        reason: Put the person before the condition.
+      illegal alien:
+        replace: [undocumented immigrant]
+        reason: Actions can break laws; people are not illegal.
+      illegal aliens:
+        replace: [undocumented immigrants]
+        reason: Actions can break laws; people are not illegal.
+
+  - id: inclusive-phrases
+    type: word_list
+    message: This phrase can carry meaning the writer did not intend.
+    severity: info
+    words:
+      blacklist:
+        replace: [blocklist, denylist]
+        reason: Say what the list does instead of tying "black" to "bad".
+      whitelist:
+        replace: [allowlist]
+        reason: Say what the list does instead of tying "white" to "good".
+      grandfathered:
+        replace: [exempt, legacy]
+        reason: The phrase comes from voting laws written to exclude Black voters.
+      grandfather clause:
+        replace: [legacy clause, exemption]
+        reason: The phrase comes from voting laws written to exclude Black voters.
+      spirit animal:
+        replace: [favorite, kindred spirit]
+        reason: Spirit animals have real meaning in some Indigenous traditions.
+      powwow:
+        replace: [meeting, gathering]
+        reason: A powwow is a specific Indigenous gathering, not a quick meeting.
+      off the reservation:
+        replace: [off script, out of line]
+        reason: The phrase comes from confining Native Americans to reservations.
+      low man on the totem pole:
+        replace: [most junior, newest]
+        reason: Totem poles are sacred objects, and their order does not mean rank.
+      sanity check:
+        replace: [quick check, confidence check]
+        reason: Say what the check is without making mental health a punchline.
+      tone-deaf:
+        replace: [out of touch, insensitive]
+        reason: Say what you mean without using a disability as a flaw.
+      lame:
+        replace: [weak, poor, unconvincing]
+        reason: The word began as a slur about disability.
+      crazy:
+        replace: [surprising, wild, unreasonable]
+        reason: Choose the precise word; this one makes mental health a punchline.
+      insane:
+        replace: [surprising, extreme, unreasonable]
+        reason: Choose the precise word; this one makes mental health a punchline.
+      guys:
+        replace: [everyone, folks, team, all]
+        reason: For a mixed group, a word for everyone includes everyone.
