@@ -34,7 +34,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
 - [x] `casing`: sentence case or title case for headings and title fields.
 - [x] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
-- [ ] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
+- [x] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
 - [ ] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
 - [ ] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
 - [ ] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
@@ -255,4 +255,12 @@ Guesses from the size of the Plain code and the spec, not measured.
   rate), because a house that writes this rule wants them all; and headings are skipped, as the
   engine's tally skips them. A numeral finding points at the number, not the sentence.
 - All six types are now built; `RuleFactory` covers every one.
+
+### 2026-10-26: Phase 1.2, task 8: scope and exceptions
+- In `StyleRule`, so every type has them. An exception excuses a finding that lies wholly inside
+  text it matches: `eiseo.app` excuses the "eiseo" in the address and nowhere else; a finding
+  that only overlaps an exception stands. A literal exception is exact (case and all); a
+  `/regex/flags` one is PCRE's. A test runs an exception through each of the six types.
+- Scope is `StyleRule::appliesTo($collection, $field)`. A rule sees blocks, not fields, so the
+  analyzer (Phase 1.4) asks before running a rule on a field.
 
