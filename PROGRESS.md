@@ -85,7 +85,7 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 - [x] Blocks a publish on any finding whose severity is `error`. Never on a grade. Drafts always save. Fails open when the check itself breaks, as now. The message names each failing rule (acceptance 3).
 - [x] `override copydesk gate`: "Publish anyway" with a required reason, through the one-time pass in `docs/a11y-gate-plan.md`. The reason is logged and shown in the report (acceptance 4).
-- [ ] A11y Gate: the contributor contract in A11y Gate (its own repo and PR), then Copydesk signing up to it and standing down its own listener when the contract is there. As planned in `docs/a11y-gate-plan.md`.
+- [x] A11y Gate: the contributor contract in A11y Gate (its own repo and PR), then Copydesk signing up to it and standing down its own listener when the contract is there. As planned in `docs/a11y-gate-plan.md`.
 
 ## Phase 1.8: Site report and command
 
@@ -445,4 +445,26 @@ Guesses from the size of the Plain code and the spec, not measured.
 - **Checked in a browser** on the greenhouse copy: a 60-word sentence refused the publish with
   the rule named; "Publish anyway" with a reason; the next save went through and the override
   was logged.
+
+### 2026-10-26: Phase 1.7, task 3: one publish check with A11y Gate
+- **In A11y Gate** (branch `gate-contributors`, for 0.11.0, not pushed): `Contracts\GateContributor`
+  (`key`, `label`, `inspect`) and `ContributedResult` (`passes`, `blocks(lines)`), tag
+  `a11y-gate.contributors`. `RefuseUnlessAccessible` asks every contributor in the same save and
+  throws one `ValidationException` with each one's lines under its own key beside `a11y_gate`.
+  A contributor that throws is logged and left out; `warn` mode covers only A11y Gate's own
+  checks. Six tests with a fake contributor; its whole suite passes (141). README and CHANGELOG.
+- **In Copydesk:** `CopydeskGateContributor` answers with the gate's own result and lines.
+  `A11yGateBridge` signs it up only when A11y Gate's contract *and* its listener exist, and then
+  `RefuseUnlessPlain` stands aside. An A11y Gate without the contract leaves Copydesk gating on
+  its own (test). Copydesk never requires A11y Gate: everything is by name; a test stub of the
+  contract (`tests/Stubs`) is word for word the real one.
+- **Not built, from the plan:** A11y Gate's own "publish anyway" (`override accessibility gate`,
+  `allow_override`). Copydesk's override no longer needs anything from A11y Gate (see task 2),
+  and A11y Gate's own override is a feature of A11y Gate, for its own release.
+- **Checked on the greenhouse copy** with both branches linked: Copydesk is tagged, a save with a
+  60-word sentence came back as one 422 with the `copydesk` key, through A11y Gate. Both lists in
+  one refusal is covered by A11y Gate's test, not seen in the browser: this page has no
+  accessibility error to show.
+- **Found in the browser:** the panel's jump button showed the whole 60-word sentence; the
+  excerpt is now cut at about 30 characters.
 

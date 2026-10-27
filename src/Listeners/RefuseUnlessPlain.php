@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Bpmore\Copydesk\Listeners;
 
-use Bpmore\Copydesk\Gate\GateResult;
+use Bpmore\Copydesk\Gate\A11yGateBridge;
 use Bpmore\Copydesk\Gate\PublishGate;
 use Illuminate\Validation\ValidationException;
 use Psr\Log\LoggerInterface;
@@ -29,6 +29,10 @@ use Statamic\Facades\User;
  * that will not render is a problem with the page, but a readability check
  * that throws is a problem with this addon, and this addon must never be
  * the reason a site cannot publish.
+ *
+ * With A11y Gate installed (a version that takes contributors), this stands
+ * aside: A11y Gate asks Copydesk during the same save and refuses once, with
+ * both lists. With an A11y Gate too old for that, or none, this is the gate.
  */
 final class RefuseUnlessPlain
 {
@@ -39,6 +43,12 @@ final class RefuseUnlessPlain
 
     public function handle(EntrySaving $event): void
     {
+        // A11y Gate asks Copydesk itself, in its own listener, and refuses
+        // once with both lists. Two listeners would refuse twice.
+        if (A11yGateBridge::joined()) {
+            return;
+        }
+
         $result = $this->gate->inspect($event->entry, User::current());
 
         if ($result->couldNotBeChecked()) {
@@ -54,30 +64,6 @@ final class RefuseUnlessPlain
             return;
         }
 
-        throw ValidationException::withMessages(['copydesk' => $this->lines($result)])->status(422);
-    }
-
-    /**
-     * The refusal, as the author reads it: what stopped the publish, each
-     * thing to fix with its field, and a reminder that nothing else did.
-     *
-     * @return list<string>
-     */
-    private function lines(GateResult $result): array
-    {
-        $count = count($result->blocking);
-
-        $lines = [
-            'This page was not published. '.($count === 1 ? 'One thing has to be fixed first.' : "{$count} things have to be fixed first."),
-        ];
-
-        foreach ($result->blocking as $finding) {
-            $field = $finding->location === null ? null : ($result->report?->blockFields[$finding->location->block] ?? null);
-            $lines[] = $finding->message.($field === null ? '' : " (in {$field})");
-        }
-
-        $lines[] = 'The grade never stops a publish, and neither do warnings or tips; they are in the Readability panel.';
-
-        return $lines;
+        throw ValidationException::withMessages(['copydesk' => $result->lines()])->status(422);
     }
 }

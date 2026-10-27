@@ -63,4 +63,29 @@ final class GateResult
     {
         return $this->outcome === self::COULD_NOT_CHECK;
     }
+
+    /**
+     * The refusal, as the author reads it: what stopped the publish, each
+     * thing to fix with its field, and a reminder that nothing else did.
+     * Read as a list in the panel; the first line stands on its own.
+     *
+     * @return list<string>
+     */
+    public function lines(): array
+    {
+        $count = count($this->blocking);
+
+        $lines = [
+            'This page was not published. '.($count === 1 ? 'One thing has to be fixed first.' : "{$count} things have to be fixed first."),
+        ];
+
+        foreach ($this->blocking as $finding) {
+            $field = $finding->location === null ? null : ($this->report?->blockFields[$finding->location->block] ?? null);
+            $lines[] = $finding->message.($field === null ? '' : " (in {$field})");
+        }
+
+        $lines[] = 'The grade never stops a publish, and neither do warnings or tips; they are in the Readability panel.';
+
+        return $lines;
+    }
 }

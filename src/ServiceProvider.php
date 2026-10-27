@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bpmore\Copydesk;
 
+use Bpmore\Copydesk\Gate\A11yGateBridge;
+use Bpmore\Copydesk\Gate\CopydeskGateContributor;
 use Bpmore\Copydesk\Gate\GateSettings;
 use Bpmore\Copydesk\Gate\OverrideLog;
 use Bpmore\Copydesk\Gate\OverridePasses;
@@ -84,6 +86,14 @@ class ServiceProvider extends AddonServiceProvider
         // the class is never autoloaded, and its missing interface is never
         // noticed. Site Weather is a suggestion, not a dependency.
         $this->app->tag(Weather\ReadabilityContributor::class, 'site-weather.contributors');
+
+        // One publish check with A11y Gate, when it is installed in a version
+        // that takes contributors: it asks Copydesk, and Copydesk's own
+        // listener stands aside. Otherwise Copydesk gates on its own.
+        if (A11yGateBridge::available()) {
+            $this->app->tag(CopydeskGateContributor::class, A11yGateBridge::TAG);
+            A11yGateBridge::join();
+        }
     }
 
     /**

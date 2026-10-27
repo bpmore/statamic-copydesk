@@ -249,8 +249,13 @@ import { clearIgnores, ignoresOf } from './editor/target.js';
                 clearIgnores(container);
             }
 
+            // The flagged words, cut short: a 60-word sentence is the whole
+            // excerpt of a very long sentence, and filled the sidebar.
             function jumpLabel(item) {
-                return 'Show ' + (item.issue.excerpt ? '\u201C' + item.issue.excerpt + '\u201D' : 'it') + ' in ' + item.label;
+                const words = Array.from(item.issue.excerpt || '');
+                const shown = words.length > 32 ? words.slice(0, 30).join('').replace(/\s+\S*$/, '') + '\u2026' : words.join('');
+
+                return 'Show ' + (shown ? '\u201C' + shown + '\u201D' : 'it') + ' in ' + item.label;
             }
 
             return { override, askToOverride, state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, ignoredCount, ignoredWords, stopIgnoring, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
