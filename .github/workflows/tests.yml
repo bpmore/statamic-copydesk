@@ -113,6 +113,10 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # The editor's position and spacing arithmetic, in Node's own runner.
+      - run: npm test
+
       - run: npm run build
 
       # The build is committed, because an addon ships its assets rather than

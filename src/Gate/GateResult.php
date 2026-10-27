@@ -26,6 +26,8 @@ final class GateResult
         public readonly string $reason,
         public readonly ?Report $report,
         public readonly array $blocking,
+        /** Why someone allowed this publish despite the findings; null when nobody did. */
+        public readonly ?string $override = null,
     ) {}
 
     /**
@@ -46,13 +48,44 @@ final class GateResult
         return new self(self::COULD_NOT_CHECK, $reason, null, []);
     }
 
+    /** The same result, let through on someone's say-so. */
+    public function overriddenBecause(string $reason): self
+    {
+        return new self($this->outcome, $this->reason, $this->report, $this->blocking, $reason);
+    }
+
     public function shouldRefuse(): bool
     {
-        return $this->blocking !== [];
+        return $this->blocking !== [] && $this->override === null;
     }
 
     public function couldNotBeChecked(): bool
     {
         return $this->outcome === self::COULD_NOT_CHECK;
+    }
+
+    /**
+     * The refusal, as the author reads it: what stopped the publish, each
+     * thing to fix with its field, and a reminder that nothing else did.
+     * Read as a list in the panel; the first line stands on its own.
+     *
+     * @return list<string>
+     */
+    public function lines(): array
+    {
+        $count = count($this->blocking);
+
+        $lines = [
+            'This page was not published. '.($count === 1 ? 'One thing has to be fixed first.' : "{$count} things have to be fixed first."),
+        ];
+
+        foreach ($this->blocking as $finding) {
+            $field = $finding->location === null ? null : ($this->report?->blockFields[$finding->location->block] ?? null);
+            $lines[] = $finding->message.($field === null ? '' : " (in {$field})");
+        }
+
+        $lines[] = 'The grade never stops a publish, and neither do warnings or tips; they are in the Readability panel.';
+
+        return $lines;
     }
 }

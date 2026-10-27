@@ -1,6 +1,6 @@
 # Plan: Copydesk and A11y Gate, one publish check
 
-**Status:** draft for Brent. Nothing in A11y Gate changes until he says so.
+**Status:** built on 2026-10-26 (Phase 1.7), with the changes in "What was built" at the end.
 **Date:** 2026-10-26
 **Read:** `statamic-a11y-gate` at `e7614af` (local copy, same as `origin/main`), `statamic-plain` at `872b700`.
 
@@ -113,3 +113,17 @@ Why a pass and not a field on the form: Statamic sends form values with an ordin
 - Checked by reading code: an ordinary CP save sends form values in the request (`statamic/cms` v6.38.0).
 - Assumed, unchecked: what the revisions publish request carries. The pass design does not depend on it.
 - Assumed, unchecked: the time estimates.
+
+## What was built (2026-10-26)
+
+- The contract as planned: `GateContributor` (`key`, `label`, `inspect`) and
+  `ContributedResult`, tag `a11y-gate.contributors`, one refusal with a key per source. A11y
+  Gate branch `gate-contributors`, for 0.11.0.
+- **Changed:** the override needs nothing from A11y Gate. Copydesk keeps its own pass, looks at
+  it during the gate, and uses it up on `EntrySaved`. A publish another gate refuses never
+  spends it, so `recordOverride` and `overridable()` are not in the contract.
+- **Not built:** A11y Gate's own override (`override accessibility gate`, `allow_override`). It
+  is a feature of A11y Gate alone now, for its own release if wanted.
+- Copydesk stands its listener aside only when A11y Gate's contract and its listener are both
+  there; otherwise it gates on its own.
+

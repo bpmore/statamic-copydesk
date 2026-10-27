@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk\Listeners;
 
 use Bpmore\Copydesk\Analysis\FieldText;
+use Bpmore\Copydesk\Analysis\Fingerprint;
 use Bpmore\Copydesk\Fieldtypes\ReadabilityPanel;
 use Bpmore\Copydesk\Settings;
 use Statamic\Events\EntryBlueprintFound;
@@ -25,7 +26,9 @@ use Statamic\Events\EntryBlueprintFound;
  * Statamic's create screen sends no entry reference and never sets the
  * blueprint's parent, so a fieldtype has nothing to ask; field config
  * does reach the browser, so the answer is put there by the one piece of
- * code that already knows it. `ensureField` is by handle, so a site that
+ * code that already knows it. So is the list of fields to check as the
+ * author types, which the editor reads from here: the fields themselves
+ * know nothing of the config. `ensureField` is by handle, so a site that
  * placed the field itself keeps its own placement.
  */
 final class AddPanelToBlueprints
@@ -51,14 +54,17 @@ final class AddPanelToBlueprints
 
         $blueprint = $event->blueprint;
         $readable = false;
+        $present = [];
 
         foreach ($this->settings->fieldsFor((string) $blueprint->handle()) as $handle) {
             $field = $blueprint->field($handle);
 
-            if ($field !== null && FieldText::isProse($field)) {
-                $readable = true;
-                break;
+            if ($field === null) {
+                continue;
             }
+
+            $present[] = $handle;
+            $readable = $readable || FieldText::isProse($field);
         }
 
         if (! $readable) {
@@ -72,6 +78,21 @@ final class AddPanelToBlueprints
                 'display' => 'Readability',
                 'collection' => substr($namespace, strlen('collections.')),
                 'blueprint' => $blueprint->handle(),
+                // The fields the editor checks as the author types: these,
+                // and the Bard, markdown and textarea fields nested in them.
+                'prose_fields' => $present,
+            ],
+            'sidebar',
+        );
+
+        // Where "Ignore here" is kept: a list nobody sees, saved with the
+        // entry like any other field, so the gate and the scan read it too.
+        $blueprint->ensureField(
+            Fingerprint::FIELD,
+            [
+                'type' => 'list',
+                'display' => 'Copydesk ignores',
+                'visibility' => 'hidden',
             ],
             'sidebar',
         );

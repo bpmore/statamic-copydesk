@@ -42,6 +42,55 @@ return [
 
     /*
     |---------------------------------------------------------------------------
+    | Targets by collection
+    |---------------------------------------------------------------------------
+    |
+    | A different grade for a collection, with the tolerance above: patient
+    | education might be written for grade 6 while news is written for 8.
+    | Collections not named here use the target above.
+    |
+    */
+
+    'targets' => [
+        // 'patient_education' => 6,
+    ],
+
+    /*
+    |---------------------------------------------------------------------------
+    | Paragraphs well above the target
+    |---------------------------------------------------------------------------
+    |
+    | A page can be on target while one paragraph is far past it. A paragraph
+    | is marked when its own grade starts more than `above_by` grades above
+    | the top of the target. Short paragraphs are left alone, because the
+    | formulas mean little on a few sentences: `min_words` is the fewest
+    | words a paragraph needs before its grade is trusted.
+    |
+    */
+
+    'paragraphs' => [
+        'enabled' => true,
+        'above_by' => 3,
+        'min_words' => 40,
+    ],
+
+    /*
+    |---------------------------------------------------------------------------
+    | House style packs
+    |---------------------------------------------------------------------------
+    |
+    | Which packs are on. Null turns on Copydesk's own core-punctuation,
+    | plain-language and inclusive-language packs, and every pack in
+    | resources/copydesk. A list turns on exactly those packs, by name, so
+    | news-style-starter, for one, is on only when it is listed. The packs
+    | and how to write your own are in the docs.
+    |
+    */
+
+    'packs' => null,
+
+    /*
+    |---------------------------------------------------------------------------
     | Fields
     |---------------------------------------------------------------------------
     |
@@ -95,7 +144,10 @@ return [
         'long_paragraph' => ['words' => 150, 'sentences' => 8, 'severity' => 'warning'],
         'passive_voice' => ['max_percent' => 20, 'severity' => 'warning'],
         'unexpanded_acronym' => ['severity' => 'warning'],
-        'jargon' => ['dictionary' => 'default', 'severity' => 'warning'],
+        // The site's own word list, kept on the settings screen. A word with
+        // nothing to say instead is an error; others take this severity.
+        // The starter list is the plain-language pack.
+        'jargon' => ['severity' => 'warning'],
         'nominalization' => ['severity' => 'tip'],
         'filler' => ['severity' => 'tip'],
     ],
@@ -105,16 +157,20 @@ return [
     | Gate
     |---------------------------------------------------------------------------
     |
-    | Off by default, and even on it blocks only on the hard rules named in
-    | 'block_on', never on a grade. A grade band is a heuristic; a press
+    | Copydesk Pro. Off by default. When on, publishing a page in one of these
+    | collections (all of them, if none is named) is refused while it has a
+    | finding whose severity is 'error': a very long sentence, a word on the
+    | site's list with nothing to say instead, or any rule a pack marks as an
+    | error. Never on a grade: a grade band is a heuristic, and a press
     | release stopped for scoring 11 is how a checker gets uninstalled.
+    | Drafts always save. Someone with "override copydesk gate" can publish
+    | anyway, once, giving a reason that is kept in the site report.
     |
     */
 
     'gate' => [
         'enabled' => false,
         'collections' => [],
-        'block_on' => ['very_long_sentence', 'jargon'],
     ],
 
     /*

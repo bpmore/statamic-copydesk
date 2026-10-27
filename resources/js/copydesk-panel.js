@@ -1,16 +1,24 @@
 /**
  * The readability panel, as a fieldtype a site places in a blueprint.
  *
- * A plain script rather than a built bundle. Statamic puts Vue on
- * `window.Vue` with the runtime template compiler, so a `template` string
- * works, and that removes npm, vite and a build step from an addon whose
- * product is one endpoint and the words it sends back. The pattern, and
- * every control-panel API used here, come from Accessibility Gate, where
- * they were read out of the control panel's own unminified build.
+ * Statamic puts Vue on `window.Vue` with the runtime template compiler, so
+ * a `template` string works, and the panel needs no single-file component.
+ * The pattern, and every control-panel API used here, come from
+ * Accessibility Gate, where they were read out of the control panel's own
+ * unminified build.
+ *
+ * It shows two things. What the fields found as the author typed, counted
+ * by severity, each issue a button that jumps to it; that is live, and
+ * comes from the editor (./editor). And the grade, on demand, from the
+ * full check, which reads the whole page.
  *
  * Everything visible is Statamic's own component library, so a defect in a
  * control is Statamic's to fix rather than ours to have shipped.
  */
+import { live } from './editor/live.js';
+import { SEVERITY, severityOf } from './editor/severity.js';
+import { clearIgnores, ignoresOf } from './editor/target.js';
+
 (function () {
     // Provided by the publish container: `values` is the form as it stands
     // right now, `reference` is "entry::<id>" on an edit screen and nothing
@@ -145,6 +153,36 @@
 
             const showRefusal = Vue.computed(() => refusal.value.length > 0 && ! state.result && ! state.failed && ! state.checking);
 
+            // "Publish anyway", for someone allowed to: a reason, then a pass
+            // for their next publish of this page.
+            const override = Vue.reactive({ open: false, reason: '', sending: false, done: null, failed: null });
+
+            async function askToOverride() {
+                override.sending = true;
+                override.failed = null;
+
+                try {
+                    const { data } = await Statamic.$app.config.globalProperties.$axios.post(cp_url('copydesk/override'), {
+                        reference: container.reference?.value,
+                        collection: props.config?.collection,
+                        reason: override.reason,
+                    });
+
+                    override.done = data.message;
+                    override.open = false;
+                } catch (e) {
+                    override.failed = e.response?.data?.message || 'The pass could not be given.';
+                } finally {
+                    override.sending = false;
+                }
+            }
+
+            // A new refusal starts the form again.
+            Vue.watch(refusal, () => {
+                override.done = null;
+                override.failed = null;
+            });
+
             const verdict = Vue.computed(() => {
                 const r = state.result;
 
@@ -183,7 +221,44 @@
                 return spans.slice(0, 5);
             }
 
-            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal };
+            // Every field's issues from as the author typed, worst first,
+            // in the order of the form within each severity.
+            const liveItems = Vue.computed(() => Object.values(live.fields)
+                .flatMap((field) => field.issues.map((item) => ({ ...item, label: field.label })))
+                .sort((a, b) => SEVERITY[severityOf(a.issue)].order - SEVERITY[severityOf(b.issue)].order));
+
+            const liveCounts = Vue.computed(() => SEVERITIES
+                .map((s) => {
+                    const n = liveItems.value.filter((item) => severityOf(item.issue) === s.key || (s.key === 'tip' && item.issue.severity === 'info')).length;
+
+                    return { key: s.key, color: s.color, n, badge: n === 1 ? s.one : s.many(n) };
+                })
+                .filter((c) => c.n > 0));
+
+            const LIVE_SHOWN = 20;
+
+            // "Ignore here", kept on the entry. Shown with a way to undo it,
+            // so an ignore is never a problem nobody can see.
+            const ignoredCount = Vue.computed(() => ignoresOf(container).length);
+
+            function ignoredWords(n) {
+                return n === 1 ? '1 thing is ignored on this page.' : n + ' things are ignored on this page.';
+            }
+
+            function stopIgnoring() {
+                clearIgnores(container);
+            }
+
+            // The flagged words, cut short: a 60-word sentence is the whole
+            // excerpt of a very long sentence, and filled the sidebar.
+            function jumpLabel(item) {
+                const words = Array.from(item.issue.excerpt || '');
+                const shown = words.length > 32 ? words.slice(0, 30).join('').replace(/\s+\S*$/, '') + '\u2026' : words.join('');
+
+                return 'Show ' + (shown ? '\u201C' + shown + '\u201D' : 'it') + ' in ' + item.label;
+            }
+
+            return { override, askToOverride, state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, ignoredCount, ignoredWords, stopIgnoring, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
         },
 
         // No panel or header of its own: a field is already drawn inside the
@@ -204,12 +279,54 @@
         // who wants them; the decimals are never the headline.
         template: `
             <div class="space-y-3">
+                <div v-if="liveItems.length || ignoredCount" class="space-y-2">
+                    <ui-heading size="sm" text="As you type" />
+                    <div class="flex flex-wrap gap-2">
+                        <div v-for="c in liveCounts" :key="c.key"><ui-badge :color="c.color" :text="c.badge" /></div>
+                    </div>
+                    <ul class="space-y-1">
+                        <li v-for="(item, i) in liveItems.slice(0, LIVE_SHOWN)" :key="'l' + i" class="text-xs">
+                            <button type="button" class="copydesk-jump" @click="item.reveal()">{{ jumpLabel(item) }}</button>
+                            <span>{{ ': ' + severityWord(item.issue) + '. ' + item.issue.message }}</span>
+                        </li>
+                    </ul>
+                    <p v-if="liveItems.length > LIVE_SHOWN" class="text-xs">{{ 'And ' + (liveItems.length - LIVE_SHOWN) + ' more.' }}</p>
+                    <p v-if="ignoredCount" class="text-xs">
+                        {{ ignoredWords(ignoredCount) + ' ' }}
+                        <button type="button" class="copydesk-jump" @click="stopIgnoring">Stop ignoring</button>
+                    </p>
+                </div>
+
                 <ui-alert
                     v-if="showRefusal"
                     variant="error"
                     :heading="refusal[0]"
                     :text="refusal.slice(1).join(' ')"
                 />
+
+                <div v-if="showRefusal && meta && meta.canOverride" class="space-y-2">
+                    <ui-description v-if="override.done" :text="override.done" />
+                    <div v-else-if="!override.open">
+                        <ui-button size="sm" text="Publish anyway" @click="override.open = true" />
+                    </div>
+                    <form v-else class="space-y-2" @submit.prevent="askToOverride">
+                        <label class="block text-sm" for="copydesk-override-reason">Why should this page publish as it is?</label>
+                        <textarea
+                            id="copydesk-override-reason"
+                            v-model="override.reason"
+                            class="copydesk-reason"
+                            rows="3"
+                            required
+                            aria-describedby="copydesk-override-help"
+                        ></textarea>
+                        <p id="copydesk-override-help" class="text-xs">A few words. They are kept with the page in the site report.</p>
+                        <ui-alert v-if="override.failed" variant="error" :text="override.failed" />
+                        <div class="flex gap-2">
+                            <div><ui-button size="sm" type="submit" variant="primary" :disabled="override.sending" :text="override.sending ? 'Sending' : 'Allow one publish'" /></div>
+                            <div><ui-button size="sm" text="Cancel" @click="override.open = false" /></div>
+                        </div>
+                    </form>
+                </div>
 
                 <ui-description
                     v-if="meta && meta.can === false"
@@ -255,6 +372,7 @@
                             <div v-for="(s, i) in sections" :key="'s' + i" class="flex flex-wrap items-center gap-2">
                                 <span class="text-sm">{{ s.name }}</span>
                                 <ui-badge :color="s.color" :text="s.label" />
+                                <span v-if="s.grades" class="text-xs">Flesch-Kincaid {{ s.grades.flesch_kincaid }} · reading ease {{ s.grades.reading_ease }}</span>
                                 <span v-if="s.findings" class="text-xs">{{ s.findings === 1 ? '1 finding' : s.findings + ' findings' }}</span>
                             </div>
                         </div>
@@ -270,6 +388,11 @@
                         </div>
 
                         <div v-if="state.result.band && !groups.length"><ui-badge color="emerald" text="Nothing to fix" /></div>
+
+                        <ui-description
+                            v-if="state.result.summary && state.result.summary.ignored"
+                            :text="state.result.summary.ignored === 1 ? '1 finding is ignored here, and not counted above.' : state.result.summary.ignored + ' findings are ignored here, and not counted above.'"
+                        />
 
                         <details v-if="state.result.grades" class="text-xs">
                             <summary>The numbers behind the band</summary>

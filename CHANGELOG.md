@@ -19,9 +19,45 @@ name, so there is nothing to migrate. What changed:
   `storage/statamic/copydesk/`.
 - The Readability page is at `/cp/utilities/copydesk`, and its
   permission is `access copydesk utility`.
+- **House style on the publish form.** The panel's check runs the house
+  rules beside the readability rules: core punctuation, plain language and
+  inclusive language by default, plus any packs in `resources/copydesk`.
+  The site's word list is now one of them. A collection can have its own
+  target grade (`targets`), each section shows Flesch-Kincaid and reading
+  ease, and a paragraph far above the target is marked.
 - **Free and Pro editions.** Listed in `composer.json`; a site runs Free
   until it sets `'bpmore/statamic-copydesk' => 'pro'` in
-  `config/statamic/editions.php`. Nothing differs between them yet.
+  `config/statamic/editions.php`. Free: the punctuation pack, term rules,
+  the readability grade, the word list and the editor's underlines. Pro:
+  every other pack and kind of rule, the rule editor, the gate, the site
+  report and the Site Weather signal.
+- **Underlines as you type.** Bard underlines what breaks a rule, by
+  severity, with a box of suggestions and "Ignore here"; markdown, textarea
+  and text fields list the same under the field; the panel counts them and
+  jumps to each. Bard nested in Replicator and Grid is checked too.
+- **Ignore here** keeps a fingerprint of the rule and sentence on the entry
+  (`copydesk_ignores`), honoured by the panel, gate and report, and always
+  counted.
+- **The gate blocks on `error`** findings, never on a grade. `block_on` is
+  gone: what blocks is now the rule's severity. Its two rules were already
+  errors, so nothing that blocked stops blocking. Pro.
+- **Publish anyway**, with a reason, for `override copydesk gate`: a pass
+  for one publish within ten minutes; the reason is kept in the site report.
+- **One refusal with A11y Gate** 0.11 or newer: Copydesk joins its check.
+- **The site report** scans in queued jobs of fifty with progress, and adds
+  issues by rule, collection and page, ignored counts, overrides, and a CSV.
+  Pages too short to grade are reported when they break a rule.
+- **`copydesk:scan --fail-on=error|warning|tip`** exits 1 on a finding at or
+  above that severity.
+- **The rule editor** (Pro): a site's own packs in a form, with "Try it on
+  some text", written back as YAML after the same checks Copydesk reads
+  them with.
+- **New permissions:** `view copydesk report`, `manage copydesk rules`,
+  `override copydesk gate`.
+
+**What to do about it:** if your config has `gate.block_on`, remove it; it
+is no longer read. To keep a rule from blocking, set its severity to
+`warning`.
 - **Positions in the text as written.** Every finding in the panel's data
   now says where it is in the field as the author wrote it, through
   readability-core 0.2's map, which the coming editor underlines need.

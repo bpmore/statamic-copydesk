@@ -14,6 +14,8 @@ final class EntryResult
      * @param  array{low: int, high: ?int, label: string}|null  $band
      * @param  list<string>  $acronyms  each unexpanded acronym found, as written
      * @param  list<string>  $jargon  each dictionary term found, as written
+     * @param  array<string, array{severity: string, count: int}>  $rules  what was found, by rule
+     * @param  int  $ignored  findings left out because someone chose "Ignore here"
      */
     public function __construct(
         public readonly string $id,
@@ -29,7 +31,14 @@ final class EntryResult
         public readonly int $tips,
         public readonly array $acronyms,
         public readonly array $jargon,
+        public readonly array $rules = [],
+        public readonly int $ignored = 0,
     ) {}
+
+    public function issues(): int
+    {
+        return $this->errors + $this->warnings + $this->tips;
+    }
 
     public function isGraded(): bool
     {
@@ -49,6 +58,8 @@ final class EntryResult
      */
     public static function fromArray(array $data): self
     {
-        return new self(...$data);
+        // Only the keys this version knows: a scan cached by an older one
+        // has fewer, and the new ones have defaults.
+        return new self(...array_intersect_key($data, array_flip(array_keys(get_class_vars(self::class)))));
     }
 }

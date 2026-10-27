@@ -8,7 +8,6 @@ use Bpmore\Copydesk\Gate\GateSettings;
 use Bpmore\ReadabilityCore\Exclusion\Pipeline;
 use Bpmore\ReadabilityCore\Formula\Target;
 use Bpmore\ReadabilityCore\Locale\LocaleGuard;
-use Bpmore\ReadabilityCore\Rule\Dictionary;
 use Bpmore\ReadabilityCore\Rule\Jargon;
 use Bpmore\ReadabilityCore\Rule\RuleSet;
 
@@ -42,9 +41,60 @@ final class Settings
         return LocaleGuard::fromConfig($this->config);
     }
 
-    public function target(): Target
+    /**
+     * The reading level to write for: the collection's own target when
+     * `targets` names one, otherwise the site's. A collection's target is a
+     * grade, with the site's tolerance either side.
+     */
+    public function target(?string $collection = null): Target
     {
-        return Target::fromConfig((array) ($this->config['target'] ?? []));
+        $site = (array) ($this->config['target'] ?? []);
+        $grade = $collection === null ? null : ($this->config['targets'][$collection] ?? null);
+
+        return Target::fromConfig(is_numeric($grade) ? ['grade' => (int) $grade, 'tolerance' => $site['tolerance'] ?? 1] : $site);
+    }
+
+    /**
+     * The packs a site has turned on, or null for the default: Copydesk's
+     * own (see HouseRules) and every pack in resources/copydesk.
+     *
+     * @return list<string>|null
+     */
+    public function packs(): ?array
+    {
+        $packs = $this->config['packs'] ?? null;
+
+        return is_array($packs) ? array_values(array_map(strval(...), $packs)) : null;
+    }
+
+    /**
+     * Options for the site's word list: `enabled`, `severity`, and an
+     * optional `dictionary` of extra words, as the engine's jargon rule read
+     * them. Kept under `rules.jargon`, where Plain had them.
+     *
+     * @return array<string, mixed>
+     */
+    public function siteWords(): array
+    {
+        return (array) ($this->config['rules']['jargon'] ?? []);
+    }
+
+    /**
+     * When a paragraph is marked as reading well above the target: how many
+     * grades above the top of the target, and the fewest words a paragraph
+     * needs before its grade means anything.
+     *
+     * @return array{enabled: bool, above_by: int, min_words: int}
+     */
+    public function paragraphs(): array
+    {
+        $options = (array) ($this->config['paragraphs'] ?? []);
+
+        return [
+            'enabled' => (bool) ($options['enabled'] ?? true),
+            'above_by' => max(0, (int) ($options['above_by'] ?? 3)),
+            'min_words' => max(1, (int) ($options['min_words'] ?? 40)),
+        ];
     }
 
     /**
@@ -85,22 +135,13 @@ final class Settings
     }
 
     /**
-     * The rules, with the jargon rule on the given dictionary rather than
-     * the bare starter: the site's own entries come from the settings
-     * screen, not the config file.
+     * The engine's readability rules. Not its jargon rule: the site's word
+     * list and the plain-language pack are house rules now (HouseRules), and
+     * running both would report every word twice.
      */
-    public function rules(?Dictionary $dictionary = null): RuleSet
+    public function rules(): RuleSet
     {
-        $config = (array) ($this->config['rules'] ?? []);
-        $rules = RuleSet::fromConfig($config);
-
-        if ($dictionary === null || ! in_array(Jargon::HANDLE, $rules->handles(), true)) {
-            return $rules;
-        }
-
-        $options = is_array($config[Jargon::HANDLE] ?? null) ? $config[Jargon::HANDLE] : [];
-
-        return $rules->without(Jargon::HANDLE)->with(new Jargon($options, $dictionary));
+        return RuleSet::fromConfig((array) ($this->config['rules'] ?? []))->without(Jargon::HANDLE);
     }
 
     public function gate(): GateSettings

@@ -24,6 +24,8 @@ use Statamic\Facades\Site;
  * stand-in; where it is not installed, as on a CI runner, this file skips.
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     if (! interface_exists(WeatherContributor::class)) {
         $this->markTestSkipped('Site Weather is not installed here; its contract cannot be tested.');
     }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bpmore\Copydesk\Fieldtypes;
 
+use Bpmore\Copydesk\Edition;
+use Bpmore\Copydesk\Gate\PublishGate;
 use Statamic\Facades\User;
 use Statamic\Fields\Fieldtype;
 
@@ -46,12 +48,16 @@ class ReadabilityPanel extends Fieldtype
     }
 
     /**
-     * Whether this user may check, handed to the component as `meta` when
-     * the form loads, so the panel can say so instead of showing a button
-     * that would only ever answer 403.
+     * Whether this user may check, and may publish past the gate, handed to
+     * the component as `meta` when the form loads, so the panel can say so
+     * instead of showing a button that would only ever answer 403.
      */
     public function preload()
     {
-        return ['can' => (bool) User::current()?->can('view readability')];
+        return [
+            'can' => (bool) User::current()?->can('view readability'),
+            // Whether to offer "Publish anyway" when the gate refuses.
+            'canOverride' => Edition::isPro() && (bool) User::current()?->can(PublishGate::OVERRIDE),
+        ];
     }
 }

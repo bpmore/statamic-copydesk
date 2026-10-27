@@ -44,6 +44,8 @@ final class Report
         public readonly Findings $findings,
         public readonly array $notices = [],
         public readonly array $writtenRules = [],
+        /** Findings left out because the author chose "Ignore here" for them. */
+        public readonly int $ignored = 0,
     ) {}
 
     public static function refused(Decision $locale, Target $target): self
@@ -101,11 +103,17 @@ final class Report
                 'band' => self::band_($section->band()),
                 'comparison' => $section->band() === null ? null : $this->target->compare($section->band())->value,
                 'words' => $section->counts->words,
+                // The two numbers people most often ask for, beside the band.
+                'grades' => ($g = Grades::of($section->counts)) === null ? null : [
+                    'flesch_kincaid' => round($g->fleschKincaid, 1),
+                    'reading_ease' => round($g->readingEase, 1),
+                ],
                 'findings' => count($section->findings($this->findings)),
                 'blocks' => $section->indexes,
             ], $this->sections),
             'findings' => array_map($this->finding(...), $this->findings->all()),
             'summary' => [
+                'ignored' => $this->ignored,
                 'errors' => count($this->findings->ofSeverity(Severity::Error)),
                 'warnings' => count($this->findings->ofSeverity(Severity::Warning)),
                 'tips' => count($this->findings->ofSeverity(Severity::Tip)),
@@ -128,6 +136,10 @@ final class Report
             'suggestion' => $finding->suggestion,
             'field' => $location === null ? null : ($this->blockFields[$location->block] ?? null),
             'block' => $location?->block,
+            // What "Ignore here" stores for it; null when it cannot be ignored.
+            'fingerprint' => $location === null || ! isset($this->document->blocks[$location->block])
+                ? null
+                : Fingerprint::of($this->document->blocks[$location->block], $finding, in_array($finding->rule, $this->writtenRules, true)),
             'offset' => $location?->offset,
             'length' => $location?->length,
             // Where it is in the field as the author wrote it, for the editor.

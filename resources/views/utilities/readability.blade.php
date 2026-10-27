@@ -16,7 +16,8 @@
     is for the file in and the file out, which a form there cannot do.
 
     The scan is of the site selected in the control panel, cached for an
-    hour; the button scans again. Tables are plain elements with the few
+    hour; the button scans again. A scan runs as queued jobs; while it does,
+    $scan is null and the page shows how far it has got. Tables are plain elements with the few
     classes the control panel's own build is known to carry.
 --}}
 
@@ -28,7 +29,15 @@
     <ui-description text="{!! e($companion) !!}" />
     @endif
 
-    @if ($scan->refusal !== null)
+    @if (($reportRefusal ?? null) !== null)
+    <ui-card-panel heading="{!! e($site->name()) !!}">
+        <p class="text-sm">{!! e($reportRefusal) !!}</p>
+    </ui-card-panel>
+    @elseif ($scan === null)
+    <ui-card-panel heading="{!! e($site->name()) !!}">
+        <copydesk-scan-progress url="{!! e(cp_route('utilities.copydesk.progress', $site->handle())) !!}" />
+    </ui-card-panel>
+    @elseif ($scan->refusal !== null)
     <ui-card-panel heading="{!! e($site->name()) !!}">
         <p>{!! e($scan->refusal) !!}</p>
     </ui-card-panel>
@@ -123,6 +132,116 @@
             </tbody>
         </table>
         @endif
+    </ui-card-panel>
+    @endif
+
+    @if ($scan !== null && $scan->refusal === null && $scan->pagesWithIssues() !== [])
+    @php($issuePages = $scan->pagesWithIssues())
+    <ui-card-panel heading="What to fix, by rule">
+        <div class="space-y-3">
+            <p class="text-sm">
+                Every published page, against the site's house rules and the readability rules. Errors stop a publish when the gate is on.
+                @if ($scan->ignored() > 0)
+                {!! e($scan->ignored() === 1 ? '1 finding is' : $scan->ignored().' findings are') !!} ignored by authors ("Ignore here") and not counted below.
+                @endif
+            </p>
+            <table class="w-full text-sm">
+                <thead><tr class="text-left"><th class="py-1 pr-4">Rule</th><th class="py-1 pr-4">How bad</th><th class="py-1 pr-4">Times</th><th class="py-1">Pages</th></tr></thead>
+                <tbody>
+                @foreach ($scan->byRule() as $row)
+                    <tr><td class="py-1 pr-4">{!! e($row['rule']) !!}</td><td class="py-1 pr-4">{!! e(['error' => 'to fix', 'warning' => 'to look at', 'tip' => 'tip'][$row['severity']] ?? $row['severity']) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </ui-card-panel>
+
+    <ui-card-panel heading="What to fix, by collection">
+        <table class="w-full text-sm">
+            <thead><tr class="text-left"><th class="py-1 pr-4">Collection</th><th class="py-1 pr-4">Pages with issues</th><th class="py-1 pr-4">To fix</th><th class="py-1 pr-4">To look at</th><th class="py-1 pr-4">Tips</th><th class="py-1">Ignored</th></tr></thead>
+            <tbody>
+            @foreach ($scan->issuesByCollection() as $row)
+                <tr><td class="py-1 pr-4">{!! e($row['title']) !!}</td><td class="py-1 pr-4">{!! e($row['pages']) !!}</td><td class="py-1 pr-4">{!! e($row['errors']) !!}</td><td class="py-1 pr-4">{!! e($row['warnings']) !!}</td><td class="py-1 pr-4">{!! e($row['tips']) !!}</td><td class="py-1">{!! e($row['ignored']) !!}</td></tr>
+            @endforeach
+            </tbody>
+        </table>
+    </ui-card-panel>
+
+    <ui-card-panel heading="Pages with the most to fix">
+        <div class="space-y-3">
+            <table class="w-full text-sm">
+                <thead><tr class="text-left"><th class="py-1 pr-4">Page</th><th class="py-1 pr-4">Collection</th><th class="py-1 pr-4">To fix</th><th class="py-1 pr-4">To look at</th><th class="py-1 pr-4">Tips</th><th class="py-1">Ignored</th></tr></thead>
+                <tbody>
+                @foreach (array_slice($issuePages, 0, 25) as $page)
+                    <tr>
+                        <td class="py-1 pr-4"><a href="{!! e($page->editUrl) !!}" class="underline underline-offset-2">{!! e($page->title) !!}</a></td>
+                        <td class="py-1 pr-4">{!! e($page->collectionTitle) !!}</td>
+                        <td class="py-1 pr-4">{!! e($page->errors) !!}</td>
+                        <td class="py-1 pr-4">{!! e($page->warnings) !!}</td>
+                        <td class="py-1 pr-4">{!! e($page->tips) !!}</td>
+                        <td class="py-1">{!! e($page->ignored) !!}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+            <div class="flex flex-wrap items-center gap-3">
+                <ui-button size="sm" href="{!! e(cp_route('utilities.copydesk.issues', $site->handle())) !!}" text="Download every issue (CSV)" />
+                @if (count($issuePages) > 25)
+                <span class="text-xs">{!! e(count($issuePages) - 25) !!} more pages are in the download.</span>
+                @endif
+            </div>
+        </div>
+    </ui-card-panel>
+    @endif
+
+    @if (($reportRefusal ?? null) === null && ($overrides ?? []) !== [])
+    <ui-card-panel heading="Published past the gate">
+        <div class="space-y-3">
+            <p class="text-sm">Every page someone published while the gate would have stopped it, newest first, with the reason they gave.</p>
+            <table class="w-full text-sm">
+                <thead><tr class="text-left"><th class="py-1 pr-4">Page</th><th class="py-1 pr-4">Rules</th><th class="py-1 pr-4">Who and when</th><th class="py-1">Reason</th></tr></thead>
+                <tbody>
+                @foreach ($overrides as $row)
+                    <tr>
+                        <td class="py-1 pr-4">{!! e($row['title'] ?? '') !!} <span class="text-xs">({!! e($row['collection'] ?? '') !!})</span></td>
+                        <td class="py-1 pr-4">{!! e(implode(', ', (array) ($row['rules'] ?? []))) !!}</td>
+                        <td class="py-1 pr-4">{!! e($row['user_name'] ?? '') !!}, {!! e(\Illuminate\Support\Carbon::parse($row['at'] ?? 'now')->toDayDateTimeString()) !!}</td>
+                        <td class="py-1">{!! e($row['reason'] ?? '') !!}</td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </ui-card-panel>
+    @endif
+
+    @if (isset($packs))
+    <ui-card-panel heading="House style packs">
+        <div class="space-y-3">
+            <p class="text-sm">Copydesk ships {!! e(implode(', ', $packs['bundled'])) !!}. A site's own packs live in resources/copydesk and can extend them.</p>
+            @if ($packs['site'] !== [])
+            <ul class="text-sm space-y-1">
+                @foreach ($packs['site'] as $pack)
+                <li>
+                    <span class="font-medium">{!! e($pack) !!}</span>
+                    @if ($packs['canEdit'])
+                    <a class="underline underline-offset-2 ml-2" href="{!! e(cp_route('copydesk.packs.edit', $pack)) !!}">Edit the rules</a>
+                    @endif
+                </li>
+                @endforeach
+            </ul>
+            @else
+            <p class="text-sm">This site has no pack of its own yet.</p>
+            @endif
+            @if ($packs['canEdit'])
+            <form method="post" action="{!! e(cp_route('copydesk.packs.store')) !!}" class="flex flex-wrap items-end gap-2">
+                {!! csrf_field() !!}
+                <label class="text-sm" for="copydesk-new-pack">New pack name</label>
+                <input id="copydesk-new-pack" name="name" type="text" class="copydesk-reason" style="max-width: 16rem" placeholder="house" required pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+                <ui-button size="sm" type="submit" text="Start a pack" />
+            </form>
+            @endif
+        </div>
     </ui-card-panel>
     @endif
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Bpmore\Copydesk\Weather;
 
+use Bpmore\Copydesk\Edition;
 use Bpmore\Copydesk\Scan\ScanHistory;
 use Bpmore\Copydesk\Settings;
 use Bpmore\SiteWeather\Contracts\WeatherContributor;
@@ -64,6 +65,10 @@ final class ReadabilityContributor implements WeatherContributor
 
     public function reading(): Reading
     {
+        if (! Edition::isPro()) {
+            return Reading::unknown('The Site Weather signal is part of Copydesk Pro', null);
+        }
+
         $url = Utility::find('copydesk')?->url();
         $site = Site::selected();
 

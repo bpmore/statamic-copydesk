@@ -60,50 +60,50 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.4: One analysis
 
-- [ ] The analyzer runs readability rules and style rules together, each rule only where its `scope` says, and returns one list of findings with character offsets.
-- [ ] Targets per collection in config (`targets: ['patient_education' => 8]`), falling back to the site target.
-- [ ] Plain's dictionary becomes the site's `word_list` pack: what the settings screen saves is read as a pack, so nothing a site entered is lost. Import and export keep working.
-- [ ] Readability details (D3): Flesch-Kincaid and reading ease beside the band, per page and per section, from `readability-core` (acceptance 5).
-- [ ] A paragraph that reads well above target is marked (D3). How far above counts as "well above" is a config value, with the default and its reason in the config file.
+- [x] The analyzer runs readability rules and style rules together, each rule only where its `scope` says, and returns one list of findings with character offsets.
+- [x] Targets per collection in config (`targets: ['patient_education' => 8]`), falling back to the site target.
+- [x] Plain's dictionary becomes the site's `word_list` pack: what the settings screen saves is read as a pack, so nothing a site entered is lost. Import and export keep working.
+- [x] Readability details (D3): Flesch-Kincaid and reading ease beside the band, per page and per section, from `readability-core` (acceptance 5).
+- [x] A paragraph that reads well above target is marked (D3). How far above counts as "well above" is a config value, with the default and its reason in the config file.
 
 ## Phase 1.5: In the editor
 
-- [ ] **Spike first.** Prove a Bard extension added through `Statamic.$bard.addExtension` can draw ProseMirror decorations using the editor's own ProseMirror, not a second bundled copy (a second copy breaks decorations silently). Write down what was found. If it cannot, stop and say so here before the next task.
-- [ ] `POST /cp/copydesk/lint`: one field's text in, issues with character offsets out. Needs the same permission and entry access as the panel's check.
-- [ ] Bard underlines, debounced 600 ms per field: dotted for info, wavy for warning, double for error, never colour alone. Acceptance 1: an em dash typed in Bard is underlined within a second.
-- [ ] The popover: message, suggestion buttons that replace the text, "Ignore here". Keyboard reachable, announced to screen readers, focus returned to the text after.
-- [ ] Markdown, textarea and text fields (D4): the field's issues as a list under it, debounced the same way, with the same suggestions and "Ignore here".
-- [ ] Bard nested in a Replicator set inside Grid (acceptance 8), with a fixture for it.
-- [ ] The sidebar panel: grade against target, issue counts by severity, a link that jumps to each issue.
+- [x] **Spike first.** Prove a Bard extension added through `Statamic.$bard.addExtension` can draw ProseMirror decorations using the editor's own ProseMirror, not a second bundled copy (a second copy breaks decorations silently). Write down what was found. If it cannot, stop and say so here before the next task.
+- [x] `POST /cp/copydesk/lint`: one field's text in, issues with character offsets out. Needs the same permission and entry access as the panel's check.
+- [x] Bard underlines, debounced 600 ms per field: dotted for info, wavy for warning, double for error, never colour alone. Acceptance 1: an em dash typed in Bard is underlined within a second.
+- [x] The popover: message, suggestion buttons that replace the text, "Ignore here". Keyboard reachable, announced to screen readers, focus returned to the text after.
+- [x] Markdown, textarea and text fields (D4): the field's issues as a list under it, debounced the same way, with the same suggestions and "Ignore here".
+- [x] Bard nested in a Replicator set inside Grid (acceptance 8), with a fixture for it.
+- [x] The sidebar panel: grade against target, issue counts by severity, a link that jumps to each issue.
 
 ## Phase 1.6: Ignores
 
-- [ ] "Ignore here" stores a fingerprint (rule id plus a hash of the sentence) in a hidden `copydesk_ignores` field on the entry. A changed sentence no longer matches, so the ignore lapses.
-- [ ] Ignored findings are left out of the editor and the gate, and counted in the report so they cannot hide problems quietly.
+- [x] "Ignore here" stores a fingerprint (rule id plus a hash of the sentence) in a hidden `copydesk_ignores` field on the entry. A changed sentence no longer matches, so the ignore lapses.
+- [x] Ignored findings are left out of the editor and the gate, and counted in the report so they cannot hide problems quietly.
 
 ## Phase 1.7: The gate (Pro)
 
-- [ ] Blocks a publish on any finding whose severity is `error`. Never on a grade. Drafts always save. Fails open when the check itself breaks, as now. The message names each failing rule (acceptance 3).
-- [ ] `override copydesk gate`: "Publish anyway" with a required reason, through the one-time pass in `docs/a11y-gate-plan.md`. The reason is logged and shown in the report (acceptance 4).
-- [ ] A11y Gate: the contributor contract in A11y Gate (its own repo and PR), then Copydesk signing up to it and standing down its own listener when the contract is there. As planned in `docs/a11y-gate-plan.md`.
+- [x] Blocks a publish on any finding whose severity is `error`. Never on a grade. Drafts always save. Fails open when the check itself breaks, as now. The message names each failing rule (acceptance 3).
+- [x] `override copydesk gate`: "Publish anyway" with a required reason, through the one-time pass in `docs/a11y-gate-plan.md`. The reason is logged and shown in the report (acceptance 4).
+- [x] A11y Gate: the contributor contract in A11y Gate (its own repo and PR), then Copydesk signing up to it and standing down its own listener when the contract is there. As planned in `docs/a11y-gate-plan.md`.
 
 ## Phase 1.8: Site report and command
 
-- [ ] The site scan runs as queued jobs of 50 entries, with progress on the report page, instead of inside the web request.
-- [ ] The report: issues by collection, by rule and by page; ignored counts; overrides with their reasons; CSV export.
-- [ ] `copydesk:scan {--site=} {--collection=} {--fail-on=error}`: exit 1 when any published entry has a finding at or above that severity, 0 otherwise (acceptance 6). The existing `--fail-above` and `--export` stay.
+- [x] The site scan runs as queued jobs of 50 entries, with progress on the report page, instead of inside the web request.
+- [x] The report: issues by collection, by rule and by page; ignored counts; overrides with their reasons; CSV export.
+- [x] `copydesk:scan {--site=} {--collection=} {--fail-on=error}`: exit 1 when any published entry has a finding at or above that severity, 0 otherwise (acceptance 6). The existing `--fail-above` and `--export` stay.
 
 ## Phase 1.9: Rule editor (Pro)
 
-- [ ] A form-based editor for site packs: add, edit and disable rules, and try a rule on sample text before saving. Writes YAML. Needs `manage copydesk rules`.
+- [x] A form-based editor for site packs: add, edit and disable rules, and try a rule on sample text before saving. Writes YAML. Needs `manage copydesk rules`.
 
 ## Phase 1.10: Ready to ship
 
-- [ ] Permissions as the spec lists them (`view copydesk report`, `manage copydesk rules`, `override copydesk gate`) alongside the existing ones; none granted to anyone but super admins by default.
-- [ ] Free and Pro split as the spec lists it, through the editions helper.
-- [ ] Every CP screen: an axe scan and a keyboard-only walkthrough.
-- [ ] README and editor docs for Copydesk; CHANGELOG; `docs/marketplace.md`; a grep for U+2014 that finds only rule definitions and the specs.
-- [ ] Installed on greenhouse beside every other bpmore addon: no clashes in route names, permission handles, nav sections or JS globals.
+- [x] Permissions as the spec lists them (`view copydesk report`, `manage copydesk rules`, `override copydesk gate`) alongside the existing ones; none granted to anyone but super admins by default.
+- [x] Free and Pro split as the spec lists it, through the editions helper.
+- [x] Every CP screen: an axe scan and a keyboard-only walkthrough.
+- [x] README and editor docs for Copydesk; CHANGELOG; `docs/marketplace.md`; a grep for U+2014 that finds only rule definitions and the specs.
+- [x] Installed on greenhouse beside every other bpmore addon: no clashes in route names, permission handles, nav sections or JS globals.
 
 ## Rough size
 
@@ -346,4 +346,193 @@ Guesses from the size of the Plain code and the spec, not measured.
 - **For Phase 1.4:** the engine's own `jargon` rule uses the same plainlanguage.gov list. When the
   `plain-language` pack is on, the analyzer must not run `jargon` too, or every word is reported
   twice.
+
+### 2026-10-26: Phase 1.4: one analysis
+- `Analysis\HouseRules` gives a check its house rules: the `packs` setting if a site lists
+  packs, otherwise core-punctuation, plain-language and inclusive-language plus every site pack
+  (news-style-starter is opt-in), resolved for the collection; and the site's own word list.
+- **The site's word list is a house rule now, keeping the id `jargon`.** The settings screen's
+  rows (and `rules.jargon.dictionary`, if set) become a `word_list` rule: a word with nothing to
+  say instead is an `error`, others take `rules.jargon.severity`. Keeping the id means the gate,
+  the site report and the CSV read it unchanged; import and export are untouched. The engine's
+  own `jargon` rule is no longer run: the plain-language pack carries its starter list, and
+  running both reported every word twice. Starter words now report as `plain-words`.
+- The analyzer runs house rules field by field, each only where its scope says, and shifts the
+  findings into the joined document. Readability rules still see the joined document.
+- **The title** reaches casing rules as a heading block, after sections and grades are cut, so it
+  is never a section or graded. Skipped when a site lists `title` as a prose field.
+- **Targets:** `targets` sets a grade per collection, with the site's tolerance.
+- **D3:** every section in the report carries Flesch-Kincaid and reading ease, and the panel
+  shows them beside the band. A test holds both to the engine's own numbers (acceptance 5).
+  A paragraph whose own band starts more than `paragraphs.above_by` (3) grades past the top of
+  the target is marked `hard_paragraph` (warning), once it has `paragraphs.min_words` (40).
+- `writtenRules` reaches the report from the house rules, so punctuation findings report their
+  place in the text as written (tested with a double space after curly quotes).
+- Free and Pro are not split yet (Phase 1.10).
+
+### 2026-10-26: Phase 1.5: in the editor
+- **Spike:** Bard hands an extension `tiptap` with `core`, `vue3` and `pm.{state,model,view}`:
+  the editor's own ProseMirror. The extension (`resources/js/editor/bard.js`) builds its plugin,
+  `Decoration` and `DecorationSet` from those, so there is no second copy to break decorations.
+- **The endpoint** (`POST /cp/copydesk/lint`) answers Bard issues by node path and UTF-16
+  offset in the block as written. **Found:** a textarea's offsets were counted from its
+  paragraph, not the value, so a suggestion would have landed in the wrong place; they now count
+  from the start of the value (test with an accent and an empty paragraph).
+- **Which fields:** the ones in `fields` config. The listener stamps the list into the panel's
+  config (`prose_fields`), and the editor reads it from the blueprint in the publish container.
+  A Bard, markdown or textarea field nested in one of them (a Grid, a Replicator, a Bard set) is
+  checked too; a nested text field (a caption) is not, as the full check does not read it.
+- **Bard:** underlines 600 ms after typing stops, placed in the document as it was when asked
+  and carried through anything typed since. Dotted, wavy, double. A click or Option/Alt+Enter
+  opens the box; the caret entering an underline is announced in a polite live region. Escape
+  and every choice put focus back in the text. A suggestion widens over spaces so ", " for a
+  spaced em dash reads "words, more", not "words ,  more".
+- **Markdown, textarea, text:** Statamic's own fieldtypes, wrapped in `Statamic.configuring`,
+  with the list after them. The wrapper hands the fieldtype's own properties through, so field
+  actions (the markdown expand button) still show. Markdown has no positions, so its list says
+  "Try: use" instead of a button.
+- **Sidebar:** "As you type" in the readability panel: counts by severity, and every issue as a
+  button that puts the caret on its words (and opens the box, in Bard).
+- **Checked in a browser** on a greenhouse copy with this branch linked (fixture and steps in
+  `docs/editor.md`): an em dash typed in Bard is underlined about 0.8 s after typing starts
+  (acceptance 1); the Bard inside a Replicator inside a Grid is underlined and its issue jumps
+  from the panel (acceptance 8); a suggestion replaces the text in Bard and in a textarea; no
+  console errors on the test page, an article and the globals screen.
+- **Found in the browser:** the box closed itself whenever the page scrolled, and Bard scrolls
+  the caret into view after a click, so it never stayed open: it now follows its words. An old
+  box's listener could close a new box: each now closes only its own. Statamic's textarea sets
+  its `focus` prop as a DOM property, so `textarea.focus` is undefined: focused through the
+  prototype.
+- **For Phase 1.6:** "Ignore here" hid the issue only while the form was open. Done in 1.6.
+- **Not done here:** the full check (panel grade, gate, scan) still reads only top-level Bard,
+  markdown, textarea and text fields, so a Bard in a Grid is underlined as you type but not
+  counted by the gate. Worth deciding before 1.7.
+- JS tests run with Node's own runner (`npm test`, in CI before the build): the path-to-position
+  arithmetic and the spacing rule.
+
+### 2026-10-26: Phase 1.6: ignores
+- A fingerprint is the rule id and the first 12 hex of a SHA-1 of the sentence the finding is
+  in, spacing folded (`Analysis\Fingerprint`). The editor's endpoint and the full check make it
+  from the same blocks, so they match: a test says so, and in the browser the panel's full check
+  counted the two ignores the editor had made.
+- Kept in `copydesk_ignores`, a hidden `list` field the panel listener adds to every form that
+  gets the panel. "Ignore here" writes it through the publish container, so it is saved with the
+  entry like any other change (checked: saved, reloaded, still ignored).
+- The analyzer leaves ignored findings out before the report is made, so the panel, the gate and
+  the scan all skip them, and counts them (`summary.ignored`). The panel says how many are
+  ignored, and has "Stop ignoring", which empties the list; every field asks again.
+- An ignore holds while other sentences change and while spaces are retyped, lapses when its own
+  sentence changes, and never hides a different rule in the same sentence (tests for each).
+- **For Phase 1.8:** the site report should show `ignored` per page; the count is on the report
+  already.
+
+### 2026-10-26: Phase 1.7: the gate, tasks 1 and 2
+- **Blocks on `error`**, nothing else (`PublishGate::blocking`). Plain 1.0's `block_on` is gone
+  and no longer read; its two rules were already errors (very long sentence, a site word with
+  nothing to say instead), so a site with the gate on blocks on what it did before, plus any rule
+  its packs mark `error`. Pro only: on Free the gate never runs (test). README and config say so.
+- **Publish anyway:** `POST /cp/copydesk/override` with a reason (three words at least) gives a
+  pass in the cache for that person and that entry (or their next new page in the collection),
+  ten minutes. The gate only *looks* at the pass; `SettleOverrides` (on `EntrySaved`) uses it up
+  and writes the override to `storage/statamic/copydesk/overrides.jsonl` with the page, person,
+  rules and reason. **Changed from the plan:** the plan had the pass spent by whichever gate ran
+  and A11y Gate calling `recordOverride` on its contributors. Spending it on `EntrySaved` instead
+  means a publish another gate refuses never wastes it, and A11y Gate needs no override hook
+  from Copydesk at all: each add-on owns the pass for its own problems.
+- The panel shows "Publish anyway" under the refusal to people with the permission, with a
+  labelled reason box. The Readability utility lists "Published past the gate", newest first,
+  with the reason (acceptance 4, tested through the utility page).
+- **Checked in a browser** on the greenhouse copy: a 60-word sentence refused the publish with
+  the rule named; "Publish anyway" with a reason; the next save went through and the override
+  was logged.
+
+### 2026-10-26: Phase 1.7, task 3: one publish check with A11y Gate
+- **In A11y Gate** (branch `gate-contributors`, for 0.11.0, not pushed): `Contracts\GateContributor`
+  (`key`, `label`, `inspect`) and `ContributedResult` (`passes`, `blocks(lines)`), tag
+  `a11y-gate.contributors`. `RefuseUnlessAccessible` asks every contributor in the same save and
+  throws one `ValidationException` with each one's lines under its own key beside `a11y_gate`.
+  A contributor that throws is logged and left out; `warn` mode covers only A11y Gate's own
+  checks. Six tests with a fake contributor; its whole suite passes (141). README and CHANGELOG.
+- **In Copydesk:** `CopydeskGateContributor` answers with the gate's own result and lines.
+  `A11yGateBridge` signs it up only when A11y Gate's contract *and* its listener exist, and then
+  `RefuseUnlessPlain` stands aside. An A11y Gate without the contract leaves Copydesk gating on
+  its own (test). Copydesk never requires A11y Gate: everything is by name; a test stub of the
+  contract (`tests/Stubs`) is word for word the real one.
+- **Not built, from the plan:** A11y Gate's own "publish anyway" (`override accessibility gate`,
+  `allow_override`). Copydesk's override no longer needs anything from A11y Gate (see task 2),
+  and A11y Gate's own override is a feature of A11y Gate, for its own release.
+- **Checked on the greenhouse copy** with both branches linked: Copydesk is tagged, a save with a
+  60-word sentence came back as one 422 with the `copydesk` key, through A11y Gate. Both lists in
+  one refusal is covered by A11y Gate's test, not seen in the browser: this page has no
+  accessibility error to show.
+- **Found in the browser:** the panel's jump button showed the whole 60-word sentence; the
+  excerpt is now cut at about 30 characters.
+
+### 2026-10-26: Phase 1.8: site report and command
+- **Queued scan:** the page under Tools starts a scan as `ScanChunk` jobs of 50 pages. Each job's
+  part is kept in the cache; the last one in puts the report together once (`Cache::add` guards
+  two finishing at the same moment), caches it, and records it in the trend. A scan started again
+  makes older jobs stand down. With the sync queue (most sites) it all happens before the page
+  draws. The command still scans in one go.
+- **Progress:** `copydesk-scan-progress` asks every two seconds ("Scanning: 50 of 88 pages
+  done.", in a polite live region) and reloads into the report when done. **Checked on the
+  greenhouse copy with a database queue:** 88 pages in 2 jobs, progress shown, the page switched
+  to the report by itself (61 graded, 27 with nothing to grade).
+- **The report:** issues by rule (errors first), by collection, and the pages with the most to
+  fix, each with ignored counts; overrides with reasons (from 1.7); "Download every issue (CSV)",
+  a row per page and rule. Short pages with issues are now in the report too: before, a page too
+  short to grade was dropped even when it broke house style.
+- **Command:** `--fail-on=error|warning|tip` exits 1 when a published page has a finding at or
+  above it, 0 otherwise (acceptance 6), and 2 for a severity it does not know. `--fail-on-errors`
+  stays, as `--fail-on=error`. `--fail-above` and `--export` stay; the CSV export includes short
+  pages with issues.
+- A scan cached by the previous version still reads: new fields have defaults.
+
+### 2026-10-26: Phase 1.9: rule editor
+- **Statamic's own publish form** (`Statamic\CP\PublishForm`) with a blueprint built in code
+  (`Packs\PackForm`): description, extends (checkboxes of the other packs), disable, and a
+  Replicator with one set per rule type, each with only its own keys. A rule's `id` is
+  `rule_id` in the form, because a Replicator row has an `id` of its own. A rule switched off
+  in the Replicator goes into `disable`. The `collections` section is kept from the file as it
+  is; the form does not show it, and says so.
+- **Saving** checks the pack as Copydesk reads it (`Pack::fromArray`, then the whole set with
+  this pack in it, so a bad `extends` or a circle is caught) and refuses with the reason; the
+  file is untouched on a refusal (test). Written with Symfony YAML: comments do not survive,
+  and the form says so.
+- **Try it on some text:** a sidebar fieldtype (`copydesk_rule_tester`) posts the unsaved
+  form and some text, and lists what the pack would flag.
+- `manage copydesk rules` ("Edit house style rules") and Pro, both required (test). "House
+  style packs" on the Readability page lists the packs, with "Edit the rules" and "Start a
+  pack". A site pack is on by default (`packs: null`), so a new pack works at once.
+- **Round trip** of every kind of rule from docs/packs.md, through the form and back, equal
+  (test). **Checked in a browser:** started a pack, added a term rule, tried it ("Eiseo"
+  flagged), saved, and the YAML on disk was right. A rule saved with an empty list was refused
+  by the form's own "required" before reaching the server.
+
+### 2026-10-26: Phase 1.10: ready to ship
+- **Permissions:** `view copydesk report` (the site report and its CSV), `manage copydesk
+  rules`, `override copydesk gate`, beside the three Plain had. Statamic gives them to nobody
+  but super admins until a role has them (test lists all six).
+- **Free and Pro:** Free runs punctuation and term rules from any pack, the readability rules
+  and grade, the site's word list, and the editor. Pro adds every other pack and rule kind, the
+  gate, the rule editor, the site report (the utility page says why it is missing, Free or no
+  permission) and the Site Weather signal. **Decided here, worth a look:** the site's word list
+  (Plain's dictionary) stays in Free; the spec's Free list does not name it, and taking away
+  what Plain gave for free seemed wrong. Tests run as Pro where they use Pro features, and
+  `EditionSplitTest` holds the line.
+- **Accessibility:** axe-core 4.11 (a local copy; the CDN was blocked here) on the entry form,
+  the entry form with the box open, the Readability page and the rule editor: no violation in
+  any Copydesk element. The page's own (unnamed asset button, grid header cells, low-contrast
+  set labels, a popover trigger's attribute) are Statamic's. **Keyboard:** from the sidebar, Tab
+  reaches the panel's jump buttons; Enter puts the caret on the words; Option+Enter moves focus
+  into the box; Tab moves through it; Escape returns to the text. **Found:** Tab cannot leave
+  Statamic's markdown field (CodeMirror keeps it), which is Statamic's, not Copydesk's.
+- **Docs:** README (house style, the editor, editions, A11y Gate, permissions, `--fail-on`),
+  CHANGELOG (everything in Phase 1, and the `block_on` change), `docs/marketplace.md` (listing
+  draft and the screenshots to take), `docs/packs.md` (the editor).
+- **U+2014:** only in the punctuation rule, the specs, tests and docs that show the rule, and
+  two of Brent's tooling files (`.claude/settings.json`, `run-build.sh`), left as they are.
+- **Greenhouse:** installed beside the other 20 bpmore addons: route names all unique, no
+  permission handle shared, no other addon hooks Bard or replaces a core fieldtype, and no
+  console errors on the screens checked.
 

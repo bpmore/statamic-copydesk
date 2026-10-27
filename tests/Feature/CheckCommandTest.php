@@ -14,6 +14,8 @@ use Statamic\Support\Str;
  * an exit code a build can stop on.
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     Site::setSites([
         'default' => ['name' => 'Main', 'locale' => 'en_US', 'url' => '/'],
         'french' => ['name' => 'French', 'locale' => 'fr_FR', 'url' => '/fr/'],
@@ -74,7 +76,26 @@ it('exits 1 on an error-level finding only when asked to', function () {
     pageIn('pages', 'Long', 'Word '.implode(' ', array_fill(0, 59, 'word')).'.');
 
     $this->artisan('copydesk:scan')->assertExitCode(0);
-    $this->artisan('copydesk:scan', ['--fail-on-errors' => true])->expectsOutputToContain('1 error-level finding(s)')->assertExitCode(1);
+    $this->artisan('copydesk:scan', ['--fail-on-errors' => true])->expectsOutputToContain('1 finding(s) at or above error')->assertExitCode(1);
+});
+
+it('exits 1 on --fail-on=error when a published page has an error, and 0 when none does (acceptance 6)', function () {
+    pageIn('pages', 'Plain', 'We help you. Call us today.');
+
+    $this->artisan('copydesk:scan', ['--fail-on' => 'error'])->assertExitCode(0);
+
+    pageIn('pages', 'Long', 'Word '.implode(' ', array_fill(0, 59, 'word')).'.');
+
+    $this->artisan('copydesk:scan', ['--fail-on' => 'error'])->assertExitCode(1);
+});
+
+it('counts warnings at --fail-on=warning, a short page too, and refuses a severity it does not know', function () {
+    // Too short to grade, and still a warning: an em dash.
+    pageIn('pages', 'Short', 'Plain words — short.');
+
+    $this->artisan('copydesk:scan', ['--fail-on' => 'error'])->assertExitCode(0);
+    $this->artisan('copydesk:scan', ['--fail-on' => 'warning'])->assertExitCode(1);
+    $this->artisan('copydesk:scan', ['--fail-on' => 'fatal'])->expectsOutputToContain('--fail-on takes error, warning or tip.')->assertExitCode(2);
 });
 
 it('narrows to sites and collections, and does not record a partial scan in the trend', function () {

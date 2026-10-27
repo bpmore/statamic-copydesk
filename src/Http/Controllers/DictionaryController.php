@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk\Http\Controllers;
 
 use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 use Statamic\Facades\Site;
 use Statamic\Facades\User;
 use Statamic\Http\Controllers\CP\CpController;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * A site's own dictionary, out as a file and in from one.
@@ -27,11 +29,48 @@ class DictionaryController extends CpController
     /** Throw the cached scan of a site away, so the page grades it afresh. */
     public function rescan(string $site, SiteScan $scan): RedirectResponse
     {
+        SiteReport::authorize();
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}], so there is nothing to scan.");
 
         $scan->forget($site);
+        $scan->start($site);
 
-        return back()->with('success', 'Scanned again.');
+        return back()->with('success', 'Scanning again.');
+    }
+
+    /** How far the background scan has got, for the page under Tools. */
+    public function progress(string $site, SiteScan $scan): JsonResponse
+    {
+        SiteReport::authorize();
+        abort_if(Site::get($site) === null, 404, "There is no site called [{$site}].");
+
+        return response()->json($scan->progress($site) ?? ['done' => null, 'total' => null]);
+    }
+
+    /**
+     * The issues as a spreadsheet: one row per page and rule, with how many
+     * and how bad, and the page's ignored count.
+     */
+    public function issues(string $site, SiteScan $scan): StreamedResponse
+    {
+        SiteReport::authorize();
+        abort_if(Site::get($site) === null, 404, "There is no site called [{$site}].");
+
+        $report = $scan->cached($site);
+        abort_if($report === null, 409, 'The scan is still running. Try again when it is done.');
+
+        return response()->streamDownload(function () use ($report) {
+            $out = fopen('php://output', 'w');
+            fputcsv($out, ['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page']);
+
+            foreach ($report->pagesWithIssues() as $page) {
+                foreach ($page->rules as $rule => $found) {
+                    fputcsv($out, [$report->site, $page->collection, $page->title, $page->editUrl, $rule, $found['severity'], $found['count'], $page->ignored]);
+                }
+            }
+
+            fclose($out);
+        }, 'copydesk-issues-'.$site.'-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv']);
     }
 
     public function export(string $site, Dictionaries $dictionaries): JsonResponse

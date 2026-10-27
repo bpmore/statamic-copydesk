@@ -1,6 +1,10 @@
 # Copydesk
 
-Readability and plain language checking for Statamic 6. It grades the
+House style, plain language and readability checking for Statamic 6. It
+checks writing against the site's own house style, as rules kept in plain
+YAML packs (punctuation, names spelled your way, words to avoid, inclusive
+language, newsroom conventions), underlines what breaks them as the author
+types, and grades the
 reading level of a page as a band against the level you write for, section
 by section, and says what to change: the sentence that runs too long, the
 term your readers do not know and what to say instead, the acronym nobody
@@ -71,6 +75,35 @@ English, and a grade for a French page is a confident number that means
 nothing, so a site whose locale is not in the configured list is refused
 with a sentence rather than scored.
 
+## House style
+
+The rules are kept in packs: YAML files that anyone on the team can read.
+Copydesk ships four: `core-punctuation`, `plain-language` (plainlanguage.gov's
+substitutions), `inclusive-language` (each entry with its reason) and
+`news-style-starter` (a few newsroom conventions in Copydesk's own words, not
+any stylebook). A site's own packs live in `resources/copydesk`, extend the
+shipped ones, replace or turn off any rule, and can add rules for one
+collection. Six kinds of rule: word lists, names spelled exactly, patterns,
+punctuation, heading case, and sentence checks. How to write one is in
+[docs/packs.md](docs/packs.md); in Pro, a form under Tools edits them, with
+"Try it on some text" before saving.
+
+## In the editor
+
+As the author types, each prose field asks the server 600 ms after they
+stop. In Bard the flagged words are underlined, dotted for a tip, wavy for
+something to look at, double for something to fix, so colour is never the
+only sign. A click, or Option+Enter with the caret in the words, opens the
+message, a button for each suggestion and "Ignore here". Markdown, textarea
+and text fields list the same issues under the field. Bard inside a
+Replicator inside a Grid is checked too. The readability panel counts the
+issues by severity, with a button that jumps to each one.
+
+"Ignore here" keeps a fingerprint of the rule and the sentence on the entry
+(a hidden `copydesk_ignores` field), so the ignore holds after a save, in
+the gate and in the report, until the sentence changes. Ignored findings
+are always counted, never hidden. More in [docs/editor.md](docs/editor.md).
+
 ## What gets graded
 
 Configurable per blueprint: an allowlist of the fields that are prose
@@ -96,14 +129,17 @@ file and a file goes in, merging or replacing, so a list built for one
 site can be carried to another or edited by hand and brought back. The
 file is the same shape the starter ships in.
 
-## The site, whole
+## The site, whole (Pro)
 
-The same page under Tools grades every published page of the site:
+The same page under Tools grades every published page of the site, in
+queued jobs of fifty with its progress shown:
 how they spread across the bands against the target, each collection's
 median page, the hardest pages with a link to each, and the acronyms
 nobody spelled out and the jargon that comes up most, which is the list a
-dictionary gets built from. Cached for an hour per site, with a button
-to scan again.
+dictionary gets built from. Then what to fix: every issue by rule, by
+collection and by page, with ignored counts, every publish someone let
+past the gate with their reason, and a CSV of every issue. Cached for an
+hour per site, with a button to scan again.
 
 Every scan is also kept, the last ninety per site, in
 `storage/statamic/copydesk/scans/`. The dashboard widget reads them. Add
@@ -124,7 +160,7 @@ php please copydesk:scan                       # every site, a table per site
 php please copydesk:scan --site=default --collection=news
 php please copydesk:scan --export=csv          # a dated CSV under storage/statamic/copydesk, or --export=path.csv
 php please copydesk:scan --fail-above=10%      # exit 1 when more than a tenth of pages read above the target; or a count
-php please copydesk:scan --fail-on-errors      # exit 1 on any very long sentence or banned term
+php please copydesk:scan --fail-on=error       # exit 1 when a published page has an error; or warning, or tip
 ```
 
 A full scan of a site is recorded the same way the page under Tools
@@ -132,7 +168,8 @@ records one, so a nightly run keeps the widget and the Site Weather band
 current; a scan narrowed to a collection is not. The threshold's default
 is `check.fail_above` in the config, off unless set. One page the check
 cannot read is named and the rest are graded. Exit codes: 0, 1 when a
-threshold is crossed, 2 for a site or collection that does not exist.
+threshold is crossed, 2 for a site, collection or severity that does not
+exist. `--fail-on-errors` still works, as `--fail-on=error`.
 
 ## On the page itself
 
@@ -155,14 +192,19 @@ pair it hands the site `graded`, `band`, `low`, `high`, `target`,
 `reason` when not graded. `entry="<id>"` grades another entry. Cached per
 entry and its last change.
 
-## The gate
+## The gate (Pro)
 
 Off by default. Turned on, it stops a publish (never a draft) in the
-collections you name (or all of them, if you name none), and only for the
-findings of the rules in `block_on`: a very long sentence, and a banned
-term from the dictionary, one you gave nothing to say instead of. A term
-with a suggested replacement is a warning to fix, not a reason to stop a
-publish.
+collections you name (or all of them, if you name none), and only for
+findings whose severity is `error`: a very long sentence, a word on the
+site's list with nothing to say instead, and any rule a pack marks as an
+error. Warnings and tips never stop a publish.
+
+Someone with the **Publish past the gate** permission (`override copydesk
+gate`) sees "Publish anyway" in the panel when the gate refuses. They give
+a reason, and their next publish of that page, within ten minutes, goes
+through. The reason, the person and the rules are kept and shown in the
+site report.
 
 **It never blocks on a grade, and it cannot be configured to.** A grade
 band is a heuristic. A press release stopped for scoring 11 is how a
@@ -179,8 +221,16 @@ blueprint, the exclusions, each rule's options, and the gate.
 
 ## Editions
 
-Copydesk comes in two editions, Free and Pro. A site runs Free until it
-chooses Pro, in `config/statamic/editions.php`:
+Copydesk comes in two editions.
+
+- **Free:** the punctuation pack and term rules (a site's own names, spelled
+  its way), the readability grade and panel, the site's word list, and the
+  editor's underlines.
+- **Pro:** every pack and every kind of rule, the rule editor, the publish
+  gate with "Publish anyway", the site report with its CSV, and the Site
+  Weather signal.
+
+A site runs Free until it chooses Pro, in `config/statamic/editions.php`:
 
 ```php
 'addons' => [
@@ -190,6 +240,13 @@ chooses Pro, in `config/statamic/editions.php`:
 
 Statamic checks the licence for the edition a site chooses. A name other
 than `free` or `pro` there is refused with an error rather than guessed at.
+
+## With A11y Gate
+
+Both stop a publish. With an A11y Gate that takes contributors (0.11 or
+newer) installed, Copydesk joins its check: an author is refused once,
+with both lists, each in its own panel. With an older A11y Gate, or none,
+Copydesk's gate runs on its own. Neither requires the other.
 
 ## With A11y Report
 
@@ -208,7 +265,7 @@ neither slows the other.
 
 ## Who may do what
 
-Three permissions, under **Copydesk** on a role, beside the two Statamic
+Six permissions, under **Copydesk** on a role, beside the two Statamic
 gives every addon (`access copydesk utility` for the Readability page, and
 the settings one, which this addon answers itself):
 
@@ -221,10 +278,14 @@ the settings one, which this addon answers itself):
 - **Configure readability**: open the settings screen. Today that is the
   dictionary; the target and gate land there as they move off the config
   file.
+- **See the site report** (`view copydesk report`, Pro): the report on the
+  Readability page, and its CSV.
+- **Edit house style rules** (`manage copydesk rules`, Pro): the rule editor.
+- **Publish past the gate** (`override copydesk gate`, Pro): "Publish
+  anyway", once, with a reason that is kept.
 
-A super user may do all of it, as everywhere else. The gate is not a
-permission: it runs on every save Statamic lets through, whoever is
-saving, because a page is either publishable or it is not.
+A super user may do all of it, as everywhere else; nobody else has any of
+them until a role is given it.
 
 ## Working on it
 

@@ -4,10 +4,17 @@ declare(strict_types=1);
 
 namespace Bpmore\Copydesk;
 
+use Bpmore\Copydesk\Gate\A11yGateBridge;
+use Bpmore\Copydesk\Gate\CopydeskGateContributor;
 use Bpmore\Copydesk\Gate\GateSettings;
+use Bpmore\Copydesk\Gate\OverrideLog;
+use Bpmore\Copydesk\Gate\OverridePasses;
+use Bpmore\Copydesk\Gate\PublishGate;
 use Bpmore\Copydesk\Http\Controllers\DictionaryController;
+use Bpmore\Copydesk\Http\Controllers\PacksController;
 use Bpmore\Copydesk\Packs\PackLibrary;
 use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Gate as Access;
@@ -32,6 +39,7 @@ class ServiceProvider extends AddonServiceProvider
 
     protected $fieldtypes = [
         Fieldtypes\ReadabilityPanel::class,
+        Fieldtypes\RuleTester::class,
     ];
 
     /** The dashboard widget. Add `readability` to the widgets in `config/statamic/cp.php`. */
@@ -61,6 +69,11 @@ class ServiceProvider extends AddonServiceProvider
 
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
         $this->app->bind(GateSettings::class, static fn ($app): GateSettings => $app->make(Settings::class)->gate());
+        // One gate per request: it holds an override between the save it let
+        // through and that save finishing (SettleOverrides).
+        $this->app->singleton(PublishGate::class);
+        $this->app->singleton(OverridePasses::class, static fn ($app): OverridePasses => new OverridePasses($app->make('cache')->store()));
+        $this->app->singleton(OverrideLog::class, static fn ($app): OverrideLog => OverrideLog::inStorage($app->make(Filesystem::class)));
         $this->app->singleton(ScanHistory::class, static fn ($app): ScanHistory => ScanHistory::inStorage($app->make(Filesystem::class)));
 
         // The house rule packs: the bundled ones, then the site's own in
@@ -76,6 +89,14 @@ class ServiceProvider extends AddonServiceProvider
         // the class is never autoloaded, and its missing interface is never
         // noticed. Site Weather is a suggestion, not a dependency.
         $this->app->tag(Weather\ReadabilityContributor::class, 'site-weather.contributors');
+
+        // One publish check with A11y Gate, when it is installed in a version
+        // that takes contributors: it asks Copydesk, and Copydesk's own
+        // listener stands aside. Otherwise Copydesk gates on its own.
+        if (A11yGateBridge::available()) {
+            $this->app->tag(CopydeskGateContributor::class, A11yGateBridge::TAG);
+            A11yGateBridge::join();
+        }
     }
 
     /**
@@ -98,17 +119,30 @@ class ServiceProvider extends AddonServiceProvider
                     $dictionaries = $this->app->make(Dictionaries::class);
                     $site = Site::selected();
 
+                    $report = SiteReport::refusal();
+
                     return [
                         'site' => $site,
-                        'scan' => $this->app->make(SiteScan::class)->cached($site->handle()),
+                        // The site report is Pro, and needs its own permission;
+                        // the dictionary and the packs below are not.
+                        'reportRefusal' => $report,
+                        'scan' => $report === null ? $this->app->make(SiteScan::class)->cached($site->handle()) : null,
                         'sites' => Site::all()->values(),
                         'counts' => Site::all()->mapWithKeys(fn ($s) => [$s->handle() => count($dictionaries->own($s->handle()))])->all(),
                         'canManage' => (bool) User::current()?->can('manage jargon dictionary'),
                         'companion' => Companion::notice(),
+                        'overrides' => array_slice($this->app->make(OverrideLog::class)->all(), 0, 50),
+                        'packs' => [
+                            'bundled' => $this->app->make(PackLibrary::class)->bundledNames(),
+                            'site' => $this->app->make(PackLibrary::class)->siteNames(),
+                            'canEdit' => Edition::isPro() && (bool) User::current()?->can(PacksController::PERMISSION),
+                        ],
                     ];
                 })
                 ->routes(function ($router) {
                     $router->post('rescan/{site}', [DictionaryController::class, 'rescan'])->name('rescan');
+                    $router->get('progress/{site}', [DictionaryController::class, 'progress'])->name('progress');
+                    $router->get('issues/{site}', [DictionaryController::class, 'issues'])->name('issues');
                     $router->get('export/{site}', [DictionaryController::class, 'export'])->name('export');
                     $router->post('import/{site}', [DictionaryController::class, 'import'])->name('import');
                 })
@@ -116,10 +150,14 @@ class ServiceProvider extends AddonServiceProvider
     }
 
     /**
-     * Three permissions, each with a meaning of its own beside the two
-     * Statamic gives every addon (access to the utility page, and editing
-     * the addon's settings):
+     * Permissions, each with a meaning of its own beside the two Statamic
+     * gives every addon (access to the utility page, and editing the
+     * addon's settings). Nobody but a super admin has any of them until a
+     * role is given it.
      *
+     * - `view copydesk report`: the site report on the utility page (Pro).
+     * - `manage copydesk rules`: the rule editor (Pro).
+     * - `override copydesk gate`: publish past the gate, with a reason (Pro).
      * - `view readability`: check a page from the publish form; see the
      *   dashboard widget. Not the utility page, which is Statamic's own
      *   "access utility" permission, nor the tag, which is the front end.
@@ -145,6 +183,15 @@ class ServiceProvider extends AddonServiceProvider
                 Permission::register('manage jargon dictionary')
                     ->label('Manage the dictionary')
                     ->description('Add, change, import and export the words to avoid and what to say instead.');
+                Permission::register(PublishGate::OVERRIDE)
+                    ->label('Publish past the gate')
+                    ->description('Publish a page the Copydesk gate stopped, once, giving a reason that is kept in the site report.');
+                Permission::register(SiteReport::PERMISSION)
+                    ->label('See the site report')
+                    ->description('See how the whole site reads and what it breaks, on the Readability page under Tools, and download it as a CSV.');
+                Permission::register(PacksController::PERMISSION)
+                    ->label('Edit house style rules')
+                    ->description('Add, change and turn off the rules in the site\'s own packs, in resources/copydesk.');
                 Permission::register('configure readability')
                     ->label('Configure readability')
                     ->description('Change the addon\'s settings: the dictionary today, and the target and gate as they move onto the settings screen.');

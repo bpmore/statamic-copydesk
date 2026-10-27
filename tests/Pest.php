@@ -2,11 +2,18 @@
 
 declare(strict_types=1);
 
+use Bpmore\Copydesk\Edition;
 use Bpmore\Copydesk\Tests\TestCase;
 
 // Only the feature tests boot Statamic. The engine takes text and returns
 // findings, and its suite, in packages/readability-core, boots nothing.
 uses(TestCase::class)->in('Feature');
+
+/** Run this test as a site on Copydesk Pro. */
+function pro(): void
+{
+    config()->set('statamic.editions.addons.'.Edition::PACKAGE, 'pro');
+}
 
 /**
  * A Bard value as Statamic stores it: paragraphs of plain text, with a

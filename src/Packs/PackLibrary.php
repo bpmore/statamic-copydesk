@@ -58,6 +58,48 @@ final class PackLibrary
         return $this->memo[$key] = $set;
     }
 
+    /** @return list<string> the names of the packs Copydesk ships */
+    public function bundledNames(): array
+    {
+        return self::names($this->bundled);
+    }
+
+    /** @return list<string> the names of the site's own packs */
+    public function siteNames(): array
+    {
+        return self::names($this->site);
+    }
+
+    /** Where a site pack of this name lives, whether or not it exists yet. */
+    public function sitePath(string $name): string
+    {
+        return rtrim($this->site, '/').'/'.$name.'.yaml';
+    }
+
+    /**
+     * Every pack, read now, with this one pack as given instead of as the
+     * file has it: what the rule editor checks a pack against before it
+     * saves it, and tries sample text with.
+     */
+    public function setWith(Pack $pack): PackSet
+    {
+        $packs = array_values(array_filter(
+            array_map($this->read(...), $this->files()),
+            static fn (Pack $p): bool => $p->name !== $pack->name,
+        ));
+
+        return new PackSet([...$packs, $pack]);
+    }
+
+    /** @return list<string> */
+    private static function names(string $directory): array
+    {
+        $files = is_dir($directory) ? (glob(rtrim($directory, '/').'/*.yaml') ?: []) : [];
+        sort($files);
+
+        return array_map(static fn (string $f): string => basename($f, '.yaml'), $files);
+    }
+
     /**
      * Every pack file, bundled first, then the site's, each in name order.
      *
