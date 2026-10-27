@@ -43,7 +43,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 
 In `bpmore/readability-core`, released as 0.2.0, then taken here.
 
-- [ ] Each block keeps the text as written beside the cleaned text, with a map from every cleaned position back to the written one, through normalising (collapsed spaces, straightened quotes, `…`, invisible characters) and through the exclusions that cut text out of a block (`Addresses`, `References`, `ProperNames`). Additive: nothing that reads `text` today changes. Released as 0.2.0.
+- [x] Each block keeps the text as written beside the cleaned text, with a map from every cleaned position back to the written one, through normalising (collapsed spaces, straightened quotes, `…`, invisible characters) and through the exclusions that cut text out of a block (`Addresses`, `References`, `ProperNames`). Additive: nothing that reads `text` today changes. Released as 0.2.0.
 - [x] Copydesk requires `^0.2`. Every finding (readability and house) is given its position in the written text; the panel and the coming lint endpoint use those.
 - [x] `punctuation` reads the written text for `quotes` and `double_space`, and their skipped tests run and pass (task 5 ticked).
 
@@ -309,7 +309,9 @@ Guesses from the size of the Plain code and the spec, not measured.
   written text is read at all. The cleaned text is unchanged: tests hold it to copies of the old
   code on 6,000 generated strings, and every old test passes as it was. The engine also gets its
   own GitHub workflow (it had none once Copydesk stopped testing its copy) and a CHANGELOG.
-  The first task stays open until 0.2.0 is tagged and on Packagist.
+  Released as readability-core 0.2.0 (PR bpmore/readability-core#1, tagged and on Packagist).
+  Its first run on GitHub's Ubuntu found one old test that depended on libxml's version (bare
+  text is a paragraph under libxml 2.9, "other" under 2.15); the test now takes either.
 - **Found while doing it:** `References` tidies every block, not only ones with a citation, so in
   a real check a space before a comma and a doubled comma were gone before any house rule could
   see them. So `punctuation` reads the written text for all its checks, not only `quotes` and
@@ -319,8 +321,9 @@ Guesses from the size of the Plain code and the spec, not measured.
   offset and length in characters of the field as written. A test posts a paragraph with curly
   quotes, a double space and a no-break space before "utilize" and gets its true place back.
 - **Cost:** the benchmark went from 98 ms to about 112 ms. Still under 150.
-- **Waiting on:** readability-core 0.2.0 being released. Copydesk now requires `^0.2`, so this
-  branch cannot be installed, or merged, until the engine is tagged and on Packagist.
+- **A11y Report** pinned the engine at `^0.1`, which would have kept it from installing beside
+  Copydesk; it now takes `^0.1 || ^0.2` (bpmore/statamic-a11y-report#72), and needs a patch
+  release before a site can update both.
 - **For Phase 1.4:** the analyzer passes the ids of rules that read written text as the report's
   `writtenRules`; nothing does yet, because house rules are not wired into the analyzer.
 
