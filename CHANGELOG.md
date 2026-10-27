@@ -4,11 +4,14 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
-## Unreleased
+## 2.0.0 - 2026-10-27
 
-**Plain is now Copydesk.** Same code, new name, ahead of the house-style
-rules that are on the way. Nothing was ever sold or installed under the old
-name, so there is nothing to migrate. What changed:
+The first release as Copydesk: Plain's readability check, renamed, with
+house style checked as the author types. A major version because the name,
+the config and the gate's `block_on` all changed; nothing was ever sold or
+installed under the old name, so there is nothing to migrate.
+
+**Plain is now Copydesk.** What changed with the name:
 
 - Package `bpmore/statamic-copydesk`, namespace `Bpmore\Copydesk`.
 - Config `config/copydesk.php`, published with `--tag=copydesk-config`.
