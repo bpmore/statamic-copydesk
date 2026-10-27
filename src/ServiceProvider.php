@@ -11,6 +11,7 @@ use Bpmore\Copydesk\Gate\OverrideLog;
 use Bpmore\Copydesk\Gate\OverridePasses;
 use Bpmore\Copydesk\Gate\PublishGate;
 use Bpmore\Copydesk\Http\Controllers\DictionaryController;
+use Bpmore\Copydesk\Http\Controllers\PacksController;
 use Bpmore\Copydesk\Packs\PackLibrary;
 use Bpmore\Copydesk\Scan\ScanHistory;
 use Bpmore\Copydesk\Scan\SiteScan;
@@ -37,6 +38,7 @@ class ServiceProvider extends AddonServiceProvider
 
     protected $fieldtypes = [
         Fieldtypes\ReadabilityPanel::class,
+        Fieldtypes\RuleTester::class,
     ];
 
     /** The dashboard widget. Add `readability` to the widgets in `config/statamic/cp.php`. */
@@ -124,6 +126,11 @@ class ServiceProvider extends AddonServiceProvider
                         'canManage' => (bool) User::current()?->can('manage jargon dictionary'),
                         'companion' => Companion::notice(),
                         'overrides' => array_slice($this->app->make(OverrideLog::class)->all(), 0, 50),
+                        'packs' => [
+                            'bundled' => $this->app->make(PackLibrary::class)->bundledNames(),
+                            'site' => $this->app->make(PackLibrary::class)->siteNames(),
+                            'canEdit' => Edition::isPro() && (bool) User::current()?->can(PacksController::PERMISSION),
+                        ],
                     ];
                 })
                 ->routes(function ($router) {
@@ -169,6 +176,9 @@ class ServiceProvider extends AddonServiceProvider
                 Permission::register(PublishGate::OVERRIDE)
                     ->label('Publish past the gate')
                     ->description('Publish a page the Copydesk gate stopped, once, giving a reason that is kept in the site report.');
+                Permission::register(PacksController::PERMISSION)
+                    ->label('Edit house style rules')
+                    ->description('Add, change and turn off the rules in the site\'s own packs, in resources/copydesk.');
                 Permission::register('configure readability')
                     ->label('Configure readability')
                     ->description('Change the addon\'s settings: the dictionary today, and the target and gate as they move onto the settings screen.');

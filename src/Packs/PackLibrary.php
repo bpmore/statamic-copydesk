@@ -70,6 +70,27 @@ final class PackLibrary
         return self::names($this->site);
     }
 
+    /** Where a site pack of this name lives, whether or not it exists yet. */
+    public function sitePath(string $name): string
+    {
+        return rtrim($this->site, '/').'/'.$name.'.yaml';
+    }
+
+    /**
+     * Every pack, read now, with this one pack as given instead of as the
+     * file has it: what the rule editor checks a pack against before it
+     * saves it, and tries sample text with.
+     */
+    public function setWith(Pack $pack): PackSet
+    {
+        $packs = array_values(array_filter(
+            array_map($this->read(...), $this->files()),
+            static fn (Pack $p): bool => $p->name !== $pack->name,
+        ));
+
+        return new PackSet([...$packs, $pack]);
+    }
+
     /** @return list<string> */
     private static function names(string $directory): array
     {

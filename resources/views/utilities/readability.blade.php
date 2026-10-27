@@ -211,6 +211,36 @@
     </ui-card-panel>
     @endif
 
+    @if (isset($packs))
+    <ui-card-panel heading="House style packs">
+        <div class="space-y-3">
+            <p class="text-sm">Copydesk ships {!! e(implode(', ', $packs['bundled'])) !!}. A site's own packs live in resources/copydesk and can extend them.</p>
+            @if ($packs['site'] !== [])
+            <ul class="text-sm space-y-1">
+                @foreach ($packs['site'] as $pack)
+                <li>
+                    <span class="font-medium">{!! e($pack) !!}</span>
+                    @if ($packs['canEdit'])
+                    <a class="underline underline-offset-2 ml-2" href="{!! e(cp_route('copydesk.packs.edit', $pack)) !!}">Edit the rules</a>
+                    @endif
+                </li>
+                @endforeach
+            </ul>
+            @else
+            <p class="text-sm">This site has no pack of its own yet.</p>
+            @endif
+            @if ($packs['canEdit'])
+            <form method="post" action="{!! e(cp_route('copydesk.packs.store')) !!}" class="flex flex-wrap items-end gap-2">
+                {!! csrf_field() !!}
+                <label class="text-sm" for="copydesk-new-pack">New pack name</label>
+                <input id="copydesk-new-pack" name="name" type="text" class="copydesk-reason" style="max-width: 16rem" placeholder="house" required pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+                <ui-button size="sm" type="submit" text="Start a pack" />
+            </form>
+            @endif
+        </div>
+    </ui-card-panel>
+    @endif
+
     <ui-card-panel heading="Your dictionary">
         <div class="space-y-3">
             <p>

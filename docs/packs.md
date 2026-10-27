@@ -61,6 +61,20 @@ misspelt key, an unknown rule id or a pattern that does not work is
 refused with the file and the rule named, so a mistake never quietly turns
 a rule off.
 
+## Editing a pack in the control panel (Pro)
+
+People with the **Edit house style rules** permission (`manage copydesk rules`) see "House
+style packs" on the Readability page under Tools. "Start a pack" makes a file in
+`resources/copydesk`, and "Edit the rules" opens it as a form: one block per rule, with only
+the keys its kind has. Switch a rule off with its toggle; it stays in the file and its id goes
+into `disable`.
+
+"Try it on some text", beside the form, runs the pack as the form has it now, before saving.
+Saving checks the pack exactly as Copydesk will read it, and refuses one it could not, with the
+reason. Saving rewrites the file, so comments in it are not kept, and a pack's `collections`
+section, which the form does not show, is kept as it is. The packs Copydesk ships cannot be
+edited: start your own and extend them.
+
 ## The kinds of rule
 
 Every rule has an `id` (lowercase, hyphens), a `type`, a `message` that

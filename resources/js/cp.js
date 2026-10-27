@@ -6,3 +6,4 @@
 import './editor/index.js';
 import './copydesk-panel.js';
 import './scan-progress.js';
+import './rule-tester.js';

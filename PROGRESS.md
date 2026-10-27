@@ -95,7 +95,7 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.9: Rule editor (Pro)
 
-- [ ] A form-based editor for site packs: add, edit and disable rules, and try a rule on sample text before saving. Writes YAML. Needs `manage copydesk rules`.
+- [x] A form-based editor for site packs: add, edit and disable rules, and try a rule on sample text before saving. Writes YAML. Needs `manage copydesk rules`.
 
 ## Phase 1.10: Ready to ship
 
@@ -487,4 +487,25 @@ Guesses from the size of the Plain code and the spec, not measured.
   stays, as `--fail-on=error`. `--fail-above` and `--export` stay; the CSV export includes short
   pages with issues.
 - A scan cached by the previous version still reads: new fields have defaults.
+
+### 2026-10-26: Phase 1.9: rule editor
+- **Statamic's own publish form** (`Statamic\CP\PublishForm`) with a blueprint built in code
+  (`Packs\PackForm`): description, extends (checkboxes of the other packs), disable, and a
+  Replicator with one set per rule type, each with only its own keys. A rule's `id` is
+  `rule_id` in the form, because a Replicator row has an `id` of its own. A rule switched off
+  in the Replicator goes into `disable`. The `collections` section is kept from the file as it
+  is; the form does not show it, and says so.
+- **Saving** checks the pack as Copydesk reads it (`Pack::fromArray`, then the whole set with
+  this pack in it, so a bad `extends` or a circle is caught) and refuses with the reason; the
+  file is untouched on a refusal (test). Written with Symfony YAML: comments do not survive,
+  and the form says so.
+- **Try it on some text:** a sidebar fieldtype (`copydesk_rule_tester`) posts the unsaved
+  form and some text, and lists what the pack would flag.
+- `manage copydesk rules` ("Edit house style rules") and Pro, both required (test). "House
+  style packs" on the Readability page lists the packs, with "Edit the rules" and "Start a
+  pack". A site pack is on by default (`packs: null`), so a new pack works at once.
+- **Round trip** of every kind of rule from docs/packs.md, through the form and back, equal
+  (test). **Checked in a browser:** started a pack, added a term rule, tried it ("Eiseo"
+  flagged), saved, and the YAML on disk was right. A rule saved with an empty list was refused
+  by the form's own "required" before reaching the server.
 
