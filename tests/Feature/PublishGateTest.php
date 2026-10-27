@@ -77,7 +77,7 @@ it('blocks on a banned term, and not on a term the dictionary gives a replacemen
 
     $lines = refusal(fn () => page(bard('Please be advised that we utilize forms.'))->save());
     expect($lines)->not->toBeNull();
-    expect($lines[1])->toContain('"Please be advised that" is on the site\'s list of words to avoid');
+    expect($lines[1])->toBe('"Please be advised that": say it another way. It is on this site\'s list of words to avoid. (in content)');
     expect($lines)->toHaveCount(3);
 });
 

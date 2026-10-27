@@ -60,11 +60,11 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.4: One analysis
 
-- [ ] The analyzer runs readability rules and style rules together, each rule only where its `scope` says, and returns one list of findings with character offsets.
-- [ ] Targets per collection in config (`targets: ['patient_education' => 8]`), falling back to the site target.
-- [ ] Plain's dictionary becomes the site's `word_list` pack: what the settings screen saves is read as a pack, so nothing a site entered is lost. Import and export keep working.
-- [ ] Readability details (D3): Flesch-Kincaid and reading ease beside the band, per page and per section, from `readability-core` (acceptance 5).
-- [ ] A paragraph that reads well above target is marked (D3). How far above counts as "well above" is a config value, with the default and its reason in the config file.
+- [x] The analyzer runs readability rules and style rules together, each rule only where its `scope` says, and returns one list of findings with character offsets.
+- [x] Targets per collection in config (`targets: ['patient_education' => 8]`), falling back to the site target.
+- [x] Plain's dictionary becomes the site's `word_list` pack: what the settings screen saves is read as a pack, so nothing a site entered is lost. Import and export keep working.
+- [x] Readability details (D3): Flesch-Kincaid and reading ease beside the band, per page and per section, from `readability-core` (acceptance 5).
+- [x] A paragraph that reads well above target is marked (D3). How far above counts as "well above" is a config value, with the default and its reason in the config file.
 
 ## Phase 1.5: In the editor
 
@@ -346,4 +346,27 @@ Guesses from the size of the Plain code and the spec, not measured.
 - **For Phase 1.4:** the engine's own `jargon` rule uses the same plainlanguage.gov list. When the
   `plain-language` pack is on, the analyzer must not run `jargon` too, or every word is reported
   twice.
+
+### 2026-10-26: Phase 1.4: one analysis
+- `Analysis\HouseRules` gives a check its house rules: the `packs` setting if a site lists
+  packs, otherwise core-punctuation, plain-language and inclusive-language plus every site pack
+  (news-style-starter is opt-in), resolved for the collection; and the site's own word list.
+- **The site's word list is a house rule now, keeping the id `jargon`.** The settings screen's
+  rows (and `rules.jargon.dictionary`, if set) become a `word_list` rule: a word with nothing to
+  say instead is an `error`, others take `rules.jargon.severity`. Keeping the id means the gate,
+  the site report and the CSV read it unchanged; import and export are untouched. The engine's
+  own `jargon` rule is no longer run: the plain-language pack carries its starter list, and
+  running both reported every word twice. Starter words now report as `plain-words`.
+- The analyzer runs house rules field by field, each only where its scope says, and shifts the
+  findings into the joined document. Readability rules still see the joined document.
+- **The title** reaches casing rules as a heading block, after sections and grades are cut, so it
+  is never a section or graded. Skipped when a site lists `title` as a prose field.
+- **Targets:** `targets` sets a grade per collection, with the site's tolerance.
+- **D3:** every section in the report carries Flesch-Kincaid and reading ease, and the panel
+  shows them beside the band. A test holds both to the engine's own numbers (acceptance 5).
+  A paragraph whose own band starts more than `paragraphs.above_by` (3) grades past the top of
+  the target is marked `hard_paragraph` (warning), once it has `paragraphs.min_words` (40).
+- `writtenRules` reaches the report from the house rules, so punctuation findings report their
+  place in the text as written (tested with a double space after curly quotes).
+- Free and Pro are not split yet (Phase 1.10).
 

@@ -255,6 +255,7 @@
                             <div v-for="(s, i) in sections" :key="'s' + i" class="flex flex-wrap items-center gap-2">
                                 <span class="text-sm">{{ s.name }}</span>
                                 <ui-badge :color="s.color" :text="s.label" />
+                                <span v-if="s.grades" class="text-xs">Flesch-Kincaid {{ s.grades.flesch_kincaid }} · reading ease {{ s.grades.reading_ease }}</span>
                                 <span v-if="s.findings" class="text-xs">{{ s.findings === 1 ? '1 finding' : s.findings + ' findings' }}</span>
                             </div>
                         </div>

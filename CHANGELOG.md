@@ -19,6 +19,12 @@ name, so there is nothing to migrate. What changed:
   `storage/statamic/copydesk/`.
 - The Readability page is at `/cp/utilities/copydesk`, and its
   permission is `access copydesk utility`.
+- **House style on the publish form.** The panel's check runs the house
+  rules beside the readability rules: core punctuation, plain language and
+  inclusive language by default, plus any packs in `resources/copydesk`.
+  The site's word list is now one of them. A collection can have its own
+  target grade (`targets`), each section shows Flesch-Kincaid and reading
+  ease, and a paragraph far above the target is marked.
 - **Free and Pro editions.** Listed in `composer.json`; a site runs Free
   until it sets `'bpmore/statamic-copydesk' => 'pro'` in
   `config/statamic/editions.php`. Nothing differs between them yet.

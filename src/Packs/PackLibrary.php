@@ -58,6 +58,27 @@ final class PackLibrary
         return $this->memo[$key] = $set;
     }
 
+    /** @return list<string> the names of the packs Copydesk ships */
+    public function bundledNames(): array
+    {
+        return self::names($this->bundled);
+    }
+
+    /** @return list<string> the names of the site's own packs */
+    public function siteNames(): array
+    {
+        return self::names($this->site);
+    }
+
+    /** @return list<string> */
+    private static function names(string $directory): array
+    {
+        $files = is_dir($directory) ? (glob(rtrim($directory, '/').'/*.yaml') ?: []) : [];
+        sort($files);
+
+        return array_map(static fn (string $f): string => basename($f, '.yaml'), $files);
+    }
+
     /**
      * Every pack file, bundled first, then the site's, each in name order.
      *

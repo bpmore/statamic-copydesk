@@ -3,8 +3,8 @@
 declare(strict_types=1);
 
 use Bpmore\Copydesk\Analysis\Analyzer;
+use Bpmore\Copydesk\Analysis\HouseRules;
 use Bpmore\Copydesk\Analysis\Report;
-use Bpmore\Copydesk\Dictionaries;
 use Bpmore\Copydesk\Scan\ScanReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Bpmore\Copydesk\Settings;
@@ -190,7 +190,7 @@ it('names a page the check threw on and grades the rest, rather than stopping', 
     published('Easy', EASY);
     published('Odd', HARD);
 
-    app()->bind(Analyzer::class, fn ($app) => new class($app->make(Settings::class), $app->make(Dictionaries::class)) extends Analyzer
+    app()->bind(Analyzer::class, fn ($app) => new class($app->make(Settings::class), $app->make(HouseRules::class)) extends Analyzer
     {
         public function analyze(Blueprint $blueprint, array $values, string $locale, ?string $site = null): Report
         {

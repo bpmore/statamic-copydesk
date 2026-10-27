@@ -78,7 +78,9 @@ it('sends every finding with its field, its sentence, and where in the sentence 
     $response->assertOk();
     $findings = collect($response->json('findings'));
 
-    $jargon = $findings->where('rule', 'jargon')->values();
+    // The starter words come from the plain-language pack now, not the
+    // engine's jargon rule; the site's own words keep the id `jargon`.
+    $jargon = $findings->where('rule', 'plain-words')->values();
     expect($jargon)->toHaveCount(3);
     expect($jargon[0]['field'])->toBe('content');
     expect($jargon[0]['context'])->toBe(['text' => 'We utilize forms.', 'offset' => 3, 'length' => 7]);
@@ -127,7 +129,7 @@ it('reads only the fields the site configured, and only the kinds that are prose
     // The markdown was rendered first: the heading is a section, the
     // emphasis is words, and the inline code was left out.
     expect(array_column($response->json('sections'), 'title'))->toBe(['', 'Details']);
-    expect(collect($response->json('findings'))->where('rule', 'jargon')->pluck('field')->all())->toBe(['summary', 'notes']);
+    expect(collect($response->json('findings'))->where('rule', 'plain-words')->pluck('field')->all())->toBe(['summary', 'notes']);
 });
 
 it('refuses another language with the guard\'s own words rather than a wrong number', function () {
@@ -194,7 +196,7 @@ it('says where each finding is in the field as the author wrote it', function ()
     $entry = savedPage(bard($written));
 
     $findings = collect(check(['reference' => $entry->reference(), 'values' => ['content' => bard($written)]])->assertOk()->json('findings'));
-    $jargon = $findings->firstWhere('rule', 'jargon');
+    $jargon = $findings->firstWhere('rule', 'plain-words');
 
     expect($jargon['excerpt'])->toBe('utilize')
         ->and($jargon['offset'])->not->toBe(mb_strpos($written, 'utilize'))

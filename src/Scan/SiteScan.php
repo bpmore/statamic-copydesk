@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk\Scan;
 
 use Bpmore\Copydesk\Analysis\Analyzer;
+use Bpmore\Copydesk\Analysis\HouseRules;
 use Bpmore\Copydesk\Settings;
 use Bpmore\ReadabilityCore\Rule\Finding;
-use Bpmore\ReadabilityCore\Rule\Jargon;
 use Bpmore\ReadabilityCore\Rule\Severity;
 use Bpmore\ReadabilityCore\Rule\UnexpandedAcronym;
 use Illuminate\Contracts\Cache\Repository as Cache;
@@ -131,7 +131,7 @@ final class SiteScan
             warnings: count($findings->ofSeverity(Severity::Warning)),
             tips: count($findings->ofSeverity(Severity::Tip)),
             acronyms: array_map(static fn (Finding $f): string => rtrim($f->excerpt, "'s"), $findings->ofRule(UnexpandedAcronym::HANDLE)->all()),
-            jargon: array_map(static fn (Finding $f): string => $f->excerpt, $findings->ofRule(Jargon::HANDLE)->all()),
+            jargon: array_map(static fn (Finding $f): string => $f->excerpt, $findings->ofRule(HouseRules::SITE_WORDS, 'plain-words')->all()),
         );
     }
 
