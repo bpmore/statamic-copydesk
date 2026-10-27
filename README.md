@@ -17,8 +17,8 @@ mandate, universities writing for applicants and their families. The
 question those readers ask is not whether a page passes a standard. It is
 whether the person it was written for can read it.
 
-The engine is [`bpmore/readability-core`](packages/readability-core), in
-this repository, framework-agnostic and with no runtime dependencies. This
+The engine is [`bpmore/readability-core`](https://github.com/bpmore/readability-core),
+its own package, framework-agnostic and with no runtime dependencies. This
 addon is its Statamic surface.
 
 ## Plain language, as the standard defines it
@@ -222,23 +222,26 @@ name (`statamic-copydesk`), so the dictionary a site edits is never read
 back. 6.34.0 is the first release with the fix (statamic/cms#15495).
 
 ```sh
-composer install        # the addon, with the engine from packages/readability-core
+composer install        # the addon, with the engine from Packagist
 vendor/bin/pest         # boots Statamic through Testbench
 vendor/bin/pint --test
 ```
 
-The engine's own suite runs from its directory:
-`cd packages/readability-core && composer install && vendor/bin/pest`.
+The engine has its own repository and suite. To work on both at once,
+clone it beside this one and point Composer at it, without committing the
+change:
 
-To see the addon in a real site, point the site's `composer.json` at both
-packages by path (Composer does not read the repositories a dependency
-declares), and require the addon:
+```sh
+composer config repositories.readability-core path ../readability-core
+composer update bpmore/readability-core
+```
+
+To see the addon in a real site, point the site's `composer.json` at this
+folder by path and require the addon. The engine comes from Packagist:
 
 ```json
 "repositories": [
-    { "type": "path", "url": "../statamic-copydesk", "options": { "symlink": true } },
-    { "type": "path", "url": "../statamic-copydesk/packages/readability-core",
-      "options": { "symlink": true, "versions": { "bpmore/readability-core": "0.1.0" } } }
+    { "type": "path", "url": "../statamic-copydesk", "options": { "symlink": true } }
 ],
 "require": { "bpmore/statamic-copydesk": "@dev" }
 ```

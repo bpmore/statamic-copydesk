@@ -1,7 +1,7 @@
-# Two suites, on every push and pull request: the engine's, which boots
-# nothing, and the addon's, which boots Statamic through Testbench. Shaped
-# like the workflow in Accessibility Gate; neither has an ext-intl branch
-# to exercise yet.
+# The addon's suite, on every push and pull request, booting Statamic through
+# Testbench. The engine, bpmore/readability-core, is its own repository with
+# its own CI; it arrives here from Packagist like any other dependency. Shaped
+# like the workflow in Accessibility Gate; no ext-intl branch to exercise yet.
 #
 # The second job is the oldest PHP the manifest allows, with the oldest version
 # of every dependency it allows. A floor in composer.json is a promise about a
@@ -30,58 +30,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  core:
-    name: readability-core, PHP ${{ matrix.php }}, ${{ matrix.dependencies }} dependencies
-    runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: packages/readability-core
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - php: '8.4'
-            dependencies: highest
-          - php: '8.2'
-            dependencies: lowest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          coverage: none
-
-      # Before installing, because a malformed manifest on a published package
-      # is otherwise found by Packagist, which is later and in front of an
-      # audience.
-      - name: Check the manifest is well formed
-        run: composer validate --strict
-
-      # No composer.lock is committed: this is a package an application
-      # installs, so the application's lock is the one that matters. Every run
-      # here is a fresh resolve, and a red run on an unchanged commit means a
-      # dependency moved, which is a finding rather than a nuisance.
-      - name: Install dependencies
-        if: matrix.dependencies == 'highest'
-        run: composer install --prefer-dist --no-interaction --no-progress
-
-      # `--prefer-lowest` alone would take the oldest *pre-release* of anything
-      # that has one; `--prefer-stable` with it takes the oldest stable, which
-      # is the oldest thing a real install can end up with.
-      - name: Install the oldest dependencies the manifest allows
-        if: matrix.dependencies == 'lowest'
-        run: composer update --prefer-lowest --prefer-stable --prefer-dist --no-interaction --no-progress
-
-      - name: Check formatting
-        run: vendor/bin/pint --test
-
-      - name: Run the suite
-        run: vendor/bin/pest
-
   addon:
     name: statamic-copydesk, PHP ${{ matrix.php }}, ${{ matrix.dependencies }} dependencies
     runs-on: ubuntu-latest
@@ -117,8 +65,8 @@ jobs:
           composer config --unset repositories.bpmore-site-weather
           composer remove --dev bpmore/statamic-site-weather --no-update --no-interaction
 
-      # The engine comes from the path repository in this same checkout, so
-      # the addon is always tested against the engine it sits beside.
+      # The engine comes from Packagist, at whatever version the manifest
+      # allows, the same way it reaches a site.
       - name: Install dependencies
         if: matrix.dependencies == 'highest'
         run: composer install --prefer-dist --no-interaction --no-progress

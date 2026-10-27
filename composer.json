@@ -34,17 +34,6 @@
     },
     "repositories": [
         {
-            "name": "bpmore-readability-core",
-            "type": "path",
-            "url": "packages/readability-core",
-            "options": {
-                "symlink": true,
-                "versions": {
-                    "bpmore/readability-core": "0.1.0"
-                }
-            }
-        },
-        {
             "name": "bpmore-site-weather",
             "type": "path",
             "url": "../statamic-site-weather",

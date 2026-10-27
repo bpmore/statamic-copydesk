@@ -19,6 +19,9 @@ name, so there is nothing to migrate. What changed:
   `storage/statamic/copydesk/`.
 - The Readability page is at `/cp/utilities/copydesk`, and its
   permission is `access copydesk utility`.
+- **The engine comes from Packagist.** `bpmore/readability-core` is no
+  longer kept inside this repository; it installs like any other package,
+  so Copydesk and A11y Report always share one copy of it.
 - **Statamic 6.34 or newer.** The slug (`copydesk`) now differs from the
   package name, and Statamic before 6.34 saves addon settings under one
   and reads them under the other, so the dictionary would never load.
