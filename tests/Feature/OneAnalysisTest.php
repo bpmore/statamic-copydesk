@@ -18,6 +18,8 @@ use Statamic\Facades\User;
  * Phase 1.4: one check, readability and house rules together.
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     Collection::make('pages')->save();
     $this->user = User::make()->makeSuper();
     $this->user->save();

@@ -13,6 +13,8 @@ use Statamic\Facades\User;
  * The endpoint the editor asks as the author types (Phase 1.5).
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     Collection::make('pages')->save();
     $this->user = User::make()->makeSuper();
     $this->user->save();

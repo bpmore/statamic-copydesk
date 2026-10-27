@@ -24,6 +24,8 @@ use Statamic\Support\Str;
  * hardest pages, the acronyms and jargon that come up most.
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     Site::setSites([
         'default' => ['name' => 'Main', 'locale' => 'en_US', 'url' => '/'],
         'other' => ['name' => 'Other', 'locale' => 'en_US', 'url' => '/other/'],

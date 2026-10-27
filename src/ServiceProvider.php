@@ -14,6 +14,7 @@ use Bpmore\Copydesk\Http\Controllers\DictionaryController;
 use Bpmore\Copydesk\Http\Controllers\PacksController;
 use Bpmore\Copydesk\Packs\PackLibrary;
 use Bpmore\Copydesk\Scan\ScanHistory;
+use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Gate as Access;
@@ -118,9 +119,14 @@ class ServiceProvider extends AddonServiceProvider
                     $dictionaries = $this->app->make(Dictionaries::class);
                     $site = Site::selected();
 
+                    $report = SiteReport::refusal();
+
                     return [
                         'site' => $site,
-                        'scan' => $this->app->make(SiteScan::class)->cached($site->handle()),
+                        // The site report is Pro, and needs its own permission;
+                        // the dictionary and the packs below are not.
+                        'reportRefusal' => $report,
+                        'scan' => $report === null ? $this->app->make(SiteScan::class)->cached($site->handle()) : null,
                         'sites' => Site::all()->values(),
                         'counts' => Site::all()->mapWithKeys(fn ($s) => [$s->handle() => count($dictionaries->own($s->handle()))])->all(),
                         'canManage' => (bool) User::current()?->can('manage jargon dictionary'),
@@ -144,10 +150,14 @@ class ServiceProvider extends AddonServiceProvider
     }
 
     /**
-     * Three permissions, each with a meaning of its own beside the two
-     * Statamic gives every addon (access to the utility page, and editing
-     * the addon's settings):
+     * Permissions, each with a meaning of its own beside the two Statamic
+     * gives every addon (access to the utility page, and editing the
+     * addon's settings). Nobody but a super admin has any of them until a
+     * role is given it.
      *
+     * - `view copydesk report`: the site report on the utility page (Pro).
+     * - `manage copydesk rules`: the rule editor (Pro).
+     * - `override copydesk gate`: publish past the gate, with a reason (Pro).
      * - `view readability`: check a page from the publish form; see the
      *   dashboard widget. Not the utility page, which is Statamic's own
      *   "access utility" permission, nor the tag, which is the front end.
@@ -176,6 +186,9 @@ class ServiceProvider extends AddonServiceProvider
                 Permission::register(PublishGate::OVERRIDE)
                     ->label('Publish past the gate')
                     ->description('Publish a page the Copydesk gate stopped, once, giving a reason that is kept in the site report.');
+                Permission::register(SiteReport::PERMISSION)
+                    ->label('See the site report')
+                    ->description('See how the whole site reads and what it breaks, on the Readability page under Tools, and download it as a CSV.');
                 Permission::register(PacksController::PERMISSION)
                     ->label('Edit house style rules')
                     ->description('Add, change and turn off the rules in the site\'s own packs, in resources/copydesk.');

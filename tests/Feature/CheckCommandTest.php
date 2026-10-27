@@ -14,6 +14,8 @@ use Statamic\Support\Str;
  * an exit code a build can stop on.
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     Site::setSites([
         'default' => ['name' => 'Main', 'locale' => 'en_US', 'url' => '/'],
         'french' => ['name' => 'French', 'locale' => 'fr_FR', 'url' => '/fr/'],

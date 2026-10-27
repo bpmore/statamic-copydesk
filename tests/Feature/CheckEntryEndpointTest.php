@@ -13,6 +13,8 @@ use Statamic\Facades\User;
  * values, so that is what most of this file is about.
  */
 beforeEach(function () {
+    // Pro: these tests use the packs, the site report and the signal Free leaves out.
+    pro();
     Collection::make('pages')->save();
 
     $this->user = User::make()->makeSuper();

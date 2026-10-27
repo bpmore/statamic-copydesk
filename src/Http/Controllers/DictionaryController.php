@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk\Http\Controllers;
 
 use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -28,6 +29,7 @@ class DictionaryController extends CpController
     /** Throw the cached scan of a site away, so the page grades it afresh. */
     public function rescan(string $site, SiteScan $scan): RedirectResponse
     {
+        SiteReport::authorize();
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}], so there is nothing to scan.");
 
         $scan->forget($site);
@@ -39,6 +41,7 @@ class DictionaryController extends CpController
     /** How far the background scan has got, for the page under Tools. */
     public function progress(string $site, SiteScan $scan): JsonResponse
     {
+        SiteReport::authorize();
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}].");
 
         return response()->json($scan->progress($site) ?? ['done' => null, 'total' => null]);
@@ -50,6 +53,7 @@ class DictionaryController extends CpController
      */
     public function issues(string $site, SiteScan $scan): StreamedResponse
     {
+        SiteReport::authorize();
         abort_if(Site::get($site) === null, 404, "There is no site called [{$site}].");
 
         $report = $scan->cached($site);

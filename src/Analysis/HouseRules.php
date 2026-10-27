@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk\Analysis;
 
 use Bpmore\Copydesk\Dictionaries;
+use Bpmore\Copydesk\Edition;
 use Bpmore\Copydesk\Packs\PackLibrary;
 use Bpmore\Copydesk\Settings;
 use Bpmore\Copydesk\Style\RuleDefinition;
 use Bpmore\Copydesk\Style\RuleFactory;
+use Bpmore\Copydesk\Style\RuleType;
 use Bpmore\Copydesk\Style\StyleRule;
 use Bpmore\ReadabilityCore\Rule\Dictionary;
 use Bpmore\ReadabilityCore\Rule\DictionaryEntry;
@@ -29,6 +31,9 @@ use Bpmore\ReadabilityCore\Rule\DictionaryEntry;
  * publish for those); one with a replacement takes the configured severity.
  * The engine's own jargon rule is not run beside it: the plain-language
  * pack carries the same starter list.
+ *
+ * Copydesk Free runs only punctuation and term rules from the packs (the
+ * core-punctuation pack, and a site's own names); the rest is Pro.
  */
 final class HouseRules
 {
@@ -36,6 +41,9 @@ final class HouseRules
 
     /** @var list<string> */
     public const DEFAULT_PACKS = ['core-punctuation', 'plain-language', 'inclusive-language'];
+
+    /** @var list<RuleType> the kinds of rule Copydesk Free runs */
+    public const FREE_TYPES = [RuleType::Punctuation, RuleType::Term];
 
     public function __construct(
         private readonly PackLibrary $library,
@@ -50,6 +58,13 @@ final class HouseRules
     {
         $set = $this->library->set();
         $rules = $set->runnable($this->roots(), $collection);
+
+        // Free runs punctuation and term rules, from any pack; every other
+        // kind is Pro. The site's own word list stays: it is the dictionary
+        // Plain always had.
+        if (! Edition::isPro()) {
+            $rules = array_values(array_filter($rules, static fn (StyleRule $rule): bool => in_array($rule->definition->type, self::FREE_TYPES, true)));
+        }
 
         $words = $this->siteWords($site);
 

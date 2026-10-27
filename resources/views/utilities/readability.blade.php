@@ -29,7 +29,11 @@
     <ui-description text="{!! e($companion) !!}" />
     @endif
 
-    @if ($scan === null)
+    @if (($reportRefusal ?? null) !== null)
+    <ui-card-panel heading="{!! e($site->name()) !!}">
+        <p class="text-sm">{!! e($reportRefusal) !!}</p>
+    </ui-card-panel>
+    @elseif ($scan === null)
     <ui-card-panel heading="{!! e($site->name()) !!}">
         <copydesk-scan-progress url="{!! e(cp_route('utilities.copydesk.progress', $site->handle())) !!}" />
     </ui-card-panel>
@@ -190,7 +194,7 @@
     </ui-card-panel>
     @endif
 
-    @if (($overrides ?? []) !== [])
+    @if (($reportRefusal ?? null) === null && ($overrides ?? []) !== [])
     <ui-card-panel heading="Published past the gate">
         <div class="space-y-3">
             <p class="text-sm">Every page someone published while the gate would have stopped it, newest first, with the reason they gave.</p>
