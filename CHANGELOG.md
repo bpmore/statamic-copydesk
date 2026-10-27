@@ -35,6 +35,9 @@ name, so there is nothing to migrate. What changed:
   severity, with a box of suggestions and "Ignore here"; markdown, textarea
   and text fields list the same under the field; the panel counts them and
   jumps to each. Bard nested in Replicator and Grid is checked too.
+- **Nested fields count.** The panel's grade, the gate and the site report
+  read the Bard, markdown and textarea fields nested in a listed Grid,
+  Replicator, Group or Bard set, the same ones underlined as you type.
 - **Ignore here** keeps a fingerprint of the rule and sentence on the entry
   (`copydesk_ignores`), honoured by the panel, gate and report, and always
   counted.
