@@ -35,7 +35,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [x] `casing`: sentence case or title case for headings and title fields.
 - [x] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
 - [x] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
-- [ ] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
+- [x] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
 - [ ] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
 - [ ] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
 
@@ -263,4 +263,18 @@ Guesses from the size of the Plain code and the spec, not measured.
   `/regex/flags` one is PCRE's. A test runs an exception through each of the six types.
 - Scope is `StyleRule::appliesTo($collection, $field)`. A rule sees blocks, not fields, so the
   analyzer (Phase 1.4) asks before running a rule on a field.
+
+### 2026-10-26: Phase 1.2, task 9: packs and how they add up
+- **Decided here, as the spec gives no pack format:** a pack is a YAML file named for the pack,
+  with optional `description`, `extends`, `disable`, `rules`, and `collections` (per collection,
+  its own `disable` and `rules`). Per-collection overrides live inside a pack, so a site keeps
+  them in Git next to the rules they change.
+- `Style\PackSet` takes the bundled packs, then the site's, refuses two packs with one name
+  (both files named), and resolves: extended packs first, in order; then the pack's rules (an id
+  already there is replaced in place); then its `disable`; then, for one collection, that
+  collection's changes. A pack reached twice is applied once. A circle is refused as "a extends b
+  extends a". An extended pack or disabled id that does not exist is refused with the nearest
+  real name.
+- **For Phase 1.4:** which packs a site has turned on (the roots passed to `rules()`) is the
+  addon's call: the site's own packs, or a configured list of bundled ones, by edition.
 
