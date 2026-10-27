@@ -33,7 +33,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [x] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
 - [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
 - [x] `casing`: sentence case or title case for headings and title fields.
-- [ ] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
+- [x] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
 - [ ] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
 - [ ] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
 - [ ] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
@@ -245,4 +245,14 @@ Guesses from the size of the Plain code and the spec, not measured.
   a hyphenated word is a word.
 - **For Phase 1.4:** a title field has to reach this rule as a heading block (it arrives as a
   paragraph from the plain-text extractor today), so one rule covers headings and titles.
+
+### 2026-10-26: Phase 1.2, task 7: `sentence`
+- `Style\Rules\Sentence` uses the engine's segmenter, `Words::of` and `PassiveVoice::isPassive`,
+  all public. The engine's `Sentences` loop is internal, so the few lines of it are written here;
+  a test runs the engine's `LongSentence` and this rule at 25 words on the same text and requires
+  the same sentences.
+- Differs from the engine on purpose: each passive sentence is a finding (the engine reports a
+  rate), because a house that writes this rule wants them all; and headings are skipped, as the
+  engine's tally skips them. A numeral finding points at the number, not the sentence.
+- All six types are now built; `RuleFactory` covers every one.
 
