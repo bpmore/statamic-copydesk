@@ -204,3 +204,22 @@ Guesses from the size of the Plain code and the spec, not measured.
 - A pattern that does not compile is refused when the pack loads, in PCRE's own words:
   `house.yaml, rule "broken": "pattern" does not compile: missing closing parenthesis at offset 9.`
 
+### 2026-10-26: Phase 1.2, task 5: `punctuation`, partly blocked. Stopped here.
+- Built: `em_dash`, `space_before_punctuation` and `repeated_punctuation` work and are tested.
+- **Blocked: `quotes` and `double_space`.** readability-core cleans every block before any rule
+  sees it (`Text\Normalizer`, run in `Extraction\Frame`): curly quotes become straight, runs of
+  spaces become one, `…` becomes `...`, invisible characters go. So a curly-quotes house gets a
+  finding on every quote that is already right (5 false findings on "She said “don’t” and
+  ‘go’."), a straight-quotes house never sees a curly one, and double spaces are gone before the
+  check looks. Their tests are skipped with this reason; nothing is ticked.
+- **The same cause reaches Phase 1.5.** Every finding's position is in the cleaned text, not the
+  text in the editor. The cleaning collapses spaces, expands `…`, drops soft hyphens, and the
+  structural exclusions (`Addresses`, `References`) cut text out of a block. Any of those before
+  a finding moves its underline. Plain never needed exact positions: its panel shows a finding
+  inside its own cleaned sentence. Live underlines do.
+- **Proposed fix, waiting on Brent:** in readability-core (D1: changes go there), keep each
+  block's original text and a map from cleaned positions back to it, through normalising and
+  through the exclusions. Released as 0.2.0, additive, so A11y Report is unaffected. Copydesk
+  then reads punctuation from the original text and gives every finding an original position.
+  About 1 to 2 days, before Phase 1.5 and before `quotes`/`double_space` can be ticked.
+

@@ -17,6 +17,7 @@ final class RuleFactory
             RuleType::WordList => new Rules\WordList($definition),
             RuleType::Term => new Rules\Term($definition),
             RuleType::Pattern => new Rules\Pattern($definition),
+            RuleType::Punctuation => new Rules\Punctuation($definition),
             default => throw new LogicException("Rules of type [{$definition->type->value}] are not built yet."),
         };
     }
