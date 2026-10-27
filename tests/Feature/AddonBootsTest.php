@@ -21,6 +21,25 @@ it('boots as a Statamic addon', function () {
     expect($manifest['extra']['laravel']['providers'])->toBe([ServiceProvider::class]);
 });
 
-it('has the engine on its autoloader, from the path repository', function () {
+it('has the engine on its autoloader', function () {
     expect((new EnglishSegmenter)->sentences('Dr. Smith went to St. Louis Inc. yesterday. He came back today.'))->toHaveCount(2);
+});
+
+it('ships a Vite manifest where the control panel looks for it', function () {
+    // Statamic's registerVite points Laravel's Vite at <buildDirectory>, and
+    // Laravel reads <buildDirectory>/manifest.json. A missing or misplaced
+    // manifest throws "Vite manifest not found" on every control panel page.
+    $build = __DIR__.'/../../resources/dist/build';
+
+    expect(is_file($build.'/manifest.json'))->toBeTrue('no manifest.json in resources/dist/build: run `npm run build`');
+
+    $manifest = json_decode((string) file_get_contents($build.'/manifest.json'), true);
+
+    expect($manifest)->toBeArray()->toHaveKey('resources/js/cp.js');
+
+    foreach ($manifest as $entry) {
+        if (isset($entry['file'])) {
+            expect(is_file($build.'/'.$entry['file']))->toBeTrue("manifest names {$entry['file']}, which is not in the build");
+        }
+    }
 });
