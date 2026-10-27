@@ -1,6 +1,6 @@
 # Copydesk: Statamic Marketplace listing
 
-Draft copy for the listing. Brent approves it before it goes up.
+Copy for the listing. Approved by Brent on 2026-10-27.
 
 ## Name
 
