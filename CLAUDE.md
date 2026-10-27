@@ -89,14 +89,13 @@ for compatibility.
 
 ## Where things live: the engine
 
-- **`packages/readability-core/`** is `bpmore/readability-core`, the framework-agnostic engine
-  the addon and A11y Report both depend on. It lives in this repo with its own `composer.json`,
-  `vendor/`, `phpunit.xml` and Pest suite, and has **no runtime dependencies**. Consumers take it
-  through a Composer path repository. It has also been split out as its own repository,
-  `github.com/bpmore/readability-core`, which matched this copy file for file on 2026-10-26
-  (only `LICENSE.md` differs).
-- Engine tests run from its own folder:
-  `cd packages/readability-core && composer install && vendor/bin/pest` (and `vendor/bin/pint`).
+- **`bpmore/readability-core`** is the framework-agnostic engine Copydesk and A11y Report both
+  depend on, with **no runtime dependencies**. It lives only in its own repository,
+  `github.com/bpmore/readability-core`, and comes from Packagist like any other dependency
+  (decision D1 in `PROGRESS.md`). Copydesk kept a copy in `packages/` until 2026-10-26; it was
+  removed so the two could not drift.
+- A fix to the engine is made in its repository, released there, and taken here by raising the
+  constraint. To work on both at once, see "Working on it" in the README.
 - The arch test above lives in the engine's own suite (`tests/ArchTest.php`) and, because
   nothing from Statamic or Laravel is installed there, is enforced by a token scan rather than Pest's
   `toUse()`. The file says why.

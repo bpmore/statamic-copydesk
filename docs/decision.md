@@ -93,9 +93,11 @@ About half of Copydesk's v1 list is already in Plain: panel, scoring, gate, dict
 
 ## Where the code would live
 
-- The work happens in `bpmore/statamic-plain`, as 2.0.
-- New rule types go in `readability-core` as plain PHP `Rule` classes. Reading YAML stays in the addon, so the engine still needs nothing at runtime.
-- This folder (`statamic-copydesk`) keeps the spec and this file. No code goes here.
+Superseded by the rename and the Phase 1 plan. As things stand:
+
+- The work happens in `bpmore/statamic-copydesk`, the Plain repository renamed.
+- New rule types go in Copydesk's own `src/Style/`, plain PHP behind an arch test, implementing the engine's `Rule` interface. The engine itself is unchanged, so A11y Report is unaffected (`PROGRESS.md`, Phase 1.2).
+- The engine is only `bpmore/readability-core` in its own repository; the copy in `packages/` is gone (`PROGRESS.md`, D1).
 
 ## Not settled by this file
 

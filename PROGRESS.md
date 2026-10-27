@@ -17,7 +17,7 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 
 ## Phase 1.1: Housekeeping
 
-- [ ] One engine copy (D1): require `bpmore/readability-core` from Packagist, path repository to `../readability-core` in development, remove `packages/readability-core/` and the CI job that tests it there (the engine's own repo tests it).
+- [x] One engine copy (D1): require `bpmore/readability-core` from Packagist, path repository to `../readability-core` in development, remove `packages/readability-core/` and the CI job that tests it there (the engine's own repo tests it).
 - [ ] A Vite build, set up the way `bpmore/statamic-lifecycle` has it (Vite config, `$vite` in the service provider, built bundle committed under `resources/dist`, a CI check that the committed build is current). The panel script moves into it unchanged; its tests still pass.
 - [ ] Editions: `free` and `pro` in `composer.json` `extra.statamic.editions`, one helper that answers "is this Pro", and a test for each edition. Nothing is gated yet; later tasks use the helper.
 
@@ -111,3 +111,15 @@ Guesses from the size of the Plain code and the spec, not measured.
 - 1.10 ready to ship: 2 days.
 
 ## Notes
+
+### 2026-10-26: Phase 1.1, task 1: one engine copy
+- `packages/readability-core/` matched `bpmore/readability-core` v0.1.0 (the release on
+  Packagist, and that repo's `main`) file for file, except two product names in `LICENSE.md`.
+  So nothing was lost by deleting it. The engine now installs from Packagist as `v0.1.0`.
+- **Changed from the task as written:** no path repository is committed. CI has no
+  `../readability-core`, and Composer refuses a path repository whose folder is missing (the
+  reason the Site Weather one is dropped on the runner). The README shows the two commands to
+  link a local checkout instead, for when the engine and the addon change together.
+- The engine's CI job is gone from `tests.yml`; its own repository runs its suite.
+- 85 passed locally; both CI jobs replayed on fresh clones (see the commit).
+
