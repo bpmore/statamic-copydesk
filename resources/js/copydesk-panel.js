@@ -284,10 +284,10 @@ import { clearIgnores, ignoresOf } from './editor/target.js';
                     <div class="flex flex-wrap gap-2">
                         <div v-for="c in liveCounts" :key="c.key"><ui-badge :color="c.color" :text="c.badge" /></div>
                     </div>
-                    <ul class="space-y-1">
+                    <ul class="space-y-2">
                         <li v-for="(item, i) in liveItems.slice(0, LIVE_SHOWN)" :key="'l' + i" class="text-xs">
-                            <button type="button" class="copydesk-jump" @click="item.reveal()">{{ jumpLabel(item) }}</button>
-                            <span>{{ ': ' + severityWord(item.issue) + '. ' + item.issue.message }}</span>
+                            <div><button type="button" class="copydesk-jump" @click="item.reveal()">{{ jumpLabel(item) }}</button></div>
+                            <span>{{ severityWord(item.issue) + '. ' + item.issue.message }}</span>
                         </li>
                     </ul>
                     <p v-if="liveItems.length > LIVE_SHOWN" class="text-xs">{{ 'And ' + (liveItems.length - LIVE_SHOWN) + ' more.' }}</p>
@@ -297,12 +297,11 @@ import { clearIgnores, ignoresOf } from './editor/target.js';
                     </p>
                 </div>
 
-                <ui-alert
-                    v-if="showRefusal"
-                    variant="error"
-                    :heading="refusal[0]"
-                    :text="refusal.slice(1).join(' ')"
-                />
+                <!-- One paragraph per line: what to fix reads as a list, not a run-on. -->
+                <ui-alert v-if="showRefusal" variant="error">
+                    <ui-heading :text="refusal[0]" />
+                    <p v-for="(line, i) in refusal.slice(1)" :key="i">{{ line }}</p>
+                </ui-alert>
 
                 <div v-if="showRefusal && meta && meta.canOverride" class="space-y-2">
                     <ui-description v-if="override.done" :text="override.done" />

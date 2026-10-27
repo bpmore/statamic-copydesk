@@ -157,6 +157,8 @@
 .dark .copydesk-issue--tip, .dark .copydesk-issue--info { text-decoration-color: #93c5fd; }
 
 .copydesk-jump {
+    /* A long label wraps from the left: a button centers its text by default. */
+    text-align: left;
     padding: 0;
     border: 0;
     background: none;
