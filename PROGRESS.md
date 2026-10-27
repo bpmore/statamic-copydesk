@@ -19,7 +19,7 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 
 - [x] One engine copy (D1): require `bpmore/readability-core` from Packagist, path repository to `../readability-core` in development, remove `packages/readability-core/` and the CI job that tests it there (the engine's own repo tests it).
 - [x] A Vite build, set up the way `bpmore/statamic-lifecycle` has it (Vite config, `$vite` in the service provider, built bundle committed under `resources/dist`, a CI check that the committed build is current). The panel script moves into it unchanged; its tests still pass.
-- [ ] Editions: `free` and `pro` in `composer.json` `extra.statamic.editions`, one helper that answers "is this Pro", and a test for each edition. Nothing is gated yet; later tasks use the helper.
+- [x] Editions: `free` and `pro` in `composer.json` `extra.statamic.editions`, one helper that answers "is this Pro", and a test for each edition. Nothing is gated yet; later tasks use the helper.
 
 ## Phase 1.2: The style rule engine (plain PHP, no Statamic)
 
@@ -142,4 +142,15 @@ Guesses from the size of the Plain code and the spec, not measured.
 - **For greenhouse, when it next updates Copydesk:** run `vendor:publish --tag=copydesk`, and
   delete `public/vendor/statamic-copydesk/js/`, the old panel script nothing loads any more.
 - 86 passed.
+
+### 2026-10-26: Phase 1.1, task 3: editions
+- `extra.statamic.editions` is `["free", "pro"]`, Free first, so Statamic's `Addon::edition()`
+  answers Free until a site sets `statamic.editions.addons.bpmore/statamic-copydesk`. No sibling
+  addon used editions before; this follows Statamic's own `Addon::edition()`.
+- `Edition::isPro()` (and `Edition::current()`) is the one question every Pro feature asks. An
+  unknown edition in config throws, as Statamic does, rather than quietly running Free.
+- **Found:** Statamic's `AddonTestCase` writes the addon's manifest without `editions`, so under
+  test the addon had none, a state no install can be in. `TestCase` now copies them from
+  `composer.json`. Without that, three of the five edition tests fail (checked).
+- Nothing is gated yet. 91 passed.
 

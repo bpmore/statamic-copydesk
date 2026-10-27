@@ -19,6 +19,9 @@ name, so there is nothing to migrate. What changed:
   `storage/statamic/copydesk/`.
 - The Readability page is at `/cp/utilities/copydesk`, and its
   permission is `access copydesk utility`.
+- **Free and Pro editions.** Listed in `composer.json`; a site runs Free
+  until it sets `'bpmore/statamic-copydesk' => 'pro'` in
+  `config/statamic/editions.php`. Nothing differs between them yet.
 - **The engine comes from Packagist.** `bpmore/readability-core` is no
   longer kept inside this repository; it installs like any other package,
   so Copydesk and A11y Report always share one copy of it.

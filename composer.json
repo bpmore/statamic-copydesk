@@ -63,7 +63,11 @@
         "statamic": {
             "name": "Copydesk",
             "slug": "copydesk",
-            "description": "Readability and plain-language checking on the publish form."
+            "description": "Readability and plain-language checking on the publish form.",
+            "editions": [
+                "free",
+                "pro"
+            ]
         },
         "laravel": {
             "providers": [
