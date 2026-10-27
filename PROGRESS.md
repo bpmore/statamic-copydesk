@@ -15,6 +15,8 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 - **D3. Per-paragraph grades. Decided 2026-10-26: keep the grade range.** The spec asks for Flesch-Kincaid and reading ease "per entry and per paragraph". Plain grades whole pages and sections as bands, on purpose: four formulas on a three-sentence paragraph give noise, not a grade. The band per page and per section stays the headline; Flesch-Kincaid and reading ease show as numbers in the details; a paragraph is marked only when it reads well above target. This departs from the spec on purpose.
 - **D4. Live checks in non-Bard fields. Decided 2026-10-26: a list under the field.** A textarea or text input cannot draw underlines. Bard gets underlines; markdown, textarea and text fields get the same issues as a list under the field, with the same suggestions and "Ignore here".
 
+- **D5. Original text and positions. Decided 2026-10-26: fix it in readability-core, after the rest of Phase 1.2.** The engine cleans text before rules see it, so two punctuation checks cannot work and every finding's position is in the cleaned text, not the editor's (Notes, 2026-10-26, task 5). Phase 1.2b below does the fix before any editor work.
+
 ## Phase 1.1: Housekeeping
 
 - [x] One engine copy (D1): require `bpmore/readability-core` from Packagist, path repository to `../readability-core` in development, remove `packages/readability-core/` and the CI job that tests it there (the engine's own repo tests it).
@@ -25,17 +27,25 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 
 Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet` runs readability rules and style rules together. An arch test keeps `Bpmore\Copydesk\Style` free of `Statamic\` and `Illuminate\`. YAML is parsed at the edge; the engine takes arrays.
 
-- [ ] The rule schema from the spec (`id`, `type`, `message`, `suggestions`, `severity`, `scope`, `exceptions`, plus each type's own keys), validated with errors that name the pack file and the rule id. `info` maps to the engine's `tip`.
-- [ ] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
-- [ ] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
-- [ ] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
+- [x] The rule schema from the spec (`id`, `type`, `message`, `suggestions`, `severity`, `scope`, `exceptions`, plus each type's own keys), validated with errors that name the pack file and the rule id. `info` maps to the engine's `tip`.
+- [x] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
+- [x] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
+- [x] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
 - [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
-- [ ] `casing`: sentence case or title case for headings and title fields.
-- [ ] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
-- [ ] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
-- [ ] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
-- [ ] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
-- [ ] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
+- [x] `casing`: sentence case or title case for headings and title fields.
+- [x] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
+- [x] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
+- [x] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
+- [x] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
+- [x] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
+
+## Phase 1.2b: Original text and positions (D5)
+
+In `bpmore/readability-core`, released as 0.2.0, then taken here.
+
+- [ ] Each block keeps the text as written beside the cleaned text, with a map from every cleaned position back to the written one, through normalising (collapsed spaces, straightened quotes, `…`, invisible characters) and through the exclusions that cut text out of a block (`Addresses`, `References`, `ProperNames`). Additive: nothing that reads `text` today changes. Released as 0.2.0.
+- [ ] Copydesk requires `^0.2`. Every finding (readability and house) is given its position in the written text; the panel and the coming lint endpoint use those.
+- [ ] `punctuation` reads the written text for `quotes` and `double_space`, and their skipped tests run and pass (task 5 ticked).
 
 ## Phase 1.3: Bundled packs
 
@@ -153,4 +163,140 @@ Guesses from the size of the Plain code and the spec, not measured.
   test the addon had none, a state no install can be in. `TestCase` now copies them from
   `composer.json`. Without that, three of the five edition tests fail (checked).
 - Nothing is gated yet. 91 passed.
+
+### 2026-10-26: Phase 1.2, task 1: the rule schema
+- `Style\RuleDefinition::fromArray($raw, $source, $position)` checks one rule and returns it plain:
+  id (lowercase, hyphens), type, message, suggestions, severity (`info` becomes the engine's
+  `tip`; `warning` if left out), scope (`collections`, `fields`, `*` if left out), exceptions
+  (text, or `/regex/flags`, checked to compile), and the type's own keys.
+- **Decided here, as the spec names no keys for them:** `word_list` takes `words` (word: what to
+  say instead; a word, a list, null for "say it another way", or `replace`/`severity`/`reason`);
+  `term` takes `terms`; `pattern` takes `pattern` (no delimiters) and `flags` (`imsxU`);
+  `punctuation` takes `checks` and `quotes` (curly/straight, only with the `quotes` check);
+  `casing` takes `style` (sentence/title); `sentence` takes `check` (`max_words` with
+  `max_words`, `passive`, `starts_with_numeral`). The type tasks below build on these.
+- Every refusal names the pack and the rule and says what to change; an unknown key is refused
+  with the nearest known key offered. Exception messages are English and not translated: they
+  are for whoever edits the YAML, like Statamic's own.
+- Whether `pattern` compiles is left to the `pattern` task, as planned. `RuleDefinition::compiles()`
+  checks a regex without the warning PCRE raises, which `@` does not stop under a test runner
+  or Laravel.
+- An arch test keeps `Bpmore\Copydesk\Style` free of Statamic and Laravel.
+- 102 passed. Breaking the info mapping and the unknown-key check each fails a test (checked).
+
+### 2026-10-26: Phase 1.2, task 2: `word_list`
+- `Style\StyleRule` is the engine's own `Rule`, so one `RuleSet` will run readability and house
+  rules together. A finding's rule is the pack's id (hyphens), which cannot collide with the
+  engine's handles (underscores). A finding carries one suggestion, the first; the rest stay on
+  the definition for the editor's popover.
+- `Style\Rules\WordList`: whole words, any case, a single word's inflections, longest phrase wins,
+  one finding per occurrence, offsets in bytes. An entry's severity beats the rule's. The
+  suggestion follows the author's capitals ("Use" for "Utilize") unless the replacement has its
+  own ("eiSEO").
+- `Style\Matcher` carries the engine's matching rules over, because the engine's `Phrases` is
+  internal. A test runs the engine's `Jargon` and `WordList` on the same text and dictionary and
+  requires the same places, so Plain's dictionary finds the same words as a pack (Phase 1.4).
+
+### 2026-10-26: Phase 1.2, task 3: `term`
+- `Style\Rules\Term`: the name in any other capitals is flagged, and a many-word name run
+  together or hyphenated ("UAMSHealth", "UAMS-Health"). The exact spelling never is, nor a line
+  break between its words. Whole words only; the longer name wins where two overlap.
+- **Read narrowly:** "near misses" is taken as case and spacing, not typos. A dropped letter is a
+  spell checker's job, which the spec leaves to the browser, and edit-distance matching on names
+  would flag ordinary words that happen to be close.
+- Acceptance 2 is a test: "eiSEO" passes, "EiSEO" and "eiseo" are flagged.
+
+### 2026-10-26: Phase 1.2, task 4: `pattern`
+- `Style\Rules\Pattern` runs the pack's regex between slashes (a slash in it escaped), Unicode
+  on (`u`, which in PHP also makes `\b` and `\w` Unicode-aware), plus the pack's flags. A match
+  of nothing is not a finding. If PCRE gives up on a block (backtrack limit), that block has no
+  findings from the rule rather than an error in the editor.
+- A pattern that does not compile is refused when the pack loads, in PCRE's own words:
+  `house.yaml, rule "broken": "pattern" does not compile: missing closing parenthesis at offset 9.`
+
+### 2026-10-26: Phase 1.2, task 5: `punctuation`, partly blocked. Stopped here.
+- Built: `em_dash`, `space_before_punctuation` and `repeated_punctuation` work and are tested.
+- **Blocked: `quotes` and `double_space`.** readability-core cleans every block before any rule
+  sees it (`Text\Normalizer`, run in `Extraction\Frame`): curly quotes become straight, runs of
+  spaces become one, `…` becomes `...`, invisible characters go. So a curly-quotes house gets a
+  finding on every quote that is already right (5 false findings on "She said “don’t” and
+  ‘go’."), a straight-quotes house never sees a curly one, and double spaces are gone before the
+  check looks. Their tests are skipped with this reason; nothing is ticked.
+- **The same cause reaches Phase 1.5.** Every finding's position is in the cleaned text, not the
+  text in the editor. The cleaning collapses spaces, expands `…`, drops soft hyphens, and the
+  structural exclusions (`Addresses`, `References`) cut text out of a block. Any of those before
+  a finding moves its underline. Plain never needed exact positions: its panel shows a finding
+  inside its own cleaned sentence. Live underlines do.
+- **Proposed fix, waiting on Brent:** in readability-core (D1: changes go there), keep each
+  block's original text and a map from cleaned positions back to it, through normalising and
+  through the exclusions. Released as 0.2.0, additive, so A11y Report is unaffected. Copydesk
+  then reads punctuation from the original text and gives every finding an original position.
+  About 1 to 2 days, before Phase 1.5 and before `quotes`/`double_space` can be ticked.
+
+### 2026-10-26: Phase 1.2, task 6: `casing`
+- `Style\Rules\Casing` checks heading blocks only, one finding per heading that is off, the whole
+  heading as the excerpt and the heading rewritten as the suggestion.
+- **Added to the schema:** `keep`, words always written as given. Sentence case cannot tell a
+  proper name from a capitalised word, so a house names its own ("Statamic", "UAMS Health").
+  Also never changed: words in capitals, words with a capital inside ("eiSEO"), words with a
+  digit, and "I".
+- Sentence case restarts after a colon. Title case keeps short joining words small in the middle
+  (a, an, the, and, of, to, in, ...); the first and last words always get a capital. Each part of
+  a hyphenated word is a word.
+- **For Phase 1.4:** a title field has to reach this rule as a heading block (it arrives as a
+  paragraph from the plain-text extractor today), so one rule covers headings and titles.
+
+### 2026-10-26: Phase 1.2, task 7: `sentence`
+- `Style\Rules\Sentence` uses the engine's segmenter, `Words::of` and `PassiveVoice::isPassive`,
+  all public. The engine's `Sentences` loop is internal, so the few lines of it are written here;
+  a test runs the engine's `LongSentence` and this rule at 25 words on the same text and requires
+  the same sentences.
+- Differs from the engine on purpose: each passive sentence is a finding (the engine reports a
+  rate), because a house that writes this rule wants them all; and headings are skipped, as the
+  engine's tally skips them. A numeral finding points at the number, not the sentence.
+- All six types are now built; `RuleFactory` covers every one.
+
+### 2026-10-26: Phase 1.2, task 8: scope and exceptions
+- In `StyleRule`, so every type has them. An exception excuses a finding that lies wholly inside
+  text it matches: `eiseo.app` excuses the "eiseo" in the address and nowhere else; a finding
+  that only overlaps an exception stands. A literal exception is exact (case and all); a
+  `/regex/flags` one is PCRE's. A test runs an exception through each of the six types.
+- Scope is `StyleRule::appliesTo($collection, $field)`. A rule sees blocks, not fields, so the
+  analyzer (Phase 1.4) asks before running a rule on a field.
+
+### 2026-10-26: Phase 1.2, task 9: packs and how they add up
+- **Decided here, as the spec gives no pack format:** a pack is a YAML file named for the pack,
+  with optional `description`, `extends`, `disable`, `rules`, and `collections` (per collection,
+  its own `disable` and `rules`). Per-collection overrides live inside a pack, so a site keeps
+  them in Git next to the rules they change.
+- `Style\PackSet` takes the bundled packs, then the site's, refuses two packs with one name
+  (both files named), and resolves: extended packs first, in order; then the pack's rules (an id
+  already there is replaced in place); then its `disable`; then, for one collection, that
+  collection's changes. A pack reached twice is applied once. A circle is refused as "a extends b
+  extends a". An extended pack or disabled id that does not exist is refused with the nearest
+  real name.
+- **For Phase 1.4:** which packs a site has turned on (the roots passed to `rules()`) is the
+  addon's call: the site's own packs, or a configured list of bundled ones, by edition.
+
+### 2026-10-26: Phase 1.2, task 10: packs cached
+- `Packs\PackLibrary` (a singleton) reads `resources/packs/*.yaml` in the addon, then
+  `resources/copydesk/*.yaml` in the site, checks them into a `PackSet`, and keeps it in the
+  cache and in memory for the request.
+- **Changed from the task as written:** the key is each file's path and *contents*, not its
+  modified time. Two saves in one second share a time; a test does exactly that and, keyed by
+  time, gets the old rules (checked). Hashing a few small files costs far less than parsing them.
+- Acceptance 7 is a test: change a pack, and the next read has the change with no cache cleared.
+- A file that is not readable YAML is refused with its path and the parser's reason.
+
+### 2026-10-26: Phase 1.2, task 11: the 150 ms budget
+- `tests/Feature/LintBenchmarkTest.php` times everything one check does: extract, exclude,
+  tally and grade, every readability rule, every bundled pack, and a heavy stand-in pack with
+  all six types and plainlanguage.gov's 177 entries as a word list. Bundled packs join as Phase
+  1.3 adds them. The entry is generated (3,264 words, headings, rule hits) from a fixed seed.
+- Here: median of five, **98 ms** for 420 findings (PHP 8.4, Apple M-series). About a third of the
+  budget is left. Phase 1.2b adds position mapping to every block, which costs something;
+  this test will say how much.
+- On CI (`CI` set) the time is printed, not held to; locally, over 150 ms fails.
+
+**Phase 1.2 is done except `quotes` and `double_space` (task 5), which wait on Phase 1.2b.**
 

@@ -14,3 +14,9 @@ arch('core stays framework-agnostic')
 arch('the addon declares strict types')
     ->expect('Bpmore\Copydesk')
     ->toUseStrictTypes();
+
+// The style rule engine is plain PHP, so it can be tested with a string and
+// nothing else, and so YAML is parsed at the edge rather than inside it.
+arch('the style engine stays framework-agnostic')
+    ->expect('Bpmore\Copydesk\Style')
+    ->not->toUse(['Statamic', 'Illuminate']);

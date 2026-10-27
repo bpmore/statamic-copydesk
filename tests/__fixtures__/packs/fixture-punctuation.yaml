@@ -1,0 +1,7 @@
+description: A stand-in for a bundled pack, for the library's tests.
+rules:
+  - id: no-em-dash
+    type: punctuation
+    checks: [em_dash]
+    message: Use a colon, comma, parentheses, or two sentences instead.
+    severity: error
