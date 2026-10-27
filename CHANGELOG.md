@@ -4,6 +4,14 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## Unreleased
+
+- **The site report names each rule in plain words.** "Acronym not spelled
+  out", not `unexpanded_acronym`, in the table by rule and in "Published past
+  the gate". The id stays beside the name, since `disable` takes it. A rule
+  from a site's own pack is named from its id. The CSV keeps its columns and
+  adds `rule_name` at the end.
+
 ## 2.0.1 - 2026-10-27
 
 Two fixes to how the Readability panel lays out what it says. Nothing to do

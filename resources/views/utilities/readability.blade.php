@@ -149,7 +149,7 @@
                 <thead><tr class="text-left"><th class="py-1 pr-4">Rule</th><th class="py-1 pr-4">How bad</th><th class="py-1 pr-4">Times</th><th class="py-1">Pages</th></tr></thead>
                 <tbody>
                 @foreach ($scan->byRule() as $row)
-                    <tr><td class="py-1 pr-4">{!! e($row['rule']) !!}</td><td class="py-1 pr-4">{!! e(['error' => 'to fix', 'warning' => 'to look at', 'tip' => 'tip'][$row['severity']] ?? $row['severity']) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
+                    <tr><td class="py-1 pr-4">{!! e(\Bpmore\Copydesk\Analysis\RuleName::of($row['rule'])) !!} <code class="text-xs opacity-70">{!! e($row['rule']) !!}</code></td><td class="py-1 pr-4">{!! e(['error' => 'to fix', 'warning' => 'to look at', 'tip' => 'tip'][$row['severity']] ?? $row['severity']) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
                 @endforeach
                 </tbody>
             </table>
@@ -204,7 +204,7 @@
                 @foreach ($overrides as $row)
                     <tr>
                         <td class="py-1 pr-4">{!! e($row['title'] ?? '') !!} <span class="text-xs">({!! e($row['collection'] ?? '') !!})</span></td>
-                        <td class="py-1 pr-4">{!! e(implode(', ', (array) ($row['rules'] ?? []))) !!}</td>
+                        <td class="py-1 pr-4">{!! e(implode(', ', array_map(fn ($rule) => \Bpmore\Copydesk\Analysis\RuleName::of((string) $rule), (array) ($row['rules'] ?? [])))) !!}</td>
                         <td class="py-1 pr-4">{!! e($row['user_name'] ?? '') !!}, {!! e(\Illuminate\Support\Carbon::parse($row['at'] ?? 'now')->toDayDateTimeString()) !!}</td>
                         <td class="py-1">{!! e($row['reason'] ?? '') !!}</td>
                     </tr>
