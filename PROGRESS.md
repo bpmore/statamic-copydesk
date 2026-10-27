@@ -25,7 +25,7 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 
 Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet` runs readability rules and style rules together. An arch test keeps `Bpmore\Copydesk\Style` free of `Statamic\` and `Illuminate\`. YAML is parsed at the edge; the engine takes arrays.
 
-- [ ] The rule schema from the spec (`id`, `type`, `message`, `suggestions`, `severity`, `scope`, `exceptions`, plus each type's own keys), validated with errors that name the pack file and the rule id. `info` maps to the engine's `tip`.
+- [x] The rule schema from the spec (`id`, `type`, `message`, `suggestions`, `severity`, `scope`, `exceptions`, plus each type's own keys), validated with errors that name the pack file and the rule id. `info` maps to the engine's `tip`.
 - [ ] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
 - [ ] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
 - [ ] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
@@ -153,4 +153,24 @@ Guesses from the size of the Plain code and the spec, not measured.
   test the addon had none, a state no install can be in. `TestCase` now copies them from
   `composer.json`. Without that, three of the five edition tests fail (checked).
 - Nothing is gated yet. 91 passed.
+
+### 2026-10-26: Phase 1.2, task 1: the rule schema
+- `Style\RuleDefinition::fromArray($raw, $source, $position)` checks one rule and returns it plain:
+  id (lowercase, hyphens), type, message, suggestions, severity (`info` becomes the engine's
+  `tip`; `warning` if left out), scope (`collections`, `fields`, `*` if left out), exceptions
+  (text, or `/regex/flags`, checked to compile), and the type's own keys.
+- **Decided here, as the spec names no keys for them:** `word_list` takes `words` (word: what to
+  say instead; a word, a list, null for "say it another way", or `replace`/`severity`/`reason`);
+  `term` takes `terms`; `pattern` takes `pattern` (no delimiters) and `flags` (`imsxU`);
+  `punctuation` takes `checks` and `quotes` (curly/straight, only with the `quotes` check);
+  `casing` takes `style` (sentence/title); `sentence` takes `check` (`max_words` with
+  `max_words`, `passive`, `starts_with_numeral`). The type tasks below build on these.
+- Every refusal names the pack and the rule and says what to change; an unknown key is refused
+  with the nearest known key offered. Exception messages are English and not translated: they
+  are for whoever edits the YAML, like Statamic's own.
+- Whether `pattern` compiles is left to the `pattern` task, as planned. `RuleDefinition::compiles()`
+  checks a regex without the warning PCRE raises, which `@` does not stop under a test runner
+  or Laravel.
+- An arch test keeps `Bpmore\Copydesk\Style` free of Statamic and Laravel.
+- 102 passed. Breaking the info mapping and the unknown-key check each fails a test (checked).
 
