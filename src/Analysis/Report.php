@@ -44,6 +44,8 @@ final class Report
         public readonly Findings $findings,
         public readonly array $notices = [],
         public readonly array $writtenRules = [],
+        /** Findings left out because the author chose "Ignore here" for them. */
+        public readonly int $ignored = 0,
     ) {}
 
     public static function refused(Decision $locale, Target $target): self
@@ -111,6 +113,7 @@ final class Report
             ], $this->sections),
             'findings' => array_map($this->finding(...), $this->findings->all()),
             'summary' => [
+                'ignored' => $this->ignored,
                 'errors' => count($this->findings->ofSeverity(Severity::Error)),
                 'warnings' => count($this->findings->ofSeverity(Severity::Warning)),
                 'tips' => count($this->findings->ofSeverity(Severity::Tip)),
@@ -133,6 +136,10 @@ final class Report
             'suggestion' => $finding->suggestion,
             'field' => $location === null ? null : ($this->blockFields[$location->block] ?? null),
             'block' => $location?->block,
+            // What "Ignore here" stores for it; null when it cannot be ignored.
+            'fingerprint' => $location === null || ! isset($this->document->blocks[$location->block])
+                ? null
+                : Fingerprint::of($this->document->blocks[$location->block], $finding, in_array($finding->rule, $this->writtenRules, true)),
             'offset' => $location?->offset,
             'length' => $location?->length,
             // Where it is in the field as the author wrote it, for the editor.

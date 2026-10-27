@@ -17,6 +17,7 @@
  */
 import { live } from './editor/live.js';
 import { SEVERITY, severityOf } from './editor/severity.js';
+import { clearIgnores, ignoresOf } from './editor/target.js';
 
 (function () {
     // Provided by the publish container: `values` is the form as it stands
@@ -206,11 +207,23 @@ import { SEVERITY, severityOf } from './editor/severity.js';
 
             const LIVE_SHOWN = 20;
 
+            // "Ignore here", kept on the entry. Shown with a way to undo it,
+            // so an ignore is never a problem nobody can see.
+            const ignoredCount = Vue.computed(() => ignoresOf(container).length);
+
+            function ignoredWords(n) {
+                return n === 1 ? '1 thing is ignored on this page.' : n + ' things are ignored on this page.';
+            }
+
+            function stopIgnoring() {
+                clearIgnores(container);
+            }
+
             function jumpLabel(item) {
                 return 'Show ' + (item.issue.excerpt ? '\u201C' + item.issue.excerpt + '\u201D' : 'it') + ' in ' + item.label;
             }
 
-            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
+            return { state, check, verdict, groups, sections, highlighted, shown, refusal, showRefusal, liveItems, liveCounts, LIVE_SHOWN, jumpLabel, ignoredCount, ignoredWords, stopIgnoring, severityWord: (issue) => SEVERITY[severityOf(issue)].word };
         },
 
         // No panel or header of its own: a field is already drawn inside the
@@ -231,7 +244,7 @@ import { SEVERITY, severityOf } from './editor/severity.js';
         // who wants them; the decimals are never the headline.
         template: `
             <div class="space-y-3">
-                <div v-if="liveItems.length" class="space-y-2">
+                <div v-if="liveItems.length || ignoredCount" class="space-y-2">
                     <ui-heading size="sm" text="As you type" />
                     <div class="flex flex-wrap gap-2">
                         <div v-for="c in liveCounts" :key="c.key"><ui-badge :color="c.color" :text="c.badge" /></div>
@@ -243,6 +256,10 @@ import { SEVERITY, severityOf } from './editor/severity.js';
                         </li>
                     </ul>
                     <p v-if="liveItems.length > LIVE_SHOWN" class="text-xs">{{ 'And ' + (liveItems.length - LIVE_SHOWN) + ' more.' }}</p>
+                    <p v-if="ignoredCount" class="text-xs">
+                        {{ ignoredWords(ignoredCount) + ' ' }}
+                        <button type="button" class="copydesk-jump" @click="stopIgnoring">Stop ignoring</button>
+                    </p>
                 </div>
 
                 <ui-alert
@@ -312,6 +329,11 @@ import { SEVERITY, severityOf } from './editor/severity.js';
                         </div>
 
                         <div v-if="state.result.band && !groups.length"><ui-badge color="emerald" text="Nothing to fix" /></div>
+
+                        <ui-description
+                            v-if="state.result.summary && state.result.summary.ignored"
+                            :text="state.result.summary.ignored === 1 ? '1 finding is ignored here, and not counted above.' : state.result.summary.ignored + ' findings are ignored here, and not counted above.'"
+                        />
 
                         <details v-if="state.result.grades" class="text-xs">
                             <summary>The numbers behind the band</summary>

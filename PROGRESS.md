@@ -78,8 +78,8 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.6: Ignores
 
-- [ ] "Ignore here" stores a fingerprint (rule id plus a hash of the sentence) in a hidden `copydesk_ignores` field on the entry. A changed sentence no longer matches, so the ignore lapses.
-- [ ] Ignored findings are left out of the editor and the gate, and counted in the report so they cannot hide problems quietly.
+- [x] "Ignore here" stores a fingerprint (rule id plus a hash of the sentence) in a hidden `copydesk_ignores` field on the entry. A changed sentence no longer matches, so the ignore lapses.
+- [x] Ignored findings are left out of the editor and the gate, and counted in the report so they cannot hide problems quietly.
 
 ## Phase 1.7: The gate (Pro)
 
@@ -403,11 +403,26 @@ Guesses from the size of the Plain code and the spec, not measured.
   box's listener could close a new box: each now closes only its own. Statamic's textarea sets
   its `focus` prop as a DOM property, so `textarea.focus` is undefined: focused through the
   prototype.
-- **For Phase 1.6:** "Ignore here" hides the issue for as long as the form is open (rule plus
-  words, in that field). 1.6 makes it stick, on the entry.
+- **For Phase 1.6:** "Ignore here" hid the issue only while the form was open. Done in 1.6.
 - **Not done here:** the full check (panel grade, gate, scan) still reads only top-level Bard,
   markdown, textarea and text fields, so a Bard in a Grid is underlined as you type but not
   counted by the gate. Worth deciding before 1.7.
 - JS tests run with Node's own runner (`npm test`, in CI before the build): the path-to-position
   arithmetic and the spacing rule.
+
+### 2026-10-26: Phase 1.6: ignores
+- A fingerprint is the rule id and the first 12 hex of a SHA-1 of the sentence the finding is
+  in, spacing folded (`Analysis\Fingerprint`). The editor's endpoint and the full check make it
+  from the same blocks, so they match: a test says so, and in the browser the panel's full check
+  counted the two ignores the editor had made.
+- Kept in `copydesk_ignores`, a hidden `list` field the panel listener adds to every form that
+  gets the panel. "Ignore here" writes it through the publish container, so it is saved with the
+  entry like any other change (checked: saved, reloaded, still ignored).
+- The analyzer leaves ignored findings out before the report is made, so the panel, the gate and
+  the scan all skip them, and counts them (`summary.ignored`). The panel says how many are
+  ignored, and has "Stop ignoring", which empties the list; every field asks again.
+- An ignore holds while other sentences change and while spaces are retyped, lapses when its own
+  sentence changes, and never hides a different rule in the same sentence (tests for each).
+- **For Phase 1.8:** the site report should show `ignored` per page; the count is on the report
+  already.
 

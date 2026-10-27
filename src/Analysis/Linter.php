@@ -86,6 +86,7 @@ final class Linter
                 'severity' => $finding->severity->value,
                 'message' => $finding->message,
                 'excerpt' => $finding->excerpt,
+                'fingerprint' => Fingerprint::of($block, $finding, in_array($finding->rule, $written, true)),
                 'suggestions' => self::suggestions($finding, $byId[$finding->rule] ?? null),
                 'path' => $position === null || $plain ? null : $block->origin->path,
                 // In a text or textarea field, from the start of the whole

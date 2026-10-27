@@ -45,6 +45,9 @@ use Statamic\Fields\Blueprint;
  * the page's band can be on target while one paragraph is far past it.
  * Short paragraphs are left alone, because the formulas mean little on a
  * handful of sentences.
+ *
+ * A finding the author ignored on this entry (Fingerprint) is left out and
+ * counted.
  */
 class Analyzer
 {
@@ -143,6 +146,28 @@ class Analyzer
             $blockFields[] = 'title';
         }
 
+        // What the author chose to ignore here: left out of everything
+        // that follows (the panel, the gate, the scan), and counted, so an
+        // ignore can never quietly hide a problem.
+        $written = array_values(array_map(static fn ($rule): string => $rule->handle(), array_filter($house, static fn ($rule): bool => $rule->readsWritten())));
+        $ignores = Fingerprint::stored($values[Fingerprint::FIELD] ?? null);
+        $ignored = 0;
+
+        if ($ignores !== []) {
+            $found = array_values(array_filter($found, static function (Finding $finding) use ($blocks, $written, $ignores, &$ignored): bool {
+                $block = $finding->location === null ? null : ($blocks[$finding->location->block] ?? null);
+                $print = $block === null ? null : Fingerprint::of($block, $finding, in_array($finding->rule, $written, true));
+
+                if ($print !== null && in_array($print, $ignores, true)) {
+                    $ignored++;
+
+                    return false;
+                }
+
+                return true;
+            }));
+        }
+
         return new Report(
             $decision,
             $target,
@@ -154,7 +179,8 @@ class Analyzer
             $sections,
             new Findings($found),
             $notices,
-            array_values(array_map(static fn ($rule): string => $rule->handle(), array_filter($house, static fn ($rule): bool => $rule->readsWritten()))),
+            $written,
+            $ignored,
         );
     }
 

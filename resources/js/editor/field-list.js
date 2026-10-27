@@ -16,8 +16,6 @@ import { targetFor } from './target.js';
 
 const { h, ref, shallowRef, defineComponent, onMounted, onUpdated, onBeforeUnmount } = window.Vue;
 
-const ignoreKey = (issue) => issue.rule + '\u0000' + issue.excerpt;
-
 export function withIssueList(original, kind) {
     return defineComponent({
         name: 'CopydeskIssueList',
@@ -51,7 +49,6 @@ export function withIssueList(original, kind) {
             // only put in place while the text is still the text it was
             // found in.
             const found = shallowRef({ issues: [], value: null });
-            const ignored = ref(new Set());
             let last = attrs.value;
 
             const checker = createChecker({
@@ -73,12 +70,21 @@ export function withIssueList(original, kind) {
                 }
             });
 
+            // The list is read from the form, so an ignore added or cleared
+            // anywhere shows here at once.
+            const stopWatching = target.onIgnoresChange(() => publish());
+
             onBeforeUnmount(() => {
                 checker.stop();
+                stopWatching();
                 forget(target.key);
             });
 
-            const shown = () => found.value.issues.filter((i) => ! ignored.value.has(ignoreKey(i)));
+            const shown = () => {
+                const ignores = target.ignores();
+
+                return found.value.issues.filter((i) => ! ignores.includes(i.fingerprint));
+            };
             const placeable = (issue) => issue.offset != null && kind !== 'markdown';
 
             // The input or textarea the fieldtype drew, by the id the field
@@ -118,7 +124,7 @@ export function withIssueList(original, kind) {
             }
 
             function ignore(issue) {
-                ignored.value = new Set([...ignored.value, ignoreKey(issue)]);
+                target.ignore(issue.fingerprint);
                 publish();
             }
 

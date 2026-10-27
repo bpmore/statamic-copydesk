@@ -62,7 +62,7 @@ it('reports a plain page as on or below target, with nothing to fix', function (
     $response->assertOk();
     expect($response->json('comparison'))->toBe('below');
     expect($response->json('findings'))->toBe([]);
-    expect($response->json('summary'))->toBe(['errors' => 0, 'warnings' => 0, 'tips' => 0]);
+    expect($response->json('summary'))->toBe(['ignored' => 0, 'errors' => 0, 'warnings' => 0, 'tips' => 0]);
 });
 
 it('sends every finding with its field, its sentence, and where in the sentence the flagged words are', function () {

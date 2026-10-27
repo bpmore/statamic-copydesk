@@ -18,6 +18,14 @@ How the checks as you type work, and how to see them working on a real site.
 
 Each field asks the server 600 ms after the author stops typing, with that field's text only.
 
+## Ignore here
+
+"Ignore here" keeps a fingerprint (the rule, and a hash of the sentence) in a hidden field on
+the entry, `copydesk_ignores`, saved with the entry. The ignored finding is left out of the
+underlines, the panel and the publish gate, for as long as that sentence stays as it is: change
+the sentence and Copydesk asks again. Ignoring one rule never hides another in the same
+sentence. The panel always says how many things are ignored, and "Stop ignoring" clears them.
+
 ## Which fields are checked
 
 The ones named in `fields` in `config/copydesk.php`, and any Bard, markdown or textarea field

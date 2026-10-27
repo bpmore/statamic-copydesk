@@ -21,9 +21,9 @@ import { widen } from './replacement.js';
 import { SEVERITY, severityOf } from './severity.js';
 import { targetFor } from './target.js';
 
-// "Ignore here", until Phase 1.6 stores it on the entry: for as long as the
-// form is open, the same rule on the same words in this field stays quiet.
-const ignoreKey = (issue) => issue.rule + '\u0000' + issue.excerpt;
+// The same finding to a listener, so moving the caret within one underline
+// is not announced again.
+const spokenKey = (issue) => issue.rule + '\u0000' + issue.excerpt;
 
 export function bardLint({ bard, tiptap }) {
     const target = targetFor(bard.publishContainer, bard, 'bard');
@@ -36,7 +36,6 @@ export function bardLint({ bard, tiptap }) {
     const { Plugin, PluginKey, TextSelection } = tiptap.pm.state;
     const { Decoration, DecorationSet } = tiptap.pm.view;
     const key = new PluginKey('copydeskLint');
-    const ignored = new Set();
 
     // The decorations and, since the last question was sent, every change
     // to the document, to carry the answer through.
@@ -123,10 +122,11 @@ export function bardLint({ bard, tiptap }) {
                     }
 
                     const { maps } = key.getState(view.state);
+                    const ignores = target.ignores();
                     const found = [];
 
                     for (const issue of data.issues ?? []) {
-                        const range = ignored.has(ignoreKey(issue)) ? null : rangeOf(snapshot.doc, issue);
+                        const range = ignores.includes(issue.fingerprint) ? null : rangeOf(snapshot.doc, issue);
 
                         if (! range) {
                             continue;
@@ -149,6 +149,8 @@ export function bardLint({ bard, tiptap }) {
                 checker.schedule();
             }
 
+            const stopWatching = target.onIgnoresChange(() => checker.schedule());
+
             return {
                 update(view, previous) {
                     if (! view.state.doc.eq(previous.doc) && view.editable) {
@@ -160,7 +162,7 @@ export function bardLint({ bard, tiptap }) {
                     // opened with a click once the caret leaves its words.
                     const { selection } = view.state;
                     const here = selection.empty ? at(view.state, selection.from) : null;
-                    const said = here ? ignoreKey(here.issue) : null;
+                    const said = here ? spokenKey(here.issue) : null;
 
                     if (said && said !== spoken) {
                         announce(SEVERITY[severityOf(here.issue)].word + ': ' + here.issue.message + ' ' + SHORTCUT + ' for choices.');
@@ -177,6 +179,7 @@ export function bardLint({ bard, tiptap }) {
 
                 destroy() {
                     checker.stop();
+                    stopWatching();
                     forget(target.key);
 
                     if (find(view.state, openIssue())) {
@@ -263,11 +266,12 @@ export function bardLint({ bard, tiptap }) {
         view.focus();
     }
 
+    // Kept on the entry (the hidden field), so it holds after a save, and
+    // in the gate; every underline on the same sentence for the same rule
+    // goes with it.
     function ignore(view, issue) {
-        const k = ignoreKey(issue);
-
-        ignored.add(k);
-        view.dispatch(view.state.tr.setMeta(key, { remove: (i) => ignoreKey(i) === k }).setMeta('addToHistory', false));
+        target.ignore(issue.fingerprint);
+        view.dispatch(view.state.tr.setMeta(key, { remove: (i) => i.fingerprint === issue.fingerprint }).setMeta('addToHistory', false));
         view.focus();
         publish(view);
     }

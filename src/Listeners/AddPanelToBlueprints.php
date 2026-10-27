@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Bpmore\Copydesk\Listeners;
 
 use Bpmore\Copydesk\Analysis\FieldText;
+use Bpmore\Copydesk\Analysis\Fingerprint;
 use Bpmore\Copydesk\Fieldtypes\ReadabilityPanel;
 use Bpmore\Copydesk\Settings;
 use Statamic\Events\EntryBlueprintFound;
@@ -80,6 +81,18 @@ final class AddPanelToBlueprints
                 // The fields the editor checks as the author types: these,
                 // and the Bard, markdown and textarea fields nested in them.
                 'prose_fields' => $present,
+            ],
+            'sidebar',
+        );
+
+        // Where "Ignore here" is kept: a list nobody sees, saved with the
+        // entry like any other field, so the gate and the scan read it too.
+        $blueprint->ensureField(
+            Fingerprint::FIELD,
+            [
+                'type' => 'list',
+                'display' => 'Copydesk ignores',
+                'visibility' => 'hidden',
             ],
             'sidebar',
         );

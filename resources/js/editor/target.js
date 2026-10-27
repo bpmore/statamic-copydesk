@@ -13,9 +13,36 @@
  * A text field nested in one is a caption or a button label, and is left
  * alone, as the full check leaves it alone.
  */
-const { unref } = window.Vue;
+const { unref, watch } = window.Vue;
 
 const PANEL = 'readability_panel';
+
+/** The hidden field on the entry where "Ignore here" is kept (Fingerprint::FIELD). */
+export const IGNORES = 'copydesk_ignores';
+
+/** The fingerprints ignored on this entry, as the form has them now. */
+export function ignoresOf(container) {
+    const list = unref(container?.values)?.[IGNORES];
+
+    return Array.isArray(list) ? list.filter((v) => typeof v === 'string') : [];
+}
+
+/**
+ * Ignore one finding here: its fingerprint goes into the hidden field,
+ * which is saved with the entry like any other change. Nothing is ignored
+ * for good until the author saves.
+ */
+export function ignoreIn(container, fingerprint) {
+    if (! fingerprint) {
+        return;
+    }
+
+    container.setFieldValue(IGNORES, [...new Set([...ignoresOf(container), fingerprint])]);
+}
+
+export function clearIgnores(container) {
+    container.setFieldValue(IGNORES, []);
+}
 
 export function targetFor(container, { handle, fieldPathPrefix, config }, kind) {
     const panel = findPanel(unref(container?.blueprint));
@@ -38,6 +65,11 @@ export function targetFor(container, { handle, fieldPathPrefix, config }, kind) 
         key: [fieldPathPrefix, handle].filter(Boolean).join('.') || handle,
         label: config?.display || handle,
         collection: panel.collection ?? null,
+        ignores: () => ignoresOf(container),
+        ignore: (fingerprint) => ignoreIn(container, fingerprint),
+        // Called when the list changes from somewhere else (the panel's
+        // "Stop ignoring"), so the field asks again.
+        onIgnoresChange: (callback) => watch(() => ignoresOf(container).join('\n'), callback),
         request: () => ({
             reference: unref(container.reference) || null,
             site: unref(container.site) || null,
