@@ -15,6 +15,8 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 - **D3. Per-paragraph grades. Decided 2026-10-26: keep the grade range.** The spec asks for Flesch-Kincaid and reading ease "per entry and per paragraph". Plain grades whole pages and sections as bands, on purpose: four formulas on a three-sentence paragraph give noise, not a grade. The band per page and per section stays the headline; Flesch-Kincaid and reading ease show as numbers in the details; a paragraph is marked only when it reads well above target. This departs from the spec on purpose.
 - **D4. Live checks in non-Bard fields. Decided 2026-10-26: a list under the field.** A textarea or text input cannot draw underlines. Bard gets underlines; markdown, textarea and text fields get the same issues as a list under the field, with the same suggestions and "Ignore here".
 
+- **D5. Original text and positions. Decided 2026-10-26: fix it in readability-core, after the rest of Phase 1.2.** The engine cleans text before rules see it, so two punctuation checks cannot work and every finding's position is in the cleaned text, not the editor's (Notes, 2026-10-26, task 5). Phase 1.2b below does the fix before any editor work.
+
 ## Phase 1.1: Housekeeping
 
 - [x] One engine copy (D1): require `bpmore/readability-core` from Packagist, path repository to `../readability-core` in development, remove `packages/readability-core/` and the CI job that tests it there (the engine's own repo tests it).
@@ -30,12 +32,20 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [x] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
 - [x] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
 - [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
-- [ ] `casing`: sentence case or title case for headings and title fields.
+- [x] `casing`: sentence case or title case for headings and title fields.
 - [ ] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
 - [ ] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
 - [ ] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
 - [ ] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
 - [ ] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
+
+## Phase 1.2b: Original text and positions (D5)
+
+In `bpmore/readability-core`, released as 0.2.0, then taken here.
+
+- [ ] Each block keeps the text as written beside the cleaned text, with a map from every cleaned position back to the written one, through normalising (collapsed spaces, straightened quotes, `…`, invisible characters) and through the exclusions that cut text out of a block (`Addresses`, `References`, `ProperNames`). Additive: nothing that reads `text` today changes. Released as 0.2.0.
+- [ ] Copydesk requires `^0.2`. Every finding (readability and house) is given its position in the written text; the panel and the coming lint endpoint use those.
+- [ ] `punctuation` reads the written text for `quotes` and `double_space`, and their skipped tests run and pass (task 5 ticked).
 
 ## Phase 1.3: Bundled packs
 
@@ -222,4 +232,17 @@ Guesses from the size of the Plain code and the spec, not measured.
   through the exclusions. Released as 0.2.0, additive, so A11y Report is unaffected. Copydesk
   then reads punctuation from the original text and gives every finding an original position.
   About 1 to 2 days, before Phase 1.5 and before `quotes`/`double_space` can be ticked.
+
+### 2026-10-26: Phase 1.2, task 6: `casing`
+- `Style\Rules\Casing` checks heading blocks only, one finding per heading that is off, the whole
+  heading as the excerpt and the heading rewritten as the suggestion.
+- **Added to the schema:** `keep`, words always written as given. Sentence case cannot tell a
+  proper name from a capitalised word, so a house names its own ("Statamic", "UAMS Health").
+  Also never changed: words in capitals, words with a capital inside ("eiSEO"), words with a
+  digit, and "I".
+- Sentence case restarts after a colon. Title case keeps short joining words small in the middle
+  (a, an, the, and, of, to, in, ...); the first and last words always get a capital. Each part of
+  a hyphenated word is a word.
+- **For Phase 1.4:** a title field has to reach this rule as a heading block (it arrives as a
+  paragraph from the plain-text extractor today), so one rule covers headings and titles.
 

@@ -84,7 +84,7 @@ it('reads the other types\' own keys', function () {
     expect(styleRule(['id' => 'p', 'type' => 'punctuation', 'checks' => ['em_dash', 'quotes'], 'quotes' => 'curly', 'message' => 'm'])->options)
         ->toBe(['checks' => ['em_dash', 'quotes'], 'quotes' => 'curly'])
         ->and(styleRule(['id' => 'c', 'type' => 'casing', 'style' => 'sentence', 'message' => 'm'])->options)
-        ->toBe(['style' => 'sentence'])
+        ->toBe(['style' => 'sentence', 'keep' => []])
         ->and(styleRule(['id' => 's', 'type' => 'sentence', 'check' => 'max_words', 'max_words' => 30, 'message' => 'm'])->options)
         ->toBe(['check' => 'max_words', 'max_words' => 30])
         ->and(styleRule(['id' => 'n', 'type' => 'sentence', 'check' => 'starts_with_numeral', 'message' => 'm'])->options)

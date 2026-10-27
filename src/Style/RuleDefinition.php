@@ -219,7 +219,10 @@ final class RuleDefinition
             RuleType::Term => ['terms' => self::strings($raw['terms'], 'terms', $source, $name, nonEmpty: true)],
             RuleType::Pattern => self::pattern($raw, $source, $name),
             RuleType::Punctuation => self::punctuation($raw, $source, $name),
-            RuleType::Casing => ['style' => self::oneOf($raw['style'], ['sentence', 'title'], 'style', $source, $name)],
+            RuleType::Casing => [
+                'style' => self::oneOf($raw['style'], ['sentence', 'title'], 'style', $source, $name),
+                'keep' => self::strings($raw['keep'] ?? [], 'keep', $source, $name),
+            ],
             RuleType::Sentence => self::sentence($raw, $source, $name),
         };
     }

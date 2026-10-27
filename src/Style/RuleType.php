@@ -16,7 +16,8 @@ namespace Bpmore\Copydesk\Style;
  *   optional `flags`.
  * - `punctuation`: `checks`, any of the built-in checks, and `quotes`
  *   (`curly` or `straight`) when `quotes` is one of them.
- * - `casing`: `style`, `sentence` or `title`, for headings and titles.
+ * - `casing`: `style`, `sentence` or `title`, for headings and titles, and
+ *   optional `keep`: words always written as given ("Statamic", "UAMS").
  * - `sentence`: `check`, one of `max_words` (with `max_words`), `passive`
  *   or `starts_with_numeral`.
  */
@@ -47,7 +48,7 @@ enum RuleType: string
             self::Term => ['required' => ['terms'], 'optional' => []],
             self::Pattern => ['required' => ['pattern'], 'optional' => ['flags']],
             self::Punctuation => ['required' => ['checks'], 'optional' => ['quotes']],
-            self::Casing => ['required' => ['style'], 'optional' => []],
+            self::Casing => ['required' => ['style'], 'optional' => ['keep']],
             self::Sentence => ['required' => ['check'], 'optional' => ['max_words']],
         };
     }
