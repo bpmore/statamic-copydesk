@@ -99,11 +99,11 @@ All wording original. Nothing copied from the AP Stylebook, and no pack named "A
 
 ## Phase 1.10: Ready to ship
 
-- [ ] Permissions as the spec lists them (`view copydesk report`, `manage copydesk rules`, `override copydesk gate`) alongside the existing ones; none granted to anyone but super admins by default.
-- [ ] Free and Pro split as the spec lists it, through the editions helper.
-- [ ] Every CP screen: an axe scan and a keyboard-only walkthrough.
-- [ ] README and editor docs for Copydesk; CHANGELOG; `docs/marketplace.md`; a grep for U+2014 that finds only rule definitions and the specs.
-- [ ] Installed on greenhouse beside every other bpmore addon: no clashes in route names, permission handles, nav sections or JS globals.
+- [x] Permissions as the spec lists them (`view copydesk report`, `manage copydesk rules`, `override copydesk gate`) alongside the existing ones; none granted to anyone but super admins by default.
+- [x] Free and Pro split as the spec lists it, through the editions helper.
+- [x] Every CP screen: an axe scan and a keyboard-only walkthrough.
+- [x] README and editor docs for Copydesk; CHANGELOG; `docs/marketplace.md`; a grep for U+2014 that finds only rule definitions and the specs.
+- [x] Installed on greenhouse beside every other bpmore addon: no clashes in route names, permission handles, nav sections or JS globals.
 
 ## Rough size
 
@@ -508,4 +508,31 @@ Guesses from the size of the Plain code and the spec, not measured.
   (test). **Checked in a browser:** started a pack, added a term rule, tried it ("Eiseo"
   flagged), saved, and the YAML on disk was right. A rule saved with an empty list was refused
   by the form's own "required" before reaching the server.
+
+### 2026-10-26: Phase 1.10: ready to ship
+- **Permissions:** `view copydesk report` (the site report and its CSV), `manage copydesk
+  rules`, `override copydesk gate`, beside the three Plain had. Statamic gives them to nobody
+  but super admins until a role has them (test lists all six).
+- **Free and Pro:** Free runs punctuation and term rules from any pack, the readability rules
+  and grade, the site's word list, and the editor. Pro adds every other pack and rule kind, the
+  gate, the rule editor, the site report (the utility page says why it is missing, Free or no
+  permission) and the Site Weather signal. **Decided here, worth a look:** the site's word list
+  (Plain's dictionary) stays in Free; the spec's Free list does not name it, and taking away
+  what Plain gave for free seemed wrong. Tests run as Pro where they use Pro features, and
+  `EditionSplitTest` holds the line.
+- **Accessibility:** axe-core 4.11 (a local copy; the CDN was blocked here) on the entry form,
+  the entry form with the box open, the Readability page and the rule editor: no violation in
+  any Copydesk element. The page's own (unnamed asset button, grid header cells, low-contrast
+  set labels, a popover trigger's attribute) are Statamic's. **Keyboard:** from the sidebar, Tab
+  reaches the panel's jump buttons; Enter puts the caret on the words; Option+Enter moves focus
+  into the box; Tab moves through it; Escape returns to the text. **Found:** Tab cannot leave
+  Statamic's markdown field (CodeMirror keeps it), which is Statamic's, not Copydesk's.
+- **Docs:** README (house style, the editor, editions, A11y Gate, permissions, `--fail-on`),
+  CHANGELOG (everything in Phase 1, and the `block_on` change), `docs/marketplace.md` (listing
+  draft and the screenshots to take), `docs/packs.md` (the editor).
+- **U+2014:** only in the punctuation rule, the specs, tests and docs that show the rule, and
+  two of Brent's tooling files (`.claude/settings.json`, `run-build.sh`), left as they are.
+- **Greenhouse:** installed beside the other 20 bpmore addons: route names all unique, no
+  permission handle shared, no other addon hooks Bard or replaces a core fieldtype, and no
+  console errors on the screens checked.
 
