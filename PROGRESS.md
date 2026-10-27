@@ -410,7 +410,11 @@ Guesses from the size of the Plain code and the spec, not measured.
 - **For Phase 1.6:** "Ignore here" hid the issue only while the form was open. Done in 1.6.
 - **Not done here:** the full check (panel grade, gate, scan) still reads only top-level Bard,
   markdown, textarea and text fields, so a Bard in a Grid is underlined as you type but not
-  counted by the gate. Worth deciding before 1.7.
+  counted by the gate. Worth deciding before 1.7. **Done after Phase 1, 2026-10-27:**
+  `FieldText::read` walks Grid, Replicator, Group and Bard sets for the same fields the editor
+  checks. A nested Bard in a Bard set is still read by the engine; every other field in a set is
+  taken out of the tree and read by its type, so nothing is read twice and every path stays the
+  same. Nested blocks carry their set handles, so `bard_sets` exclusions reach them too.
 - JS tests run with Node's own runner (`npm test`, in CI before the build): the path-to-position
   arithmetic and the spacing rule.
 

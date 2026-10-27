@@ -95,8 +95,10 @@ return [
     |---------------------------------------------------------------------------
     |
     | Which fields are the page's prose, by blueprint handle. '*' is every
-    | blueprint; a named blueprint adds to it. Only Bard, markdown, textarea
-    | and text fields are read; anything else on the list is ignored.
+    | blueprint; a named blueprint adds to it. Bard, markdown, textarea and
+    | text fields are read, and so are the Bard, markdown and textarea fields
+    | nested in a listed Grid, Replicator, Group or Bard set. A nested text
+    | field (a caption) is not. Anything else on the list is ignored.
     |
     */
 

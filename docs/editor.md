@@ -30,7 +30,8 @@ sentence. The panel always says how many things are ignored, and "Stop ignoring"
 
 The ones named in `fields` in `config/copydesk.php`, and any Bard, markdown or textarea field
 nested inside one of them: a Bard in a Replicator set inside a Grid named there is checked. A
-text field nested inside one (a caption, a button label) is not.
+text field nested inside one (a caption, a button label) is not. The panel's grade, the publish
+gate and the site report read the same fields, so what is underlined is what is counted.
 
 ## Checking it on a site
 

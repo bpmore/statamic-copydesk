@@ -96,8 +96,9 @@ something to look at, double for something to fix, so colour is never the
 only sign. A click, or Option+Enter with the caret in the words, opens the
 message, a button for each suggestion and "Ignore here". Markdown, textarea
 and text fields list the same issues under the field. Bard inside a
-Replicator inside a Grid is checked too. The readability panel counts the
-issues by severity, with a button that jumps to each one.
+Replicator inside a Grid is checked too, and counted by the grade, the gate
+and the report. The readability panel counts the issues by severity, with a
+button that jumps to each one.
 
 "Ignore here" keeps a fingerprint of the rule and the sentence on the entry
 (a hidden `copydesk_ignores` field), so the ignore holds after a save, in

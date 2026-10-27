@@ -88,11 +88,10 @@ class Analyzer
         foreach ($fields as $handle) {
             $field = $blueprint->field($handle);
 
-            if ($field === null || ! FieldText::isProse($field)) {
-                continue;
-            }
-
-            $document = FieldText::extract($field, $values[$handle] ?? null, $this->settings->ignoredClasses());
+            // The field and the prose nested in it, as one document: a
+            // finding in a Bard inside a Grid counts as being in the Grid,
+            // which is what a rule's scope names.
+            $document = $field === null ? null : FieldText::read($field, $values[$handle] ?? null, $this->settings->ignoredClasses());
 
             if ($document === null) {
                 continue;

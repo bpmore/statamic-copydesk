@@ -64,7 +64,7 @@ final class AddPanelToBlueprints
             }
 
             $present[] = $handle;
-            $readable = $readable || FieldText::isProse($field);
+            $readable = $readable || FieldText::isProse($field) || FieldText::holdsProse($field);
         }
 
         if (! $readable) {
