@@ -36,7 +36,7 @@ Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet`
 - [x] `sentence`: over N words, the passive-voice heuristic, a sentence that starts with a numeral. Reuses the engine's long-sentence and passive rules where they already do this, rather than a second copy.
 - [x] `scope` (collections, fields) and `exceptions` (literal or regex), on every type.
 - [x] Pack resolution: bundled packs, then site packs in `resources/copydesk/*.yaml`, then per-collection overrides; `extends`, disabling a rule by id, and a refusal (naming both packs) for a cycle.
-- [ ] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
+- [x] Compiled packs cached, keyed by each pack file's path and modified time, so editing a YAML file takes effect on the next lint with no cache clear (acceptance 7).
 - [ ] A benchmark test: lint a 3,000-word entry with every bundled pack on in under 150 ms. Reported, not failed, on CI, whose machines vary; failed locally.
 
 ## Phase 1.2b: Original text and positions (D5)
@@ -277,4 +277,14 @@ Guesses from the size of the Plain code and the spec, not measured.
   real name.
 - **For Phase 1.4:** which packs a site has turned on (the roots passed to `rules()`) is the
   addon's call: the site's own packs, or a configured list of bundled ones, by edition.
+
+### 2026-10-26: Phase 1.2, task 10: packs cached
+- `Packs\PackLibrary` (a singleton) reads `resources/packs/*.yaml` in the addon, then
+  `resources/copydesk/*.yaml` in the site, checks them into a `PackSet`, and keeps it in the
+  cache and in memory for the request.
+- **Changed from the task as written:** the key is each file's path and *contents*, not its
+  modified time. Two saves in one second share a time; a test does exactly that and, keyed by
+  time, gets the old rules (checked). Hashing a few small files costs far less than parsing them.
+- Acceptance 7 is a test: change a pack, and the next read has the change with no cache cleared.
+- A file that is not readable YAML is refused with its path and the parser's reason.
 

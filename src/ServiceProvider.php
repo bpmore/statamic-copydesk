@@ -6,6 +6,7 @@ namespace Bpmore\Copydesk;
 
 use Bpmore\Copydesk\Gate\GateSettings;
 use Bpmore\Copydesk\Http\Controllers\DictionaryController;
+use Bpmore\Copydesk\Packs\PackLibrary;
 use Bpmore\Copydesk\Scan\ScanHistory;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Filesystem\Filesystem;
@@ -61,6 +62,14 @@ class ServiceProvider extends AddonServiceProvider
         $this->app->singleton(Settings::class, static fn (): Settings => Settings::fromConfig());
         $this->app->bind(GateSettings::class, static fn ($app): GateSettings => $app->make(Settings::class)->gate());
         $this->app->singleton(ScanHistory::class, static fn ($app): ScanHistory => ScanHistory::inStorage($app->make(Filesystem::class)));
+
+        // The house rule packs: the bundled ones, then the site's own in
+        // resources/copydesk. Read once and kept; see the class.
+        $this->app->singleton(PackLibrary::class, static fn ($app): PackLibrary => new PackLibrary(
+            __DIR__.'/../resources/packs',
+            resource_path('copydesk'),
+            $app->make('cache')->store(),
+        ));
 
         // The Readability band on Site Weather's tile. Tagged by name, as a
         // string: if Site Weather is not installed nothing resolves the tag,
