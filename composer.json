@@ -57,7 +57,8 @@
     },
     "scripts": {
         "test": "pest",
-        "lint": "pint --test"
+        "lint": "pint --test",
+        "pack-review": "php bin/pack-review.php"
     },
     "extra": {
         "statamic": {

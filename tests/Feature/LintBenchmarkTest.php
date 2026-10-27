@@ -20,10 +20,9 @@ use Bpmore\ReadabilityCore\Text\Words;
  *
  * "Lint" here is everything a check of one entry does: extract the HTML,
  * apply the exclusions, tally and grade, and run every readability rule and
- * every house rule. The house rules are every bundled pack that exists plus
- * a heavy stand-in: all six types, and plainlanguage.gov's whole list as a
- * word list (the plain-language pack, D2). Bundled packs join it as Phase
- * 1.3 writes them, with no change here.
+ * every house rule. The house rules are all four bundled packs, plus a
+ * stand-in for what a site adds: names, patterns, curly quotes, heading
+ * case and the three sentence checks.
  *
  * Machines vary, and CI's most of all, so on CI the time is reported and
  * not held to; anywhere else, over budget fails.
@@ -67,17 +66,7 @@ function benchmarkEntry(int $words): string
 
 function benchmarkPack(): Pack
 {
-    $starter = json_decode((string) file_get_contents(__DIR__.'/../../vendor/bpmore/readability-core/resources/dictionaries/plain-language.json'), true);
-    $words = [];
-
-    foreach ($starter as $term => $replacements) {
-        if (! str_starts_with($term, '_')) {
-            $words[$term] = $replacements === [] ? null : $replacements;
-        }
-    }
-
     return Pack::fromArray('benchmark', ['rules' => [
-        ['id' => 'plain-words', 'type' => 'word_list', 'words' => $words, 'message' => 'Say it plainly.'],
         ['id' => 'house-names', 'type' => 'term', 'terms' => ['UAMS Health', 'eiSEO', 'Statamic', 'Greenhouse Institute', 'Little Rock', 'Arkansas Children\'s', 'MyChart', 'Epic', 'COVID-19', 'Medicare'], 'message' => 'Spell names the house way.'],
         ['id' => 'no-percent-sign', 'type' => 'pattern', 'pattern' => '\d+%', 'message' => 'Write percent.'],
         ['id' => 'times', 'type' => 'pattern', 'pattern' => '\b\d{1,2}:\d{2}\s?(?:AM|PM)\b', 'message' => 'Write a.m. and p.m.'],
