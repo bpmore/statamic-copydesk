@@ -41,6 +41,24 @@ abstract class StyleRule implements Rule
         return $this->definition->id;
     }
 
+    /**
+     * Whether this rule's findings are positions in what the author wrote
+     * (`Block::$written`) rather than in the cleaned text the engine reads.
+     * A rule that checks marks the cleaning would hide (two spaces, a curly
+     * quote) reads the written text; every other rule reads the cleaned
+     * text, where "don’t" and "don't" are the same word.
+     */
+    public function readsWritten(): bool
+    {
+        return false;
+    }
+
+    /** The text this rule reads in a block, by readsWritten(). */
+    protected function textOf(Block $block): string
+    {
+        return $this->readsWritten() ? ($block->written ?? $block->text) : $block->text;
+    }
+
     /** Whether this rule is for a field in a collection, by its scope. */
     public function appliesTo(string $collection, string $field): bool
     {
@@ -55,7 +73,7 @@ abstract class StyleRule implements Rule
         $findings = [];
 
         foreach ($document->blocks as $index => $block) {
-            $excused = $this->excused($block->text);
+            $excused = $this->excused($this->textOf($block));
 
             foreach ($this->inBlock($block, $index) as $finding) {
                 if (! self::within($finding->location?->offset ?? -1, $finding->location?->length ?? 0, $excused)) {

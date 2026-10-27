@@ -22,15 +22,32 @@ use Bpmore\ReadabilityCore\Text\Block;
  *   alone.
  *
  * Each finding says what was found and what to do, then the rule's message.
+ *
+ * These checks read what the author wrote, not the engine's cleaned text,
+ * because the cleaning is exactly what hides them: it folds runs of spaces,
+ * straightens quotes, and tidies a space before a comma away. So the
+ * findings are positions in `Block::$written`. A mark in text the engine
+ * does not read at all (inline code, an address cut out of the sentence)
+ * is left alone, as every other rule leaves it.
  */
 final class Punctuation extends StyleRule
 {
+    public function readsWritten(): bool
+    {
+        return true;
+    }
+
     protected function inBlock(Block $block, int $index): array
     {
         $findings = [];
+        $text = $this->textOf($block);
 
         foreach ($this->definition->options['checks'] as $check) {
-            foreach ($this->find($check, $block->text) as [$offset, $written, $says, $suggestion]) {
+            foreach ($this->find($check, $text) as [$offset, $written, $says, $suggestion]) {
+                if ($block->written !== null && $block->isRead($offset, $offset + strlen($written)) === false) {
+                    continue;
+                }
+
                 $findings[] = $this->finding($index, $offset, $written, $says.' '.$this->definition->message, $suggestion);
             }
         }
