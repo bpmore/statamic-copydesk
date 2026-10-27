@@ -4,7 +4,9 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
-## Unreleased
+## 2.1.0 - 2026-10-27
+
+The site report names its rules in plain words. Nothing to do on upgrade.
 
 - **The site report names each rule in plain words.** "Acronym not spelled
   out", not `unexpanded_acronym`, in the table by rule and in "Published past
