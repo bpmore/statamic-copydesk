@@ -16,3 +16,6 @@ composer.lock
 # The fake stache the Statamic test harness writes into. Only its .gitkeep is real.
 tests/__fixtures__/dev-null/*
 !tests/__fixtures__/dev-null/.gitkeep
+
+# Written by new-addon.sh on each machine; not part of this repository.
+/AGENTS.md
