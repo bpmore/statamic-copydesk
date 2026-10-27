@@ -26,7 +26,7 @@ Answered by Brent on 2026-10-26. Each changes a task below, which names it as (D
 Lives in `src/Style/`, implements the engine's `Rule` interface so one `RuleSet` runs readability rules and style rules together. An arch test keeps `Bpmore\Copydesk\Style` free of `Statamic\` and `Illuminate\`. YAML is parsed at the edge; the engine takes arrays.
 
 - [x] The rule schema from the spec (`id`, `type`, `message`, `suggestions`, `severity`, `scope`, `exceptions`, plus each type's own keys), validated with errors that name the pack file and the rule id. `info` maps to the engine's `tip`.
-- [ ] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
+- [x] `word_list`: words and phrases, each with an optional replacement; whole words, any case, longest phrase wins. Each entry may carry its own severity, so a banned word can be an error and a suggestion a warning.
 - [ ] `term`: exact spelling and casing of a name; near misses flagged case-insensitively. Acceptance 2: "eiSEO" is not flagged, "EiSEO" and "eiseo" are.
 - [ ] `pattern`: Unicode regex. A pattern that does not compile is refused at load with the rule id, never at lint time.
 - [ ] `punctuation`: em dash, double spaces, straight vs curly quotes (configured per pack), space before punctuation, repeated punctuation.
@@ -173,4 +173,17 @@ Guesses from the size of the Plain code and the spec, not measured.
   or Laravel.
 - An arch test keeps `Bpmore\Copydesk\Style` free of Statamic and Laravel.
 - 102 passed. Breaking the info mapping and the unknown-key check each fails a test (checked).
+
+### 2026-10-26: Phase 1.2, task 2: `word_list`
+- `Style\StyleRule` is the engine's own `Rule`, so one `RuleSet` will run readability and house
+  rules together. A finding's rule is the pack's id (hyphens), which cannot collide with the
+  engine's handles (underscores). A finding carries one suggestion, the first; the rest stay on
+  the definition for the editor's popover.
+- `Style\Rules\WordList`: whole words, any case, a single word's inflections, longest phrase wins,
+  one finding per occurrence, offsets in bytes. An entry's severity beats the rule's. The
+  suggestion follows the author's capitals ("Use" for "Utilize") unless the replacement has its
+  own ("eiSEO").
+- `Style\Matcher` carries the engine's matching rules over, because the engine's `Phrases` is
+  internal. A test runs the engine's `Jargon` and `WordList` on the same text and dictionary and
+  requires the same places, so Plain's dictionary finds the same words as a pack (Phase 1.4).
 
