@@ -177,6 +177,20 @@ Configuration is `config/copydesk.php` (publish it with
 are English, the target grade and tolerance, which fields are prose by
 blueprint, the exclusions, each rule's options, and the gate.
 
+## Editions
+
+Copydesk comes in two editions, Free and Pro. A site runs Free until it
+chooses Pro, in `config/statamic/editions.php`:
+
+```php
+'addons' => [
+    'bpmore/statamic-copydesk' => 'pro',
+],
+```
+
+Statamic checks the licence for the edition a site chooses. A name other
+than `free` or `pro` there is refused with an error rather than guessed at.
+
 ## With A11y Report
 
 Copydesk is sold on its own; A11y Report includes the engine and
