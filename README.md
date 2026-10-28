@@ -25,6 +25,35 @@ The engine is [`bpmore/readability-core`](https://github.com/bpmore/readability-
 its own package, framework-agnostic and with no runtime dependencies. This
 addon is its Statamic surface.
 
+## Install
+
+Statamic 6.34 or newer, on PHP 8.2 or newer. From the site's folder:
+
+```sh
+composer require bpmore/statamic-copydesk
+```
+
+That is all a site needs to start. There is nothing to build and no
+database table to make. Open any entry whose blueprint has a field called
+`content` and the Readability panel is in the sidebar.
+
+1. **Choose the fields.** Copydesk reads the field called `content` on
+   every blueprint until you say otherwise. To read others, publish the
+   config with `php please vendor:publish --tag=copydesk-config` and list
+   them under `fields` in `config/copydesk.php`, by blueprint handle:
+   `'*' => ['content']` for every blueprint, `'article' => ['summary']` to
+   add one to a single blueprint.
+2. **Give roles the permissions.** A super user can do everything. Anyone
+   else needs **Check readability** on their role to use the panel; the
+   rest are under [Who may do what](#who-may-do-what).
+3. **Turn on Pro, if you bought it.** Set the edition in
+   `config/statamic/editions.php`, as under [Editions](#editions).
+4. **Add your house style.** Put a pack in `resources/copydesk/`, as
+   [docs/packs.md](docs/packs.md) shows.
+
+Updating keeps everything a site has made: its packs, its dictionary, its
+ignores and its config.
+
 ## Plain language, as the standard defines it
 
 [ISO 24495-1:2023](https://www.iso.org/standard/78907.html) is the
@@ -148,7 +177,7 @@ Every scan is also kept, the last ninety per site, in
 median page's band against the target, how many pages read above it, and
 which way both moved since the last scan. It never scans on its own.
 
-With [Site Weather](../statamic-site-weather) installed, the same stored
+With [Site Weather](https://github.com/bpmore/statamic-site-weather) installed, the same stored
 scan puts a Readability band on its tile: clear when no page reads above
 the target, fair under a tenth of pages, overcast under a quarter, rain
 under half, storm from half. Not turned on, not English, or nothing
@@ -225,8 +254,8 @@ blueprint, the exclusions, each rule's options, and the gate.
 Copydesk comes in two editions.
 
 - **Free:** the punctuation pack and term rules (a site's own names, spelled
-  its way), the readability grade and panel, the site's word list, and the
-  editor's underlines.
+  its way), the readability grade and panel, the site's word list, the
+  editor's underlines, and `copydesk:scan` in a terminal or CI.
 - **Pro:** every pack and every kind of rule, the rule editor, the publish
   gate with "Publish anyway", the site report with its CSV, and the Site
   Weather signal.
@@ -287,6 +316,13 @@ the settings one, which this addon answers itself):
 
 A super user may do all of it, as everywhere else; nobody else has any of
 them until a role is given it.
+
+## Support
+
+Questions, bugs and requests go to the repository's
+[issues](https://github.com/bpmore/statamic-copydesk/issues). Say which
+version of Copydesk and of Statamic the site runs, and what you expected
+to happen.
 
 ## Working on it
 
