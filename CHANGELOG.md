@@ -4,6 +4,20 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## 2.1.3 - 2026-10-27
+
+The README, rewritten in plain English. No code changed. Nothing to do on
+upgrade.
+
+- **The README reads plainly.** Shorter sentences and plainer words, with
+  lists where a paragraph listed things. The facts, commands and settings
+  are the same.
+- **"English only", said simply.** Copydesk only reads English, and the
+  language codes that count as English are set in `config/copydesk.php`.
+- **The README's links work on the Marketplace page.** They point at
+  GitHub in full, so the links to the docs and to sections of the README
+  open from statamic.com too.
+
 ## 2.1.2 - 2026-10-27
 
 Two fixes to the editor on a phone, a tablet, and by keyboard. Nothing to
