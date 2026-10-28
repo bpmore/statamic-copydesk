@@ -99,10 +99,10 @@ titles aside the way the criterion does, and reports the grade as
 evidence about the writing; [A11y Report](https://github.com/bpmore/statamic-a11y-report)
 is where that evidence reaches a 3.1.5 row, apart from its Level AA claim.
 
-It is English only, and says so. Every formula it uses was calibrated on
-English, and a grade for a French page is a confident number that means
-nothing, so a site whose locale is not in the configured list is refused
-with a sentence rather than scored.
+Copydesk only reads English. Its reading-level formulas were all built for
+English. So Copydesk does not check a site in another language. The
+language codes that count as English, like `en` or `en_GB`, are set in
+`config/copydesk.php`.
 
 ## House style
 
