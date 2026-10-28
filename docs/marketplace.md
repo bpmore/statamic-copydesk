@@ -46,11 +46,11 @@ universities writing for applicants and families.
 - Every kind of rule: word lists, patterns, heading case, sentence checks.
 - A rule editor in the control panel, with "Try it on some text".
 - A publish gate on error-level findings, never on a grade, with "Publish
-  anyway" and a logged reason. Joins A11y Gate's check when both are
-  installed, so an author is refused once.
+  anyway" and a logged reason. Joins the check of A11y Gate, a separate
+  add-on, when both are installed, so an author is refused once.
 - The site report: every page graded, issues by rule, collection and page,
   ignored counts and overrides, and a CSV.
-- A Readability band on Site Weather's tile.
+- A Readability band on the tile of Site Weather, a separate add-on.
 
 ### What it is not
 
