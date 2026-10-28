@@ -19,6 +19,7 @@ import { closePopover, openIssue, openPopover } from './popover.js';
 import { rangeOf } from './positions.js';
 import { widen } from './replacement.js';
 import { SEVERITY, severityOf } from './severity.js';
+import { revealThen } from './tabs.js';
 import { targetFor } from './target.js';
 
 // The same finding to a listener, so moving the caret within one underline
@@ -89,6 +90,14 @@ export function bardLint({ bard, tiptap }) {
             },
 
             handleKeyDown(view, event) {
+                // Escape closes a box opened by a click or a jump, which has
+                // no focus of its own to take the key.
+                if (event.key === 'Escape' && find(view.state, openIssue())) {
+                    closePopover();
+
+                    return true;
+                }
+
                 if (! (event.altKey && event.key === 'Enter')) {
                     return false;
                 }
@@ -102,6 +111,21 @@ export function bardLint({ bard, tiptap }) {
                 show(view, found, true);
 
                 return true;
+            },
+
+            // Tabbing from the editor to another field closes this editor's
+            // box. Focus with nowhere named to go (a click on a button
+            // Safari will not focus) is left to the box's own click rule.
+            handleDOMEvents: {
+                blur(view, event) {
+                    const to = event.relatedTarget;
+
+                    if (to && find(view.state, openIssue()) && ! document.querySelector('.copydesk-popover')?.contains(to)) {
+                        closePopover();
+                    }
+
+                    return false;
+                },
             },
         },
 
@@ -288,9 +312,17 @@ export function bardLint({ bard, tiptap }) {
                     return false;
                 }
 
-                view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, now.from, now.to)).scrollIntoView());
-                view.focus();
-                requestAnimationFrame(() => show(view, now, false));
+                // Scrolled to the middle of the screen, not to its edge, so
+                // the box has room beside the words on a phone.
+                revealThen(view.dom, () => {
+                    view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, now.from, now.to)));
+                    view.focus();
+
+                    const { node } = view.domAtPos(now.from);
+                    (node.nodeType === Node.TEXT_NODE ? node.parentElement : node)?.scrollIntoView({ block: 'center' });
+
+                    requestAnimationFrame(() => show(view, now, false));
+                });
 
                 return true;
             },

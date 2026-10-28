@@ -12,6 +12,7 @@ import { createChecker } from './checker.js';
 import { forget, report } from './live.js';
 import { widen } from './replacement.js';
 import { SEVERITY, severityOf, suggestionLabel } from './severity.js';
+import { revealThen } from './tabs.js';
 import { targetFor } from './target.js';
 
 const { h, ref, shallowRef, defineComponent, onMounted, onUpdated, onBeforeUnmount } = window.Vue;
@@ -130,14 +131,17 @@ export function withIssueList(original, kind) {
 
             function reveal(issue) {
                 const el = input();
+                const list = document.querySelector('[data-copydesk-list="' + CSS.escape(target.key) + '"]');
 
-                if (el && placeable(issue)) {
-                    focus(el);
-                    el.setSelectionRange?.(issue.offset, issue.offset + issue.length);
-                } else {
-                    document.querySelector('[data-copydesk-list="' + CSS.escape(target.key) + '"]')?.scrollIntoView({ block: 'center' });
-                    focus(el);
-                }
+                revealThen(el ?? list, () => {
+                    if (el && placeable(issue)) {
+                        focus(el);
+                        el.setSelectionRange?.(issue.offset, issue.offset + issue.length);
+                    } else {
+                        list?.scrollIntoView({ block: 'center' });
+                        focus(el);
+                    }
+                });
 
                 return true;
             }
