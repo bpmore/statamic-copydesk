@@ -47,11 +47,11 @@ database table to make. Open any entry whose blueprint has a field called
    add one to a single blueprint.
 2. **Give roles the permissions.** A super user can do everything. Anyone
    else needs **Check readability** on their role to use the panel. The
-   rest are under [Who may do what](#who-may-do-what).
+   rest are under [Who may do what](https://github.com/bpmore/statamic-copydesk#who-may-do-what).
 3. **Turn on Pro, if you bought it.** Set the edition in
-   `config/statamic/editions.php`, as shown under [Editions](#editions).
+   `config/statamic/editions.php`, as shown under [Editions](https://github.com/bpmore/statamic-copydesk#editions).
 4. **Add your house style.** Put a pack in `resources/copydesk/`, as
-   [docs/packs.md](docs/packs.md) shows.
+   [docs/packs.md](https://github.com/bpmore/statamic-copydesk/blob/main/docs/packs.md) shows.
 
 Updating keeps everything a site has made: its packs, its dictionary, its
 ignores and its config.
@@ -123,7 +123,7 @@ Your own packs go in `resources/copydesk`. A pack can build on the ones
 Copydesk ships, replace or turn off any rule, and add rules for one
 collection only. There are six kinds of rule: word lists, names spelled
 exactly, patterns, punctuation, heading case and sentence checks.
-[docs/packs.md](docs/packs.md) shows how to write one. In Pro, you can also
+[docs/packs.md](https://github.com/bpmore/statamic-copydesk/blob/main/docs/packs.md) shows how to write one. In Pro, you can also
 edit packs in a form under Tools, and use "Try it on some text" before you
 save.
 
@@ -148,7 +148,7 @@ has a button that jumps to it.
 entry, in a hidden field called `copydesk_ignores`. The ignore lasts after
 a save, and the gate and the report respect it, until the sentence
 changes. Ignored issues are always counted, never hidden. More in
-[docs/editor.md](docs/editor.md).
+[docs/editor.md](https://github.com/bpmore/statamic-copydesk/blob/main/docs/editor.md).
 
 ## What gets graded
 
