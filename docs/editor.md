@@ -8,13 +8,14 @@ How the checks as you type work, and how to see them working on a real site.
   never the only sign: dotted for a tip, wavy for something to look at, double for something to
   fix. Click an underline, or put the caret in it and press Option+Enter (Alt+Enter on Windows),
   for a box with the message, a button for each suggestion, and "Ignore here". Escape closes the
-  box and puts the caret back. A screen reader hears what an underline says when the caret
-  reaches it.
+  box and puts the caret back; moving to another field closes it too. A screen reader hears
+  what an underline says when the caret reaches it.
 - **Markdown, textarea and text fields:** the same issues as a list under the field. In a
   textarea or text field each suggestion is a button; in markdown it is shown as text, because
   markdown is rendered before it is checked and the place in the source is not known.
 - **The readability panel:** "As you type" counts the issues on the form by severity, and lists
-  each one as a button that puts the caret on its words.
+  each one as a button that puts the caret on its words. On a phone or tablet, where Statamic
+  shows the sidebar as a tab of its own, the button switches back to the tab with the field.
 
 Each field asks the server 600 ms after the author stops typing, with that field's text only.
 
@@ -95,6 +96,7 @@ Then, on an entry:
 2. Click it. The box offers "Use “,”". Choose it: the text reads "Plain words, short ones."
 3. Put the caret in "utilize" and press Option+Enter. Focus moves to the box. Escape returns it.
 4. Type an em dash in the Body inside Sections. It is underlined too.
-5. In the readability panel, press "Show “—” in Body". The caret lands on the dash.
+5. In the readability panel, press "Show “—” in Body". The caret lands on the dash. On a
+   narrow window, with the panel under the Sidebar tab, the form switches back to Main first.
 6. Type "We utilize it." in Summary. The list under it offers "Use “use”".
 7. Type in Caption. Nothing is listed: a nested text field is not checked.
