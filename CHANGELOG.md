@@ -4,6 +4,19 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## 2.1.1 - 2026-10-27
+
+The README, ready for the Marketplace. No code changed. Nothing to do on
+upgrade.
+
+- **An Install section.** The command, then choosing the fields, giving
+  roles the permission, turning on Pro and adding a pack.
+- **A Support section.** Questions and bugs go to the repository's issues.
+- **The Site Weather link works.** It pointed at a folder on the author's
+  computer.
+- **`copydesk:scan` is listed under Free.** It always ran in Free; the
+  README now says so.
+
 ## 2.1.0 - 2026-10-27
 
 The site report names its rules in plain words. Nothing to do on upgrade.
