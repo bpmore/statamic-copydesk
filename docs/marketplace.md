@@ -36,6 +36,8 @@ universities writing for applicants and families.
 - Your site's own list of words to avoid.
 - Underlines in Bard as you type, lists under other fields, and "Ignore
   here".
+- `php please copydesk:scan --fail-on=error` for CI, with the rules your
+  edition has.
 
 ### Pro ($79)
 
@@ -48,7 +50,6 @@ universities writing for applicants and families.
   installed, so an author is refused once.
 - The site report: every page graded, issues by rule, collection and page,
   ignored counts and overrides, and a CSV.
-- `php please copydesk:scan --fail-on=error` for CI.
 - A Readability band on Site Weather's tile.
 
 ### What it is not
