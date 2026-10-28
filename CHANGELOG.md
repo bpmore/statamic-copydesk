@@ -4,6 +4,20 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## 2.1.2 - 2026-10-27
+
+Two fixes to the editor on a phone, a tablet, and by keyboard. Nothing to
+do on upgrade.
+
+- **"Show ..." in the readability panel works on a phone or tablet.** There
+  Statamic shows the sidebar as a tab beside Main, and the button scrolled
+  to a field on the hidden tab, so nothing seemed to happen. It now opens
+  the tab that holds the field first, a blueprint's own tabs too, and in
+  Bard brings the words to the middle of the screen.
+- **A Bard box closes from the keyboard.** A box opened by a click or by
+  "Show ..." now closes on Escape in the editor, and when the author tabs
+  to another field. Before, only a click elsewhere closed it.
+
 ## 2.1.1 - 2026-10-27
 
 The README, ready for the Marketplace. No code changed. Nothing to do on
