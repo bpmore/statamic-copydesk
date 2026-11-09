@@ -82,3 +82,19 @@ function utilityText(string $html): string
 
     return (string) preg_replace('/\s+/', ' ', str_replace(['\\n', '\\t', '\\r', '\\/'], [' ', ' ', ' ', '/'], $html));
 }
+
+/**
+ * The utility's own markup, as Vue will receive it: unpacked from Inertia's
+ * page object, with the page object's own encoding undone and the markup's
+ * left alone. This is the string Vue compiles, so a test of what Vue would
+ * make of a value reads this and not the flattened text above.
+ */
+function utilityHtml($user): string
+{
+    $response = test()->actingAs($user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent();
+
+    preg_match('/data-page="([^"]+)"/', $response, $m);
+    $page = json_decode(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'), true);
+
+    return (string) $page['props']['html'];
+}

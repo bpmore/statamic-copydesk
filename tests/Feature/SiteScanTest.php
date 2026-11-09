@@ -287,3 +287,54 @@ it('downloads every issue as a CSV, a row per page and rule', function () {
     expect($rows[0])->toBe(['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page', 'rule_name'])
         ->and(collect($rows)->first(fn ($r) => $r[4] === 'very_long_sentence'))->toMatchArray([0 => 'default', 2 => 'Long', 5 => 'error', 6 => '1', 8 => 'Very long sentence']);
 });
+
+it('writes a title that starts like a formula so a spreadsheet shows it rather than runs it', function () {
+    published('=HYPERLINK("https://example.test")', 'Word '.implode(' ', array_fill(0, 59, 'word')).'.');
+
+    $csv = $this->actingAs($this->user)->get(cp_route('utilities.copydesk.issues', 'default'))->assertOk()->streamedContent();
+    $rows = array_map(str_getcsv(...), array_filter(explode("\n", $csv)));
+
+    expect(collect($rows)->first(fn ($r) => $r[4] === 'very_long_sentence'))->toMatchArray([2 => '\'=HYPERLINK("https://example.test")']);
+});
+
+/*
+ * The page under Tools is compiled by the control panel as a Vue template,
+ * so a value with Vue's own braces in it would run as an expression in the
+ * browser of whoever opened the page. Blade's escaping does not touch
+ * braces; the view's `@plain` writes them as entities. These tests read the
+ * markup as Vue receives it, not the flattened text, because that is where
+ * the difference between text and code is.
+ */
+it('shows a page title that looks like a Vue expression as text, and runs nothing', function () {
+    published('Flu {{ 1+1 }} "shots"', EASY);
+
+    $html = utilityHtml($this->user);
+
+    assertVueTemplateIsWellFormed($html);
+    expect($html)->toContain('Flu &#123;&#123; 1+1 &#125;&#125; &quot;shots&quot;')->not->toContain('{{');
+});
+
+it('shows a failure message that looks like a Vue expression as text, outside any prop a component writes as markup', function () {
+    published('Easy', EASY);
+    published('Odd', HARD);
+
+    app()->bind(Analyzer::class, fn ($app) => new class($app->make(Settings::class), $app->make(HouseRules::class)) extends Analyzer
+    {
+        public function analyze(Blueprint $blueprint, array $values, string $locale, ?string $site = null): Report
+        {
+            if (($values['title'] ?? null) === 'Odd') {
+                throw new RuntimeException('a field with {{ 1+1 }} in it');
+            }
+
+            return parent::analyze($blueprint, $values, $locale, $site);
+        }
+    });
+
+    $html = utilityHtml($this->user);
+
+    assertVueTemplateIsWellFormed($html);
+    expect($html)->toContain('1 page could not be graded: ')->toContain('Odd: a field with &#123;&#123; 1+1 &#125;&#125; in it')->not->toContain('{{');
+    // `ui-description` renders its `text` prop with v-html, so the message
+    // is in the component's slot, where it is text.
+    expect($html)->not->toMatch('/<ui-description[^>]*text="[^"]*could not be graded/');
+});
