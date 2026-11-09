@@ -88,6 +88,33 @@ it('lets someone allowed publish once, with a reason, and keeps the reason (acce
         ->assertSee('Very long sentence');
 });
 
+it('shows a reason, a title or a name that looks like a Vue expression as text in the site report, and runs nothing', function () {
+    // The site report is compiled by the control panel as a Vue template, and
+    // every one of these is somebody's to write.
+    app(OverrideLog::class)->record([
+        'entry' => $this->entry->id(),
+        'title' => 'Long {{ 1+1 }}',
+        'collection' => 'pages',
+        'site' => 'default',
+        'user' => $this->editor->id(),
+        'user_name' => 'Edie {{ 2+2 }}',
+        'reason' => 'Legal {{ 3+3 }} "said so".',
+        'rules' => ['very_long_sentence'],
+    ]);
+
+    $admin = User::make()->email('admin@example.test')->makeSuper();
+    $admin->save();
+
+    $html = utilityHtml($admin);
+
+    assertVueTemplateIsWellFormed($html);
+    expect($html)
+        ->toContain('Long &#123;&#123; 1+1 &#125;&#125;')
+        ->toContain('Edie &#123;&#123; 2+2 &#125;&#125;')
+        ->toContain('Legal &#123;&#123; 3+3 &#125;&#125; &quot;said so&quot;.')
+        ->not->toContain('{{');
+});
+
 it('does not spend the pass on a publish that never saved', function () {
     app(OverridePasses::class)->grant((string) $this->editor->id(), $this->entry->id(), 'pages', 'Legal wrote this sentence.');
     test()->actingAs($this->editor);

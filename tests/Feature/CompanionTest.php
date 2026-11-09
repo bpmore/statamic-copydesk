@@ -61,14 +61,3 @@ it('says, once and in one line, who owns which surface when it is', function () 
     // And the notice compiles where the page does, in each of its states.
     assertVueTemplateIsWellFormed(utilityHtml($this->user));
 });
-
-/** The utility's own markup, as Vue will receive it: unpacked from Inertia's page object. */
-function utilityHtml($user): string
-{
-    $response = test()->actingAs($user)->get(cp_route('utilities.index').'/copydesk')->assertOk()->getContent();
-
-    preg_match('/data-page="([^"]+)"/', $response, $m);
-    $page = json_decode(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'), true);
-
-    return (string) $page['props']['html'];
-}

@@ -7,10 +7,26 @@
     view is handed to `DynamicHtmlRenderer`, which does
     `defineComponent({ template: html })`, so Statamic's own components resolve
     here as they do in the control panel's own pages. Blade runs first, on the
-    server, which is how the sites and the CSRF field get in; Blade's `{{ }}`
-    and Vue's are the same characters, so Blade output uses `{!! !!}` and
-    every other word here is static text. An unclosed tag is a Vue compile
-    error that shows as a blank page, and a test parses this file for that.
+    server, which is how the sites and the CSRF field get in. Two things
+    follow from that, and both are tested:
+
+    - Blade's `{{ }}` and Vue's are the same characters, and Blade's escaping
+      leaves braces alone, so a page title or a reason with Vue's braces in it
+      would run as an expression in the browser of whoever opened the page.
+      Any value that is text goes out through `@plain`, which escapes it and
+      writes braces as entities (see VueSafe). Counts, which cannot carry a
+      brace, go out through `{!! e() !!}`, and every other word here is
+      static text.
+    - `ui-description` renders its `text` prop and `ui-card-panel` its
+      `heading` with v-html, after Vue has decoded the entities in the
+      attribute, so no escaping protects them. A value from content, a user
+      or the configuration goes into a slot or a plain element instead. The
+      panels headed with a site's name are composed from `ui-panel`,
+      `ui-panel-header` and `ui-card`, which is what `ui-card-panel` does
+      inside, with the heading in `ui-heading`'s slot.
+
+    An unclosed tag is a Vue compile error that shows as a blank page, and a
+    test parses this file for that.
 
     Editing the dictionary itself happens on the settings screen; this page
     is for the file in and the file out, which a form there cannot do.
@@ -26,35 +42,49 @@
 <div class="space-y-6">
 
     @if ($companion !== null)
-    <ui-description text="{!! e($companion) !!}" />
+    <ui-description>@plain($companion)</ui-description>
     @endif
 
     @if (($reportRefusal ?? null) !== null)
-    <ui-card-panel heading="{!! e($site->name()) !!}">
-        <p class="text-sm">{!! e($reportRefusal) !!}</p>
-    </ui-card-panel>
+    <ui-panel>
+        <ui-panel-header><ui-heading>@plain($site->name())</ui-heading></ui-panel-header>
+        <ui-card>
+            <p class="text-sm">@plain($reportRefusal)</p>
+        </ui-card>
+    </ui-panel>
     @elseif ($scan === null)
-    <ui-card-panel heading="{!! e($site->name()) !!}">
-        <copydesk-scan-progress url="{!! e(cp_route('utilities.copydesk.progress', $site->handle())) !!}" />
-    </ui-card-panel>
+    <ui-panel>
+        <ui-panel-header><ui-heading>@plain($site->name())</ui-heading></ui-panel-header>
+        <ui-card>
+            <copydesk-scan-progress url="@plain(cp_route('utilities.copydesk.progress', $site->handle()))" />
+        </ui-card>
+    </ui-panel>
     @elseif ($scan->refusal !== null)
-    <ui-card-panel heading="{!! e($site->name()) !!}">
-        <p>{!! e($scan->refusal) !!}</p>
-    </ui-card-panel>
+    <ui-panel>
+        <ui-panel-header><ui-heading>@plain($site->name())</ui-heading></ui-panel-header>
+        <ui-card>
+            <p>@plain($scan->refusal)</p>
+        </ui-card>
+    </ui-panel>
     @elseif ($scan->isEmpty())
-    <ui-card-panel heading="{!! e($site->name()) !!}">
-        <div class="space-y-3">
-            <p>No page on this site has anything to grade yet{!! $scan->skipped > 0 ? ': '.e($scan->skipped === 1 ? '1 published page was' : $scan->skipped.' published pages were').' looked at, and none had text in a field this addon reads' : '' !!}. The fields it reads are set in the addon\'s configuration.</p>
-            <form method="post" action="{!! e(cp_route('utilities.copydesk.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
-        </div>
-    </ui-card-panel>
+    <ui-panel>
+        <ui-panel-header><ui-heading>@plain($site->name())</ui-heading></ui-panel-header>
+        <ui-card>
+            <div class="space-y-3">
+                <p>No page on this site has anything to grade yet{!! $scan->skipped > 0 ? ': '.e($scan->skipped === 1 ? '1 published page was' : $scan->skipped.' published pages were').' looked at, and none had text in a field this addon reads' : '' !!}. The fields it reads are set in the addon\'s configuration.</p>
+                <form method="post" action="@plain(cp_route('utilities.copydesk.rescan', $site->handle()))">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
+            </div>
+        </ui-card>
+    </ui-panel>
     @else
     @php($against = $scan->againstTarget())
-    <ui-card-panel heading="{!! e($site->name()) !!}: how its pages read">
+    <ui-panel>
+        <ui-panel-header><ui-heading>@plain($site->name()): how its pages read</ui-heading></ui-panel-header>
+        <ui-card>
         <div class="space-y-4">
             <p>
                 {!! e(count($scan->entries) === 1 ? '1 published page graded' : count($scan->entries).' published pages graded') !!}
-                against a target of {!! e($scan->target->band->label()) !!}:
+                against a target of @plain($scan->target->band->label()):
                 <strong>{!! e($against['above']) !!}</strong> above it,
                 <strong>{!! e($against['on_target']) !!}</strong> on it,
                 <strong>{!! e($against['below']) !!}</strong> below it{!! $scan->skipped > 0 ? '; '.e($scan->skipped).' with nothing to grade' : '' !!}.
@@ -63,7 +93,7 @@
                 <thead><tr class="text-left"><th class="py-1 pr-4">Band</th><th class="py-1 pr-4">Pages</th><th class="py-1">Against the target</th></tr></thead>
                 <tbody>
                 @foreach ($scan->distribution() as $row)
-                    <tr><td class="py-1 pr-4">{!! e($row['band']) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e(['on_target' => 'on target', 'above' => 'above', 'below' => 'below'][$row['comparison']]) !!}</td></tr>
+                    <tr><td class="py-1 pr-4">@plain($row['band'])</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e(['on_target' => 'on target', 'above' => 'above', 'below' => 'below'][$row['comparison']]) !!}</td></tr>
                 @endforeach
                 </tbody>
             </table>
@@ -71,19 +101,20 @@
                 <thead><tr class="text-left"><th class="py-1 pr-4">Collection</th><th class="py-1 pr-4">Pages</th><th class="py-1 pr-4">Median page</th><th class="py-1">Above the target</th></tr></thead>
                 <tbody>
                 @foreach ($scan->byCollection() as $row)
-                    <tr><td class="py-1 pr-4">{!! e($row['title']) !!}</td><td class="py-1 pr-4">{!! e($row['entries']) !!}</td><td class="py-1 pr-4">{!! e($row['median']) !!}</td><td class="py-1">{!! e($row['above']) !!}</td></tr>
+                    <tr><td class="py-1 pr-4">@plain($row['title'])</td><td class="py-1 pr-4">{!! e($row['entries']) !!}</td><td class="py-1 pr-4">@plain($row['median'])</td><td class="py-1">{!! e($row['above']) !!}</td></tr>
                 @endforeach
                 </tbody>
             </table>
             @if ($scan->failures !== [])
-            <ui-description text="{!! e(count($scan->failures) === 1 ? '1 page could not be graded: ' : count($scan->failures).' pages could not be graded: ') !!}{!! e(implode('; ', $scan->failures)) !!}" />
+            <ui-description>{!! e(count($scan->failures) === 1 ? '1 page could not be graded: ' : count($scan->failures).' pages could not be graded: ') !!}@plain(implode('; ', $scan->failures))</ui-description>
             @endif
             <div class="flex flex-wrap items-center gap-3">
-                <form method="post" action="{!! e(cp_route('utilities.copydesk.rescan', $site->handle())) !!}">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
-                <span class="text-xs">Last scanned {!! e(\Illuminate\Support\Carbon::parse($scan->scannedAt)->diffForHumans()) !!}.</span>
+                <form method="post" action="@plain(cp_route('utilities.copydesk.rescan', $site->handle()))">{!! csrf_field() !!}<ui-button size="sm" type="submit" text="Scan again" /></form>
+                <span class="text-xs">Last scanned @plain(\Illuminate\Support\Carbon::parse($scan->scannedAt)->diffForHumans()).</span>
             </div>
         </div>
-    </ui-card-panel>
+        </ui-card>
+    </ui-panel>
 
     <ui-card-panel heading="Hardest pages">
         <table class="w-full text-sm">
@@ -91,9 +122,9 @@
             <tbody>
             @foreach ($scan->worst() as $entry)
                 <tr>
-                    <td class="py-1 pr-4"><a href="{!! e($entry->editUrl) !!}" class="underline underline-offset-2">{!! e($entry->title) !!}</a></td>
-                    <td class="py-1 pr-4">{!! e($entry->collectionTitle) !!}</td>
-                    <td class="py-1 pr-4">{!! e($entry->band['label']) !!}</td>
+                    <td class="py-1 pr-4"><a href="@plain($entry->editUrl)" class="underline underline-offset-2">@plain($entry->title)</a></td>
+                    <td class="py-1 pr-4">@plain($entry->collectionTitle)</td>
+                    <td class="py-1 pr-4">@plain($entry->band['label'])</td>
                     <td class="py-1">{!! e($entry->errors) !!} / {!! e($entry->warnings) !!}</td>
                 </tr>
             @endforeach
@@ -111,7 +142,7 @@
                 <thead><tr class="text-left"><th class="py-1 pr-4">Acronym</th><th class="py-1 pr-4">Times</th><th class="py-1">Pages</th></tr></thead>
                 <tbody>
                 @foreach (array_slice($scan->acronyms(), 0, 25) as $row)
-                    <tr><td class="py-1 pr-4">{!! e(strtoupper($row['term'])) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
+                    <tr><td class="py-1 pr-4">@plain(strtoupper($row['term']))</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
                 @endforeach
                 </tbody>
             </table>
@@ -127,7 +158,7 @@
             <thead><tr class="text-left"><th class="py-1 pr-4">Term</th><th class="py-1 pr-4">Times</th><th class="py-1">Pages</th></tr></thead>
             <tbody>
             @foreach (array_slice($scan->jargon(), 0, 25) as $row)
-                <tr><td class="py-1 pr-4">{!! e($row['term']) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
+                <tr><td class="py-1 pr-4">@plain($row['term'])</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
             @endforeach
             </tbody>
         </table>
@@ -149,7 +180,7 @@
                 <thead><tr class="text-left"><th class="py-1 pr-4">Rule</th><th class="py-1 pr-4">How bad</th><th class="py-1 pr-4">Times</th><th class="py-1">Pages</th></tr></thead>
                 <tbody>
                 @foreach ($scan->byRule() as $row)
-                    <tr><td class="py-1 pr-4">{!! e(\Bpmore\Copydesk\Analysis\RuleName::of($row['rule'])) !!} <code class="text-xs opacity-70">{!! e($row['rule']) !!}</code></td><td class="py-1 pr-4">{!! e(['error' => 'to fix', 'warning' => 'to look at', 'tip' => 'tip'][$row['severity']] ?? $row['severity']) !!}</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
+                    <tr><td class="py-1 pr-4">@plain(\Bpmore\Copydesk\Analysis\RuleName::of($row['rule'])) <code class="text-xs opacity-70">@plain($row['rule'])</code></td><td class="py-1 pr-4">@plain(['error' => 'to fix', 'warning' => 'to look at', 'tip' => 'tip'][$row['severity']] ?? $row['severity'])</td><td class="py-1 pr-4">{!! e($row['count']) !!}</td><td class="py-1">{!! e($row['pages']) !!}</td></tr>
                 @endforeach
                 </tbody>
             </table>
@@ -161,7 +192,7 @@
             <thead><tr class="text-left"><th class="py-1 pr-4">Collection</th><th class="py-1 pr-4">Pages with issues</th><th class="py-1 pr-4">To fix</th><th class="py-1 pr-4">To look at</th><th class="py-1 pr-4">Tips</th><th class="py-1">Ignored</th></tr></thead>
             <tbody>
             @foreach ($scan->issuesByCollection() as $row)
-                <tr><td class="py-1 pr-4">{!! e($row['title']) !!}</td><td class="py-1 pr-4">{!! e($row['pages']) !!}</td><td class="py-1 pr-4">{!! e($row['errors']) !!}</td><td class="py-1 pr-4">{!! e($row['warnings']) !!}</td><td class="py-1 pr-4">{!! e($row['tips']) !!}</td><td class="py-1">{!! e($row['ignored']) !!}</td></tr>
+                <tr><td class="py-1 pr-4">@plain($row['title'])</td><td class="py-1 pr-4">{!! e($row['pages']) !!}</td><td class="py-1 pr-4">{!! e($row['errors']) !!}</td><td class="py-1 pr-4">{!! e($row['warnings']) !!}</td><td class="py-1 pr-4">{!! e($row['tips']) !!}</td><td class="py-1">{!! e($row['ignored']) !!}</td></tr>
             @endforeach
             </tbody>
         </table>
@@ -174,8 +205,8 @@
                 <tbody>
                 @foreach (array_slice($issuePages, 0, 25) as $page)
                     <tr>
-                        <td class="py-1 pr-4"><a href="{!! e($page->editUrl) !!}" class="underline underline-offset-2">{!! e($page->title) !!}</a></td>
-                        <td class="py-1 pr-4">{!! e($page->collectionTitle) !!}</td>
+                        <td class="py-1 pr-4"><a href="@plain($page->editUrl)" class="underline underline-offset-2">@plain($page->title)</a></td>
+                        <td class="py-1 pr-4">@plain($page->collectionTitle)</td>
                         <td class="py-1 pr-4">{!! e($page->errors) !!}</td>
                         <td class="py-1 pr-4">{!! e($page->warnings) !!}</td>
                         <td class="py-1 pr-4">{!! e($page->tips) !!}</td>
@@ -185,7 +216,7 @@
                 </tbody>
             </table>
             <div class="flex flex-wrap items-center gap-3">
-                <ui-button size="sm" href="{!! e(cp_route('utilities.copydesk.issues', $site->handle())) !!}" text="Download every issue (CSV)" />
+                <ui-button size="sm" href="@plain(cp_route('utilities.copydesk.issues', $site->handle()))" text="Download every issue (CSV)" />
                 @if (count($issuePages) > 25)
                 <span class="text-xs">{!! e(count($issuePages) - 25) !!} more pages are in the download.</span>
                 @endif
@@ -203,10 +234,10 @@
                 <tbody>
                 @foreach ($overrides as $row)
                     <tr>
-                        <td class="py-1 pr-4">{!! e($row['title'] ?? '') !!} <span class="text-xs">({!! e($row['collection'] ?? '') !!})</span></td>
-                        <td class="py-1 pr-4">{!! e(implode(', ', array_map(fn ($rule) => \Bpmore\Copydesk\Analysis\RuleName::of((string) $rule), (array) ($row['rules'] ?? [])))) !!}</td>
-                        <td class="py-1 pr-4">{!! e($row['user_name'] ?? '') !!}, {!! e(\Illuminate\Support\Carbon::parse($row['at'] ?? 'now')->toDayDateTimeString()) !!}</td>
-                        <td class="py-1">{!! e($row['reason'] ?? '') !!}</td>
+                        <td class="py-1 pr-4">@plain($row['title'] ?? '') <span class="text-xs">(@plain($row['collection'] ?? ''))</span></td>
+                        <td class="py-1 pr-4">@plain(implode(', ', array_map(fn ($rule) => \Bpmore\Copydesk\Analysis\RuleName::of((string) $rule), (array) ($row['rules'] ?? []))))</td>
+                        <td class="py-1 pr-4">@plain($row['user_name'] ?? ''), @plain(\Illuminate\Support\Carbon::parse($row['at'] ?? 'now')->toDayDateTimeString())</td>
+                        <td class="py-1">@plain($row['reason'] ?? '')</td>
                     </tr>
                 @endforeach
                 </tbody>
@@ -218,14 +249,14 @@
     @if (isset($packs))
     <ui-card-panel heading="House style packs">
         <div class="space-y-3">
-            <p class="text-sm">Copydesk ships {!! e(implode(', ', $packs['bundled'])) !!}. A site's own packs live in resources/copydesk and can extend them.</p>
+            <p class="text-sm">Copydesk ships @plain(implode(', ', $packs['bundled'])). A site's own packs live in resources/copydesk and can extend them.</p>
             @if ($packs['site'] !== [])
             <ul class="text-sm space-y-1">
                 @foreach ($packs['site'] as $pack)
                 <li>
-                    <span class="font-medium">{!! e($pack) !!}</span>
+                    <span class="font-medium">@plain($pack)</span>
                     @if ($packs['canEdit'])
-                    <a class="underline underline-offset-2 ml-2" href="{!! e(cp_route('copydesk.packs.edit', $pack)) !!}">Edit the rules</a>
+                    <a class="underline underline-offset-2 ml-2" href="@plain(cp_route('copydesk.packs.edit', $pack))">Edit the rules</a>
                     @endif
                 </li>
                 @endforeach
@@ -234,7 +265,7 @@
             <p class="text-sm">This site has no pack of its own yet.</p>
             @endif
             @if ($packs['canEdit'])
-            <form method="post" action="{!! e(cp_route('copydesk.packs.store')) !!}" class="flex flex-wrap items-end gap-2">
+            <form method="post" action="@plain(cp_route('copydesk.packs.store'))" class="flex flex-wrap items-end gap-2">
                 {!! csrf_field() !!}
                 <label class="text-sm" for="copydesk-new-pack">New pack name</label>
                 <input id="copydesk-new-pack" name="name" type="text" class="copydesk-reason" style="max-width: 16rem" placeholder="house" required pattern="[a-z0-9]+(-[a-z0-9]+)*" />
@@ -262,21 +293,23 @@
     </ui-card-panel>
 
     @foreach ($sites as $site)
-    <ui-card-panel heading="{!! e($site->name()) !!}">
+    <ui-panel>
+        <ui-panel-header><ui-heading>@plain($site->name())</ui-heading></ui-panel-header>
+        <ui-card>
         <div class="space-y-4">
             <div class="flex flex-wrap items-center gap-3">
-                @if ($canManage)<ui-button size="sm" href="{!! e(cp_route('utilities.copydesk.export', $site->handle())) !!}" text="Export this site's entries" />@endif
+                @if ($canManage)<ui-button size="sm" href="@plain(cp_route('utilities.copydesk.export', $site->handle()))" text="Export this site's entries" />@endif
                 <span class="text-sm">{!! e($counts[$site->handle()] === 1 ? '1 entry of its own' : $counts[$site->handle()].' entries of its own') !!}, on top of the starter.</span>
             </div>
 
             @if (! $canManage)
             <p class="text-sm">Importing and exporting the dictionary is not something your role can do.</p>
             @else
-            <form method="post" action="{!! e(cp_route('utilities.copydesk.import', $site->handle())) !!}" enctype="multipart/form-data" class="space-y-3">
+            <form method="post" action="@plain(cp_route('utilities.copydesk.import', $site->handle()))" enctype="multipart/form-data" class="space-y-3">
                 {!! csrf_field() !!}
                 <div class="space-y-1">
-                    <label class="block text-sm font-medium" for="copydesk-file-{!! e($site->handle()) !!}">A dictionary file to bring in</label>
-                    <input id="copydesk-file-{!! e($site->handle()) !!}" type="file" name="file" accept="application/json,.json" required="required" class="text-sm" />
+                    <label class="block text-sm font-medium" for="copydesk-file-@plain($site->handle())">A dictionary file to bring in</label>
+                    <input id="copydesk-file-@plain($site->handle())" type="file" name="file" accept="application/json,.json" required="required" class="text-sm" />
                 </div>
                 <div class="space-y-1 text-sm">
                     <label class="flex items-center gap-2"><input type="radio" name="mode" value="merge" checked="checked" /> Add to what is here; the file wins where both have a term</label>
@@ -286,7 +319,8 @@
             </form>
             @endif
         </div>
-    </ui-card-panel>
+        </ui-card>
+    </ui-panel>
     @endforeach
 
 </div>

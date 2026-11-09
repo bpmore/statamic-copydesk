@@ -8,6 +8,7 @@ use Bpmore\Copydesk\Analysis\RuleName;
 use Bpmore\Copydesk\Dictionaries;
 use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
+use Bpmore\Copydesk\Support\CsvSafe;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -65,9 +66,11 @@ class DictionaryController extends CpController
             $out = fopen('php://output', 'w');
             fputcsv($out, ['site', 'collection', 'page', 'edit_url', 'rule', 'severity', 'count', 'ignored_on_page', 'rule_name']);
 
+            // Every text cell through CsvSafe: a title is an author's to
+            // write, and a spreadsheet runs a cell that starts like a formula.
             foreach ($report->pagesWithIssues() as $page) {
                 foreach ($page->rules as $rule => $found) {
-                    fputcsv($out, [$report->site, $page->collection, $page->title, $page->editUrl, $rule, $found['severity'], $found['count'], $page->ignored, RuleName::of((string) $rule)]);
+                    fputcsv($out, array_map(CsvSafe::cell(...), [$report->site, $page->collection, $page->title, $page->editUrl, $rule, $found['severity'], $found['count'], $page->ignored, RuleName::of((string) $rule)]));
                 }
             }
 

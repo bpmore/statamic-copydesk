@@ -17,6 +17,7 @@ use Bpmore\Copydesk\Scan\ScanHistory;
 use Bpmore\Copydesk\Scan\SiteReport;
 use Bpmore\Copydesk\Scan\SiteScan;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate as Access;
 use Statamic\Addons\Addon;
 use Statamic\Facades\Permission;
@@ -108,6 +109,10 @@ class ServiceProvider extends AddonServiceProvider
     public function bootAddon(): void
     {
         $this->bootPermissions();
+
+        // `@plain($x)` for any value that reaches a view Vue will compile. See
+        // `VueSafe` for why Blade's own escaping is not enough there.
+        Blade::directive('plain', fn ($expression) => "<?php echo \\Bpmore\\Copydesk\\Support\\VueSafe::text({$expression}); ?>");
 
         Utility::extend(fn () => Utility::register(
             Utility::make('copydesk')

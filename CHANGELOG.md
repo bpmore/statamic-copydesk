@@ -4,6 +4,26 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## Unreleased
+
+A security fix to the Readability page and the dashboard widget, and a
+guard on the issues download. Nothing to do on upgrade.
+
+- **Text on the Readability page cannot run as code.** The control panel
+  compiles the page under Tools and the Readability widget as a Vue
+  template, and Vue's double braces in a page title, a dictionary term, a
+  scan failure or the reason given to publish past the gate were read as an
+  expression and run in the browser of whoever opened the page, as that
+  person. Every value from content, a user or a request is now written so
+  the browser shows it as text, and nothing from them goes into a component
+  prop that is written as markup. The window needed someone who could write
+  a title or a reason, and the page to be opened by someone with more
+  permissions than them.
+- **The issues CSV opens safely in a spreadsheet.** A page title or a
+  collection beginning with `=`, `+`, `-`, `@`, a tab or a carriage return
+  is written with a leading apostrophe, which Excel, Sheets and LibreOffice
+  read as "this is text" and do not show, rather than run as a formula.
+
 ## 2.1.3 - 2026-10-27
 
 The README, rewritten in plain English. No code changed. Nothing to do on

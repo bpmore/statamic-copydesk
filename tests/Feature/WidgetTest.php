@@ -122,5 +122,11 @@ it('renders markup Vue can compile, before and after scans', function () {
     aPage('Hard', HARD);
     app(SiteScan::class)->run('default');
 
-    assertVueTemplateIsWellFormed((string) app(Loader::class)->load('readability', ['type' => 'readability'])->html());
+    $html = (string) app(Loader::class)->load('readability', ['type' => 'readability'])->html();
+    assertVueTemplateIsWellFormed($html);
+
+    // `ui-description` renders its `text` prop with v-html, so what the
+    // widget says about the last scan is in the component's slot, as text,
+    // and nothing from the scan is in a prop a component writes as markup.
+    expect($html)->toContain('<ui-description>')->not->toMatch('/<ui-description[^>]*text="[^"]*Last scan/')->not->toContain('{{');
 });
