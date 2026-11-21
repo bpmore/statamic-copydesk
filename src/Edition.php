@@ -15,9 +15,9 @@ use Statamic\Facades\Addon;
  *
  *     'addons' => ['bpmore/statamic-copydesk' => 'pro'],
  *
- * Statamic answers the question and checks the licence; this only asks it,
- * so every Pro feature asks the same way. An edition the list does not have
- * is a mistake in the config, and Statamic throws rather than guess.
+ * Statamic handles licence validation separately. This helper only reads the
+ * configured edition, and an unknown value never enables Pro. Statamic 6.43+
+ * reports unknown editions on its licensing screen.
  */
 final class Edition
 {
@@ -29,7 +29,14 @@ final class Edition
 
     public static function current(): string
     {
-        return (string) (Addon::get(self::PACKAGE)?->edition() ?? self::FREE);
+        $addon = Addon::get(self::PACKAGE);
+        $configured = config('statamic.editions.addons.'.self::PACKAGE);
+
+        if ($configured !== null && ! $addon?->editions()->containsStrict($configured)) {
+            return self::FREE;
+        }
+
+        return (string) ($addon?->edition() ?? self::FREE);
     }
 
     public static function isPro(): bool
