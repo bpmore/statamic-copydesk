@@ -34,8 +34,9 @@ it('runs Free when the site chooses it by name', function () {
     expect(Edition::isPro())->toBeFalse();
 });
 
-it('refuses an edition that does not exist, rather than guess', function () {
+it('runs Free when the configured edition does not exist', function () {
     config()->set('statamic.editions.addons.'.Edition::PACKAGE, 'premium');
 
-    expect(fn () => Edition::isPro())->toThrow(Exception::class, 'Invalid edition [premium]');
+    expect(Edition::current())->toBe('free')
+        ->and(Edition::isPro())->toBeFalse();
 });
