@@ -4,6 +4,12 @@ What changed in each release, and what you have to do about it.
 
 Versions are `MAJOR.MINOR.PATCH`. From 1.0 a breaking change raises the major.
 
+## 2.1.4 - 2026-11-24
+
+- **An unrecognized edition now falls back to Free on newer Statamic versions.**
+  Valid Free and Pro choices and Statamic's license checks are unchanged.
+  Nothing to do on upgrade.
+
 ## 2.1.3 - 2026-10-27
 
 The README, rewritten in plain English. No code changed. Nothing to do on
